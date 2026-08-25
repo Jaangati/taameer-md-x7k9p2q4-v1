@@ -1,0 +1,2722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAAMEER Group — Marketing Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], arabic: ['Tajawal','sans-serif'] } } }
+}
+</script>
+<style>
+  :root {
+    --accent: #757575;
+    --accent-soft: rgba(117,117,117,0.12);
+    --accent-hover: rgba(117,117,117,0.22);
+    --brand: #3a3d42;
+  }
+  body { font-family: 'Inter', sans-serif; }
+  .font-arabic { font-family: 'Tajawal', sans-serif; }
+
+  .bg-accent { background-color: var(--accent) !important; }
+  .text-accent { color: var(--accent) !important; }
+  .border-accent { border-color: var(--accent) !important; }
+  .bg-accent-soft { background-color: var(--accent-soft) !important; }
+  .bg-accent-hover { background-color: var(--accent-hover) !important; }
+  .hover\:bg-accent-hover:hover { background-color: var(--accent-hover) !important; }
+  .shadow-accent { box-shadow: 0 10px 25px -5px rgba(117,117,117,0.35); }
+
+  .sidebar-btn {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #9CA3AF;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .sidebar-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+  .sidebar-btn.active {
+    color: white;
+    background: var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .sidebar-expanded { width: 240px; }
+  .sidebar-collapsed { width: 72px; }
+
+  .nav-item {
+    display: flex; align-items: center;
+    padding: 8px 12px;
+    border-radius: 10px;
+    color: #D1D5DB;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+  .nav-item.active { background: var(--accent); color: white; }
+  .nav-item .nav-icon { width: 24px; display: flex; justify-content: center; flex-shrink: 0; }
+  .nav-item .nav-label { margin-left: 12px; font-size: 14px; font-weight: 500; }
+
+  .section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6B7280;
+    padding: 12px 12px 6px;
+    font-weight: 600;
+  }
+
+  .stat-card { border-radius: 16px; border: 1px solid #F3F4F6; transition: all 0.2s; }
+  .stat-card:hover { border-color: var(--accent); }
+  .dark .stat-card { border-color: #374151; background: #111827; }
+
+  .day-circle {
+    min-width: 56px; height: 64px;
+    border-radius: 14px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .day-circle:hover { background: #F9FAFB; }
+  .dark .day-circle:hover { background: #1F2937; }
+  .day-circle.active { background: var(--accent); color: white; }
+
+  .month-tab {
+    padding: 6px 12px; border-radius: 10px; font-size: 13px; font-weight: 500;
+    color: #9CA3AF; cursor: pointer; transition: all 0.2s;
+  }
+  .month-tab:hover { color: #111827; }
+  .dark .month-tab:hover { color: white; }
+  .month-tab.active { color: var(--accent); font-weight: 700; background: var(--accent-soft); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+  .dark ::-webkit-scrollbar-thumb { background: #4B5563; }
+
+  .fade-in { animation: fadeIn 0.3s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .login-bg {
+    background: radial-gradient(circle at 20% 30%, rgba(117,117,117,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(58,61,66,0.1) 0%, transparent 50%),
+                linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+  }
+  .dark .login-bg {
+    background: radial-gradient(circle at 20% 30%, rgba(117,117,117,0.08) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0a 0%, #111827 100%);
+  }
+
+  .color-swatch {
+    width: 36px; height: 36px; border-radius: 10px; cursor: pointer;
+    border: 3px solid transparent; transition: all 0.2s;
+  }
+  .color-swatch:hover { transform: scale(1.1); }
+  .color-swatch.active { border-color: #111827; transform: scale(1.1); }
+  .dark .color-swatch.active { border-color: white; }
+
+  .dropdown { position: relative; }
+  .dropdown-menu {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    min-width: 220px;
+    background: white; border: 1px solid #E5E7EB;
+    border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 6px; z-index: 50;
+    display: none;
+  }
+  .dropdown-menu.show { display: block; animation: fadeIn 0.2s; }
+  .dark .dropdown-menu { background: #1F2937; border-color: #374151; }
+  .dropdown-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    color: #374151; font-size: 14px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dropdown-item:hover { background: #F3F4F6; }
+  .dark .dropdown-item { color: #E5E7EB; }
+  .dark .dropdown-item:hover { background: #374151; }
+
+  .avatar-upload { position: relative; cursor: pointer; }
+  .avatar-upload:hover .avatar-overlay { opacity: 1; }
+  .avatar-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+    color: white; font-size: 12px;
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    z-index: 100; display: none;
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .toggle { position: relative; width: 44px; height: 24px; background: #D1D5DB; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+  .toggle.on { background: var(--accent); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; background: white; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  .input-field {
+    width: 100%; padding: 10px 14px;
+    background: #F9FAFB; border: 1px solid #E5E7EB;
+    border-radius: 10px; font-size: 14px;
+    outline: none; transition: all 0.2s;
+  }
+  .input-field:focus { border-color: var(--accent); background: white; }
+  .dark .input-field { background: #1F2937; border-color: #374151; color: white; }
+  .dark .input-field:focus { background: #111827; }
+  .input-field:read-only { opacity: 0.7; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--accent); color: white;
+    padding: 10px 20px; border-radius: 10px;
+    font-weight: 500; font-size: 14px;
+    transition: opacity 0.2s; cursor: pointer; border: none;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: #F3F4F6; color: #374151;
+    padding: 10px 20px; border-radius: 10px;
+    font-weight: 500; font-size: 14px;
+    transition: background 0.2s; cursor: pointer; border: none;
+  }
+  .btn-secondary:hover { background: #E5E7EB; }
+  .dark .btn-secondary { background: #374151; color: #E5E7EB; }
+  .dark .btn-secondary:hover { background: #4B5563; }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+  }
+
+  .password-display {
+    font-family: 'Courier New', monospace;
+    background: #F3F4F6; padding: 4px 10px; border-radius: 6px;
+    font-size: 13px; letter-spacing: 1px;
+  }
+  .dark .password-display { background: #374151; }
+
+  .sidebar-header { min-height: 64px; position: relative; }
+  .sidebar-toggle-btn {
+    opacity: 0; transform: translateX(-4px);
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s;
+  }
+  .sidebar-expanded .sidebar-toggle-btn { opacity: 1; transform: translateX(0); }
+  .sidebar-toggle-btn:hover { background: rgba(255,255,255,0.1) !important; }
+  .sidebar-collapsed { position: relative; }
+  .sidebar-collapsed::before {
+    content: ''; position: absolute; top: 14px; right: -14px;
+    width: 14px; height: 40px; background: var(--accent);
+    border-radius: 0 8px 8px 0; cursor: pointer;
+    opacity: 0; transition: opacity 0.25s ease; z-index: 10;
+  }
+  .sidebar-collapsed:hover::before { opacity: 0.7; }
+  .sidebar-collapsed::after {
+    content: '\f054'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+    position: absolute; top: 26px; right: -10px;
+    width: 14px; height: 16px; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: white; z-index: 11; pointer-events: none;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  .sidebar-collapsed:hover::after { opacity: 1; }
+  .sidebar-collapsed .sidebar-header { cursor: pointer; }
+  #toggleIcon { transition: transform 0.3s ease; }
+
+  /* ===== LUTS & COLOR MATCHING MODULE STYLES ===== */
+  .upload-zone {
+    border: 2px dashed #D1D5DB;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #FAFAFA;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .dark .upload-zone { border-color: #4B5563; background: #1a1a1a; }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .upload-zone.has-image { padding: 8px; border-style: solid; }
+
+  .preset-card {
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+  }
+  .dark .preset-card { border-color: #374151; background: #111827; }
+  .preset-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .preset-card.active { border-color: var(--accent); background: var(--accent-soft); }
+
+  .preset-swatch {
+    height: 48px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .split-container {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #000;
+    cursor: col-resize;
+  }
+  .split-container img, .split-container canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+  }
+  .split-after {
+    clip-path: inset(0 0 0 50%);
+  }
+  .split-divider {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: white;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .split-divider::after {
+    content: '\f337';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px; height: 36px;
+    background: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #374151;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .scope-canvas {
+    width: 100%;
+    height: 120px;
+    background: #0a0a0a;
+    border-radius: 8px;
+  }
+
+  .slider-track {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 3px;
+    outline: none;
+  }
+  .dark .slider-track { background: #374151; }
+  .slider-track::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .tab-btn-lut {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .tab-btn-lut:hover { color: #111827; background: #F3F4F6; }
+  .dark .tab-btn-lut:hover { color: white; background: #1F2937; }
+  .tab-btn-lut.active {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .empty-canvas-placeholder {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: #6B7280;
+  }
+</style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-950 min-h-screen transition-colors duration-300">
+
+<!-- TAAMEER SVG Symbol -->
+<svg style="display:none">
+  <symbol id="taameer-icon" viewBox="0 0 806.829 830.444">
+    <path transform="matrix(1,0,0,-1,206.163,529.2239)" d="M0 0 211.018-211.018 152.399-269.637 183.982-301.22 306.949-178.252 275.367-146.669 242.6-179.436 31.583 31.581Z"/>
+    <path transform="matrix(1,0,0,-1,652.2795,323.55857)" d="M0 0 32.766-32.766-178.252-243.783-146.669-275.366 64.348-64.349 121.865-121.892 154.549-91.386 31.583 31.582Z"/>
+    <path transform="matrix(1,0,0,-1,413.3124,.00048828127)" d="M0 0-122.967-122.968-91.385-154.551-58.62-121.784 152.399-332.801 183.981-301.22-27.038-90.202 31.582-31.582Z"/>
+    <path transform="matrix(1,0,0,-1,402.6,524.63888)" d="M0 0-110.288 110.288 0 220.575 110.287 110.288ZM-250.557 194.482C-247.853 191.927-245.132 189.361-242.418 186.766L-218.717 211.565C-221.481 214.207-224.247 216.82-227 219.421C-240.492 232.166-253.237 244.202-263.086 257.163C-285.005 286.007-281.629 327.668-255.226 354.068L-225.614 383.68C-216.642 392.655-207.14 397.478-196.322 398.45C-184.918 399.626-175.116 395.694-165.469 386.042L-24.258 244.834-311.876-42.784C-328.693-59.604-336.393-79.891-334.167-101.203C-332.496-119.852-324.202-136.755-309.513-151.447L-279.901-181.059C-241.43-219.52-180.416-224.218-137.98-191.971C-122.775-180.413-109.19-166.032-96.055-152.125C-93.501-149.422-90.935-146.707-88.343-143.993L-113.142-120.291C-115.782-123.054-118.392-125.82-120.993-128.57C-133.738-142.065-145.777-154.81-158.738-164.661C-187.581-186.582-229.243-183.199-255.645-156.801L-285.257-127.191C-294.23-118.214-299.052-108.713-300.024-97.893C-301.214-86.49-297.271-76.695-287.619-67.043L-134.545 86.03 141.209-189.725C158.028-206.54 178.32-214.249 199.628-212.018C218.279-210.347 235.182-202.05 249.868-187.363L279.484-157.751C317.955-119.278 322.648-58.266 290.395-15.832C278.839-.623 264.456 12.963 250.546 26.102C247.846 28.654 245.13 31.219 242.418 33.809L218.717 9.01C221.477 6.372 224.241 3.762 226.99 1.163C240.486-11.584 253.233-23.622 263.084-36.588C285.005-65.431 281.628-107.093 255.228-133.493L225.612-163.107C216.64-172.08 207.138-176.902 196.32-177.874C184.933-179.061 175.116-175.121 165.467-165.467L24.258-24.258 303.698 255.186C320.515 272.001 328.216 292.288 325.993 313.606C324.32 332.258 316.024 349.161 301.339 363.848L271.726 393.46C250.373 414.812 222.078 425.758 193.866 425.758C171.251 425.758 148.687 418.722 129.806 404.373C114.599 392.815 101.012 378.433 87.877 364.525C85.323 361.823 82.758 359.106 80.167 356.395L104.965 332.693C107.604 335.452 110.217 338.218 112.815 340.97C125.559 354.464 137.601 367.208 150.563 377.061C179.409 398.981 221.068 395.602 247.468 369.201L277.081 339.589C286.054 330.618 290.878 321.114 291.85 310.296C293.039 298.898 289.097 289.095 279.442 279.444L134.545 134.546-141.211 410.301C-156.137 425.224-173.791 432.969-192.478 432.967C-194.846 432.967-197.2 432.843-199.633 432.593C-218.282 430.92-235.184 422.624-249.873 407.938L-279.484 378.327C-317.955 339.853-322.648 278.841-290.397 236.407C-278.843 221.2-264.463 207.618-250.557 194.482"/>
+    <path transform="matrix(1,0,0,-1,154.5493,503.63038)" d="M0 0-32.766 32.766 178.252 243.783 146.67 275.366-64.348 64.349-121.865 121.892-154.549 91.386-31.582-31.582Z"/>
+  </symbol>
+</svg>
+
+<!-- ==================== LOGIN VIEW ==================== -->
+<div id="loginView" class="login-bg min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-5xl grid md:grid-cols-2 bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-2xl fade-in border border-gray-200 dark:border-gray-800">
+    <div class="bg-gradient-to-br from-gray-900 via-[#1a1c1f] to-black p-10 flex flex-col justify-between text-white relative overflow-hidden min-h-[420px]">
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-10 right-10 w-48 h-48 rounded-full bg-[var(--accent)] blur-3xl"></div>
+      </div>
+      <div class="relative z-10">
+        <div class="flex items-center space-x-3 mb-16">
+          <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20">
+            <svg width="28" height="28" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="var(--accent)"/></svg>
+          </div>
+          <div>
+            <div class="font-arabic text-2xl font-bold leading-none">تعمير</div>
+            <div class="text-sm font-semibold tracking-wider opacity-80">TAAMEER</div>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-4xl font-bold leading-tight mb-4">Building<br>Success,<br>Together.</h1>
+          <p class="text-gray-400 text-sm leading-relaxed max-w-xs">The people behind TAAMEER's growth — united in one workspace to shape what comes next.</p>
+        </div>
+      </div>
+      <div class="relative z-10 text-xs text-gray-500">© 2026 TAAMEER Group Marketing Department. All rights reserved.</div>
+    </div>
+
+    <div class="p-10 flex flex-col justify-center">
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back</h2>
+        <p class="text-gray-500 text-sm">Sign in to your Marketing Digital Workspace</p>
+      </div>
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Team Member</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" id="username" class="input-field pl-11" placeholder="Enter your username" required>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="password" id="password" class="input-field pl-11" placeholder="Enter your password" required>
+          </div>
+        </div>
+        <label class="flex items-center text-gray-600 dark:text-gray-400 text-sm">
+          <input type="checkbox" id="rememberMe" class="mr-2 rounded border-gray-300">
+          Remember me
+        </label>
+        <button type="submit" class="btn-primary w-full">Sign In</button>
+      </form>
+      <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+        <p class="text-xs text-gray-500 text-center leading-relaxed">
+          <i class="fas fa-info-circle mr-1"></i>
+          Need an account or forgot your password?<br>
+          Please contact <span class="font-semibold text-gray-700 dark:text-gray-300">Department Management</span>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SET PASSWORD VIEW ==================== -->
+<div id="setPasswordView" class="login-bg min-h-screen flex items-center justify-center p-4 hidden">
+  <div class="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-2xl fade-in border border-gray-200 dark:border-gray-800 p-8">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-accent">
+        <svg width="32" height="32" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome, <span id="spName">User</span>!</h2>
+      <p class="text-gray-500 text-sm">This is your first login. Please set your password to continue.</p>
+    </div>
+    <form id="setPasswordForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+        <input type="password" id="spPassword" class="input-field" placeholder="Choose a password" required minlength="6">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+        <input type="password" id="spConfirm" class="input-field" placeholder="Confirm your password" required>
+      </div>
+      <button type="submit" class="btn-primary w-full">Set Password & Continue</button>
+    </form>
+    <div class="mt-4 text-center">
+      <p class="text-xs text-gray-400">© 2026 TAAMEER Group Marketing Department. All rights reserved.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DASHBOARD VIEW ==================== -->
+<div id="dashboardView" class="hidden h-screen flex">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="sidebar-collapsed bg-gray-950 flex flex-col flex-shrink-0 border-r border-gray-900 transition-all duration-300 overflow-hidden">
+    <div class="sidebar-header flex items-center justify-between px-3 py-4 border-b border-gray-900 relative">
+      <div class="flex items-center space-x-3 overflow-hidden flex-1">
+        <div class="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg width="22" height="22" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg>
+        </div>
+        <div class="sidebar-label whitespace-nowrap">
+          <div class="font-arabic text-lg font-bold leading-none text-white">تعمير</div>
+          <div class="text-[10px] font-semibold tracking-wider text-gray-400">TAAMEER</div>
+        </div>
+      </div>
+      <button onclick="toggleSidebar()" class="sidebar-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all flex-shrink-0" title="Toggle sidebar">
+        <i class="fas fa-chevron-left text-xs" id="toggleIcon"></i>
+      </button>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-3 px-3" id="sidebarNav"></nav>
+
+    <div class="p-3 border-t border-gray-900 space-y-1">
+      <button onclick="toggleTheme()" class="nav-item w-full" title="Toggle theme">
+        <span class="nav-icon"><i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block"></i></span>
+        <span class="nav-label sidebar-label">Theme</span>
+      </button>
+      <button onclick="logout()" class="nav-item w-full" title="Logout">
+        <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+        <span class="nav-label sidebar-label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
+
+    <!-- Top Bar -->
+    <header class="flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+      <div>
+        <h1 class="text-lg font-bold text-gray-900 dark:text-white" id="headerTitle">Home</h1>
+        <p class="text-xs text-gray-500" id="headerSubtitle">TAAMEER Marketing Dashboard</p>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        <div class="hidden md:flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700">
+          <i class="far fa-clock text-accent"></i>
+          <span id="clock" class="font-mono font-medium">00:00</span>
+          <span class="text-xs text-gray-400">•</span>
+          <span id="date" class="text-xs">Jan 1</span>
+        </div>
+
+        <button class="relative w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-accent transition-colors border border-gray-200 dark:border-gray-700">
+          <i class="fas fa-bell"></i>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full"></span>
+        </button>
+
+        <div class="dropdown">
+          <button onclick="toggleUserDropdown()" class="flex items-center space-x-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+            <div class="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white font-semibold text-sm overflow-hidden" id="userAvatar">
+              <img id="userAvatarImg" class="w-full h-full object-cover hidden">
+              <span id="userAvatarText">A</span>
+            </div>
+            <div class="hidden md:block text-left">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white" id="userName">Admin</p>
+              <p class="text-xs text-gray-500" id="userRole">Administrator</p>
+            </div>
+            <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+          </button>
+          <div class="dropdown-menu" id="userDropdown">
+            <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-700 mb-1">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white" id="ddName">Admin</p>
+              <p class="text-xs text-gray-500" id="ddEmail">admin@taameer.com</p>
+              <p class="text-xs text-accent capitalize" id="ddRole">admin</p>
+            </div>
+            <div class="dropdown-item" onclick="showView('profile'); closeUserDropdown();">
+              <i class="fas fa-user text-gray-400 w-4"></i>
+              <span>My Profile</span>
+            </div>
+            <div class="dropdown-item" onclick="showView('account'); closeUserDropdown();">
+              <i class="fas fa-cog text-gray-400 w-4"></i>
+              <span>Account Settings</span>
+            </div>
+            <div class="dropdown-item" onclick="logout()" style="color: #EF4444;">
+              <i class="fas fa-sign-out-alt w-4"></i>
+              <span>Logout</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-1 overflow-auto p-6" id="mainContent">
+
+      <!-- HOME -->
+      <div id="view-home" class="view-section fade-in">
+        <div class="stat-card bg-white dark:bg-gray-900 p-6 mb-5 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-accent-soft rounded-full blur-3xl -mr-20 -mt-20"></div>
+          <div class="relative z-10 flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p class="text-sm text-gray-500 mb-1" id="greetingText">Good morning</p>
+              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Welcome back, <span id="welcomeName">Admin</span> 👋</h2>
+              <p class="text-sm text-gray-500 mt-2" id="todayFullDate">—</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="text-right">
+                <div class="text-3xl font-bold font-mono text-gray-900 dark:text-white" id="bigClock">00:00</div>
+                <div class="text-xs text-gray-500" id="tzSmall">UTC</div>
+              </div>
+              <div class="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center shadow-accent">
+                <svg width="28" height="28" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div class="stat-card bg-white dark:bg-gray-900 p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-accent-soft rounded-xl flex items-center justify-center"><i class="fas fa-calendar-day text-accent"></i></div>
+              <span class="text-xs font-medium text-gray-500">Today</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">3</div>
+            <div class="text-sm text-gray-500">Scheduled events</div>
+          </div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-accent-soft rounded-xl flex items-center justify-center"><i class="fas fa-cubes text-accent"></i></div>
+              <span class="text-xs font-medium text-gray-500">Access</span>
+            </div>
+            <div class="text-2xl font-bold text-gray-900 dark:text-white" id="myModulesCount">1</div>
+            <div class="text-sm text-gray-500">Modules available</div>
+          </div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-5">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-accent-soft rounded-xl flex items-center justify-center"><i class="fas fa-briefcase text-accent"></i></div>
+              <span class="text-xs font-medium text-gray-500">Role</span>
+            </div>
+            <div class="text-lg font-bold text-gray-900 dark:text-white" id="myJobTitle">—</div>
+            <div class="text-sm text-gray-500 capitalize" id="myRoleDisplay">admin</div>
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-gray-900 dark:text-white">Your Modules</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="homeModulesGrid"></div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-bold text-gray-900 dark:text-white">Today's Schedule</h3>
+            <button onclick="showView('calendar')" class="text-xs font-medium text-accent hover:underline">Open calendar →</button>
+          </div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-4 space-y-3">
+            <div class="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div class="w-11 h-11 bg-accent-soft rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-users text-accent"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center text-xs text-gray-500 mb-1"><i class="far fa-clock mr-1"></i><span>09:00 – 10:00</span></div>
+                <div class="font-semibold text-gray-900 dark:text-white truncate">Marketing Team Standup</div>
+              </div>
+              <span class="badge text-accent bg-accent-soft">Daily</span>
+            </div>
+            <div class="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div class="w-11 h-11 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-bullhorn text-purple-600"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center text-xs text-gray-500 mb-1"><i class="far fa-clock mr-1"></i><span>11:00 – 12:00</span></div>
+                <div class="font-semibold text-gray-900 dark:text-white truncate">Campaign Review Session</div>
+              </div>
+              <span class="badge text-purple-600 bg-purple-50 dark:bg-purple-900/20">Weekly</span>
+            </div>
+            <div class="flex items-center space-x-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div class="w-11 h-11 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0"><i class="fas fa-pen-nib text-blue-600"></i></div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center text-xs text-gray-500 mb-1"><i class="far fa-clock mr-1"></i><span>14:00 – 15:30</span></div>
+                <div class="font-semibold text-gray-900 dark:text-white truncate">Content Planning Workshop</div>
+              </div>
+              <span class="badge text-blue-600 bg-blue-50 dark:bg-blue-900/20">Once</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="view-calendar" class="view-section hidden fade-in">
+        <div class="stat-card bg-white dark:bg-gray-900 p-6">
+          <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white" id="calTitle">August 2026</h2>
+              <p class="text-sm text-gray-500 mt-1">Click any day to view details</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="changeMonth(-1)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-accent-soft flex items-center justify-center transition-colors border border-gray-200 dark:border-gray-700"><i class="fas fa-chevron-left"></i></button>
+              <button onclick="goToday()" class="btn-primary">Today</button>
+              <button onclick="changeMonth(1)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-accent-soft flex items-center justify-center transition-colors border border-gray-200 dark:border-gray-700"><i class="fas fa-chevron-right"></i></button>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1 mb-5 overflow-x-auto pb-1" id="monthTabs"></div>
+          <div class="flex space-x-2 overflow-x-auto pb-3 mb-5" id="dayStrip"></div>
+          <div class="grid grid-cols-7 gap-2 mb-2">
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Sun</div>
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Mon</div>
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Tue</div>
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Wed</div>
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Thu</div>
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Fri</div>
+            <div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Sat</div>
+          </div>
+          <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- MODULE TEST -->
+      <div id="view-module-test" class="view-section hidden fade-in">
+        <div class="stat-card bg-white dark:bg-gray-900 p-6">
+          <div class="flex items-center space-x-4 mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center shadow-accent">
+              <i class="fas fa-flask text-white text-2xl"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Module Test</h2>
+              <p class="text-sm text-gray-500">This is a placeholder module for testing the system architecture</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div class="text-sm text-gray-500 mb-1">Status</div>
+              <div class="text-xl font-bold text-green-600">Active</div>
+            </div>
+            <div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div class="text-sm text-gray-500 mb-1">Version</div>
+              <div class="text-xl font-bold text-gray-900 dark:text-white">0.1.0</div>
+            </div>
+            <div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div class="text-sm text-gray-500 mb-1">Last Updated</div>
+              <div class="text-xl font-bold text-gray-900 dark:text-white" id="moduleTestDate">—</div>
+            </div>
+          </div>
+          <div class="p-6 bg-accent-soft border border-accent/20 rounded-xl">
+            <h4 class="font-semibold text-gray-900 dark:text-white mb-2">🚧 Under Development</h4>
+            <p class="text-sm text-gray-600 dark:text-gray-400">This module is a test placeholder. Future modules will follow the same pattern and appear directly in the sidebar once assigned to your role by the administrator.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LUTS & COLOR MATCHING MODULE ===== -->
+      <div id="view-luts-color" class="view-section hidden fade-in">
+        <div class="mb-5">
+          <div class="flex items-center space-x-4 mb-2">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <i class="fas fa-palette text-white text-xl"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">LUTs & Color Matching</h2>
+              <p class="text-sm text-gray-500">Professional color grading and look development for TAAMEER productions</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Zones -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div class="stat-card bg-white dark:bg-gray-900 p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                <i class="fas fa-image text-accent mr-2"></i>
+                Reference Look
+              </h3>
+              <span class="badge bg-accent-soft text-accent">Source</span>
+            </div>
+            <div class="upload-zone" id="refUploadZone" onclick="document.getElementById('refImageInput').click()">
+              <input type="file" id="refImageInput" accept="image/*" class="hidden" onchange="handleLutImageUpload(event, 'ref')">
+              <div id="refUploadContent">
+                <div class="w-14 h-14 rounded-full bg-accent-soft flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-cloud-upload-alt text-2xl text-accent"></i>
+                </div>
+                <p class="font-medium text-gray-700 dark:text-gray-300 mb-1">Drop graded image here</p>
+                <p class="text-xs text-gray-500">or click to browse · JPG, PNG, WEBP</p>
+              </div>
+              <img id="refPreview" class="hidden max-h-40 rounded-lg object-contain">
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                <i class="fas fa-bullseye text-accent mr-2"></i>
+                Target Preview
+              </h3>
+              <span class="badge bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">Target</span>
+            </div>
+            <div class="upload-zone" id="tgtUploadZone" onclick="document.getElementById('tgtImageInput').click()">
+              <input type="file" id="tgtImageInput" accept="image/*" class="hidden" onchange="handleLutImageUpload(event, 'tgt')">
+              <div id="tgtUploadContent">
+                <div class="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mx-auto mb-3">
+                  <i class="fas fa-crosshairs text-2xl text-blue-600"></i>
+                </div>
+                <p class="font-medium text-gray-700 dark:text-gray-300 mb-1">Drop image here</p>
+                <p class="text-xs text-gray-500">or click to browse · JPG, PNG, WEBP</p>
+              </div>
+              <img id="tgtPreview" class="hidden max-h-40 rounded-lg object-contain">
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="stat-card bg-white dark:bg-gray-900 p-4 mb-5">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div class="flex items-center space-x-2">
+              <button onclick="autoGenerateLUT()" class="btn-primary flex items-center space-x-2" id="generateLutBtn">
+                <i class="fas fa-magic"></i>
+                <span>Auto LUT</span>
+              </button>
+              <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <button onclick="setLutSize(17)" class="tab-btn-lut lut-size-btn active" data-size="17">17³</button>
+                <button onclick="setLutSize(33)" class="tab-btn-lut lut-size-btn" data-size="33">33³</button>
+                <button onclick="setLutSize(64)" class="tab-btn-lut lut-size-btn" data-size="64">64³</button>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="compareLooks()" class="btn-secondary flex items-center space-x-2">
+                <i class="fas fa-columns"></i>
+                <span>Compare</span>
+              </button>
+              <button onclick="resetAllLut()" class="btn-secondary flex items-center space-x-2">
+                <i class="fas fa-undo"></i>
+                <span>Reset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Left: Presets + Controls -->
+          <div class="lg:col-span-1 space-y-5">
+            <!-- Presets -->
+            <div class="stat-card bg-white dark:bg-gray-900 p-5">
+              <h3 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <i class="fas fa-swatchbook text-accent mr-2"></i>
+                Looks
+              </h3>
+              <div class="grid grid-cols-2 gap-2" id="presetGrid">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Strength -->
+            <div class="stat-card bg-white dark:bg-gray-900 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                  <i class="fas fa-sliders-h text-accent mr-2"></i>
+                  Strength
+                </h3>
+                <span class="text-sm font-mono font-medium text-accent" id="strengthValue">100%</span>
+              </div>
+              <input type="range" min="0" max="100" value="100" class="slider-track" id="strengthSlider" oninput="updateStrength(this.value)">
+            </div>
+
+            <!-- Export -->
+            <div class="stat-card bg-white dark:bg-gray-900 p-5">
+              <h3 class="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
+                <i class="fas fa-download text-accent mr-2"></i>
+                LUT & Export
+              </h3>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-500 mb-2">LUT Intensity</label>
+                  <input type="range" min="0" max="100" value="100" class="slider-track" id="lutIntensity" oninput="document.getElementById('lutIntensityVal').textContent = this.value + '%'">
+                  <div class="text-right text-xs font-mono text-gray-500 mt-1" id="lutIntensityVal">100%</div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="exportCube()" class="btn-secondary text-xs flex items-center justify-center space-x-1">
+                    <i class="fas fa-file-code"></i>
+                    <span>Export .cube</span>
+                  </button>
+                  <button onclick="exportJpeg()" class="btn-secondary text-xs flex items-center justify-center space-x-1">
+                    <i class="fas fa-file-image"></i>
+                    <span>Export JPEG</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Canvas + Scopes -->
+          <div class="lg:col-span-2 space-y-5">
+            <!-- Split View Canvas -->
+            <div class="stat-card bg-white dark:bg-gray-900 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                  <i class="fas fa-eye text-accent mr-2"></i>
+                  Preview
+                </h3>
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs text-gray-500" id="splitLabel">Split View</span>
+                  <div class="toggle on" id="splitToggle" onclick="toggleSplitView()"></div>
+                </div>
+              </div>
+              <div class="split-container" id="splitContainer">
+                <canvas id="beforeCanvas" class="before-canvas"></canvas>
+                <canvas id="afterCanvas" class="split-after"></canvas>
+                <div class="split-divider" id="splitDivider"></div>
+                <div class="empty-canvas-placeholder" id="emptyPlaceholder">
+                  <i class="fas fa-image text-4xl mb-3 opacity-30"></i>
+                  <p class="text-sm">Upload a target image to begin</p>
+                </div>
+              </div>
+              <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
+                <span><i class="fas fa-circle text-gray-400 mr-1"></i>Before</span>
+                <span class="font-mono" id="imageDimensions">—</span>
+                <span>After<i class="fas fa-circle text-accent ml-1"></i></span>
+              </div>
+            </div>
+
+            <!-- Scopes -->
+            <div class="stat-card bg-white dark:bg-gray-900 p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-gray-900 dark:text-white flex items-center">
+                  <i class="fas fa-chart-area text-accent mr-2"></i>
+                  Scopes
+                </h3>
+                <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                  <button onclick="setScope('histogram')" class="tab-btn-lut scope-btn active" data-scope="histogram">RGB Histogram</button>
+                  <button onclick="setScope('waveform')" class="tab-btn-lut scope-btn" data-scope="waveform">Waveform</button>
+                  <button onclick="setScope('vectorscope')" class="tab-btn-lut scope-btn" data-scope="vectorscope">Vectorscope</button>
+                </div>
+              </div>
+              <canvas id="scopeCanvas" class="scope-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="view-profile" class="view-section hidden fade-in">
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="mb-2">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h2>
+            <p class="text-sm text-gray-500 mt-1">Your public profile information</p>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <div class="flex items-center space-x-4 mb-5">
+              <div class="avatar-upload" onclick="document.getElementById('avatarUpload').click()">
+                <div class="w-20 h-20 rounded-2xl bg-accent flex items-center justify-center text-white font-bold text-3xl overflow-hidden" id="profileAvatarBig">
+                  <img id="profileAvatarImg" class="w-full h-full object-cover hidden">
+                  <span id="profileAvatarText">A</span>
+                </div>
+                <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+                <input type="file" id="avatarUpload" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 dark:text-white text-lg" id="profileFullName">Admin User</h3>
+                <p class="text-sm text-gray-500"><span id="profileJobTitle" class="text-accent font-medium">—</span></p>
+                <p class="text-xs text-gray-400 mt-1">@<span id="profileUsername">admin</span></p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div class="text-xs text-gray-500 mb-1"><i class="fas fa-envelope mr-1"></i>Work Email</div>
+                <div class="font-medium text-gray-900 dark:text-white" id="profileEmailDisplay">—</div>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div class="text-xs text-gray-500 mb-1"><i class="fas fa-phone mr-1"></i>Phone Number</div>
+                <div class="font-medium text-gray-900 dark:text-white" id="profilePhoneDisplay">—</div>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div class="text-xs text-gray-500 mb-1"><i class="fas fa-clock mr-1"></i>Last Login</div>
+                <div class="font-medium text-gray-900 dark:text-white" id="profileLastLogin">—</div>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div class="text-xs text-gray-500 mb-1"><i class="fas fa-globe mr-1"></i>Timezone</div>
+                <div class="font-medium text-gray-900 dark:text-white" id="profileTz">UTC</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT SETTINGS -->
+      <div id="view-account" class="view-section hidden fade-in">
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="mb-2">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Account Settings</h2>
+            <p class="text-sm text-gray-500 mt-1">Manage your personal preferences</p>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Identity</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div class="text-xs text-gray-500 mb-1">Full Name</div>
+                <div class="font-medium text-gray-900 dark:text-white" id="accNameDisplay">—</div>
+                <div class="text-xs text-gray-400 mt-2"><i class="fas fa-lock mr-1"></i>Managed by admin</div>
+              </div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div class="text-xs text-gray-500 mb-1">Job Title</div>
+                <div class="font-medium text-gray-900 dark:text-white" id="accJobDisplay">—</div>
+                <div class="text-xs text-gray-400 mt-2"><i class="fas fa-lock mr-1"></i>Managed by admin</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Contact Information</h3>
+            <form class="space-y-4" onsubmit="event.preventDefault(); saveMyProfile();">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email</label>
+                  <input type="email" id="myEmail" class="input-field" placeholder="name@taameer.com">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                  <input type="tel" id="myPhone" class="input-field" placeholder="+974...">
+                </div>
+              </div>
+              <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Change Password</h3>
+            <form class="space-y-4" onsubmit="event.preventDefault(); changePassword();">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+                <input type="password" id="curPass" class="input-field" required>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                  <input type="password" id="newPass" class="input-field" required minlength="6">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                  <input type="password" id="confPass" class="input-field" required>
+                </div>
+              </div>
+              <button type="submit" class="btn-primary">Update Password</button>
+            </form>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-2">Personal Accent Color</h3>
+            <p class="text-sm text-gray-500 mb-4">Choose your preferred interface color. This only affects your view.</p>
+            <div class="grid grid-cols-6 md:grid-cols-8 gap-3" id="personalColorPicker">
+              <div class="color-swatch" style="background: #757575" data-color="#757575" data-name="Gray" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #3a3d42" data-color="#3a3d42" data-name="Charcoal" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #F97316" data-color="#F97316" data-name="Orange" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #3B82F6" data-color="#3B82F6" data-name="Blue" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #10B981" data-color="#10B981" data-name="Green" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #EF4444" data-color="#EF4444" data-name="Red" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #8B5CF6" data-color="#8B5CF6" data-name="Purple" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #EC4899" data-color="#EC4899" data-name="Pink" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #14B8A6" data-color="#14B8A6" data-name="Teal" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #F59E0B" data-color="#F59E0B" data-name="Amber" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #06B6D4" data-color="#06B6D4" data-name="Cyan" onclick="setPersonalAccent(this)"></div>
+              <div class="color-swatch" style="background: #6366F1" data-color="#6366F1" data-name="Indigo" onclick="setPersonalAccent(this)"></div>
+            </div>
+            <div class="mt-4 flex items-center space-x-3">
+              <label class="text-sm text-gray-600 dark:text-gray-400">Custom:</label>
+              <input type="color" id="personalCustomColor" class="w-10 h-10 rounded-lg cursor-pointer border-0" value="#757575" onchange="setPersonalCustomAccent(this.value)">
+              <span class="text-xs text-gray-500 font-mono" id="personalCustomColorHex">#757575</span>
+              <button onclick="resetPersonalAccent()" class="btn-secondary text-xs ml-auto">Reset to system default</button>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Appearance</h3>
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">Dark Mode</p>
+                <p class="text-xs text-gray-500">Switch between light and dark theme</p>
+              </div>
+              <div class="toggle" id="darkToggle" onclick="toggleTheme()"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN: USER MANAGEMENT -->
+      <div id="view-users" class="view-section hidden fade-in">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
+            <p class="text-sm text-gray-500 mt-1">Manage team members, roles, and access</p>
+          </div>
+          <button onclick="openUserModal()" class="btn-primary flex items-center space-x-2">
+            <i class="fas fa-plus"></i><span>Add User</span>
+          </button>
+        </div>
+        <div class="stat-card bg-white dark:bg-gray-900 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Title</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Password</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Login</th>
+                  <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="divide-y divide-gray-100 dark:divide-gray-800"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN: MODULE MANAGEMENT -->
+      <div id="view-modules-admin" class="view-section hidden fade-in">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Module Management</h2>
+            <p class="text-sm text-gray-500 mt-1">Create, edit, and assign modules to roles</p>
+          </div>
+          <button onclick="openModuleModal()" class="btn-primary flex items-center space-x-2">
+            <i class="fas fa-plus"></i><span>New Module</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="adminModulesGrid"></div>
+      </div>
+
+      <!-- ADMIN: PERMISSIONS -->
+      <div id="view-permissions" class="view-section hidden fade-in">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Permissions Matrix</h2>
+          <p class="text-sm text-gray-500 mt-1">Control what each role can do in each module</p>
+        </div>
+        <div class="stat-card bg-white dark:bg-gray-900 p-6">
+          <div class="flex items-center space-x-3 mb-4">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Role:</label>
+            <select id="permRoleSelect" onchange="renderPermissions()" class="input-field w-auto">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div id="permissionsList" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN: SYSTEM SETTINGS -->
+      <div id="view-settings" class="view-section hidden fade-in">
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="mb-2">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">System Settings</h2>
+            <p class="text-sm text-gray-500 mt-1">Full administrative control over the TAAMEER dashboard</p>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Branding</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Organization Name</label>
+                <input type="text" id="sysOrgName" class="input-field" value="TAAMEER Group">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">System Tagline</label>
+                <input type="text" id="sysTagline" class="input-field" value="Marketing Dashboard">
+              </div>
+              <button onclick="saveBranding()" class="btn-primary">Save Branding</button>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Default Accent Color</h3>
+            <p class="text-sm text-gray-500 mb-4">This is the default color for new users. Each user can override it in their Account Settings.</p>
+            <div class="grid grid-cols-6 md:grid-cols-8 gap-3" id="colorPicker">
+              <div class="color-swatch active" style="background: #757575" data-color="#757575" data-name="Gray" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #3a3d42" data-color="#3a3d42" data-name="Charcoal" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #F97316" data-color="#F97316" data-name="Orange" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #3B82F6" data-color="#3B82F6" data-name="Blue" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #10B981" data-color="#10B981" data-name="Green" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #EF4444" data-color="#EF4444" data-name="Red" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #8B5CF6" data-color="#8B5CF6" data-name="Purple" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #EC4899" data-color="#EC4899" data-name="Pink" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #14B8A6" data-color="#14B8A6" data-name="Teal" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #F59E0B" data-color="#F59E0B" data-name="Amber" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #06B6D4" data-color="#06B6D4" data-name="Cyan" onclick="setAccent(this)"></div>
+              <div class="color-swatch" style="background: #6366F1" data-color="#6366F1" data-name="Indigo" onclick="setAccent(this)"></div>
+            </div>
+            <div class="mt-4 flex items-center space-x-3">
+              <label class="text-sm text-gray-600 dark:text-gray-400">Custom:</label>
+              <input type="color" id="customColor" class="w-10 h-10 rounded-lg cursor-pointer border-0" value="#757575" onchange="setCustomAccent(this.value)">
+              <span class="text-xs text-gray-500 font-mono" id="customColorHex">#757575</span>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Notifications</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Email Notifications</p>
+                  <p class="text-xs text-gray-500">Send updates via work email</p>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">WhatsApp Integration</p>
+                  <p class="text-xs text-gray-500">Send notifications to user phone numbers (coming soon)</p>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">In-App Notifications</p>
+                  <p class="text-xs text-gray-500">Show bell icon alerts</p>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">Security</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Require Strong Passwords</p>
+                  <p class="text-xs text-gray-500">Minimum 8 characters with mixed case</p>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">Session Timeout</p>
+                  <p class="text-xs text-gray-500">Auto-logout after inactivity</p>
+                </div>
+                <select class="input-field w-auto">
+                  <option>30 minutes</option>
+                  <option>1 hour</option>
+                  <option>4 hours</option>
+                  <option>Never</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">System Information</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Version</span><span class="font-medium text-gray-900 dark:text-white">1.0.0</span></div>
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Build</span><span class="font-medium text-gray-900 dark:text-white">2026.08.18</span></div>
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Organization</span><span class="font-medium text-gray-900 dark:text-white" id="sysOrgDisplay">TAAMEER Group</span></div>
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Total Users</span><span class="font-medium text-gray-900 dark:text-white" id="sysTotalUsers">0</span></div>
+            </div>
+          </div>
+
+          <div class="text-center text-xs text-gray-400 pt-2">© 2026 TAAMEER Group Marketing Department. All rights reserved.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ===== USER MODAL ===== -->
+<div class="modal-overlay" id="userModal">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800 fade-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="userModalTitle">Add New User</h3>
+      <button onclick="closeUserModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="userForm" class="p-6 space-y-4">
+      <input type="hidden" id="editUserId">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username *</label>
+          <input type="text" id="uUsername" class="input-field" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password <span class="text-xs text-gray-400" id="passHint">(leave blank — user sets on first login)</span></label>
+          <div class="relative">
+            <input type="text" id="uPassword" class="input-field pr-10 font-mono" placeholder="Leave blank for new users">
+            <button type="button" onclick="toggleModalPasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <i class="fas fa-eye" id="modalPwEye"></i>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label>
+          <input type="text" id="uFullName" class="input-field" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title *</label>
+          <input type="text" id="uJobTitle" class="input-field" placeholder="e.g. Marketing Manager" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email</label>
+          <input type="email" id="uEmail" class="input-field" placeholder="name@taameer.com">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+          <input type="tel" id="uPhone" class="input-field" placeholder="+974...">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
+          <select id="uRole" class="input-field">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+          <select id="uStatus" class="input-field">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Modules</label>
+        <div id="userModuleCheckboxes" class="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"></div>
+      </div>
+
+      <div class="flex space-x-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+        <button type="button" onclick="closeUserModal()" class="btn-secondary flex-1">Cancel</button>
+        <button type="submit" class="btn-primary flex-1">Save User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODULE MODAL ===== -->
+<div class="modal-overlay" id="moduleModal">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-800 fade-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="moduleModalTitle">New Module</h3>
+      <button onclick="closeModuleModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="moduleForm" class="p-6 space-y-4">
+      <input type="hidden" id="editModuleId">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Module Name *</label>
+        <input type="text" id="mName" class="input-field" required placeholder="e.g. Campaigns">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+        <textarea id="mDesc" class="input-field" rows="2" placeholder="Brief description"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icon (FontAwesome)</label>
+          <input type="text" id="mIcon" class="input-field" placeholder="fa-flask" value="fa-cube">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
+          <input type="color" id="mColor" class="w-full h-10 rounded-lg cursor-pointer border-0" value="#757575">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
+        <select id="mStatus" class="input-field">
+          <option value="active">Active</option>
+          <option value="soon">Coming Soon</option>
+          <option value="disabled">Disabled</option>
+        </select>
+      </div>
+      <div class="flex space-x-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+        <button type="button" onclick="closeModuleModal()" class="btn-secondary flex-1">Cancel</button>
+        <button type="submit" class="btn-primary flex-1">Save Module</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ============ STATE ============
+const DEFAULT_MODULES = [
+  { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-alt', desc: 'Schedule management and event tracking', color: '#757575', roles: ['admin','user'], status: 'active' },
+  { id: 'module-test', name: 'Module Test', icon: 'fa-flask', desc: 'Placeholder test module', color: '#757575', roles: ['admin','user'], status: 'active' },
+  { id: 'luts-color', name: 'LUTs & Color Matching', icon: 'fa-palette', desc: 'Professional color grading and look development', color: '#EC4899', roles: ['admin','user'], status: 'active' }
+];
+
+let state = {
+  users: JSON.parse(localStorage.getItem('taameer_users')) || [
+    { id: 1, username: 'admin', password: 'admin123', fullName: 'Admin User', jobTitle: 'System Administrator', email: 'admin@taameer.com', phone: '+974 0000 0001', role: 'admin', status: 'active', avatar: null, lastLogin: new Date().toISOString(), modules: ['calendar','module-test','luts-color'], accentColor: null },
+    { id: 2, username: 'user', password: '', fullName: 'Test User', jobTitle: 'Marketing Specialist', email: 'user@taameer.com', phone: '+974 0000 0002', role: 'user', status: 'active', avatar: null, lastLogin: null, modules: ['calendar','module-test','luts-color'], accentColor: null }
+  ],
+  modules: JSON.parse(localStorage.getItem('taameer_modules')) || DEFAULT_MODULES,
+  permissions: JSON.parse(localStorage.getItem('taameer_permissions')) || {
+    user: { calendar: { view: true, edit: true, delete: false }, 'module-test': { view: true, edit: false, delete: false }, 'luts-color': { view: true, edit: true, delete: false } },
+    admin: { calendar: { view: true, edit: true, delete: true }, 'module-test': { view: true, edit: true, delete: true }, 'luts-color': { view: true, edit: true, delete: true } }
+  },
+  settings: JSON.parse(localStorage.getItem('taameer_settings')) || { orgName: 'TAAMEER Group', tagline: 'Marketing Dashboard', accent: '#757575', accentName: 'Gray' },
+  currentUser: null,
+  pendingUser: null
+};
+
+let currentMonth = new Date();
+let selectedDay = new Date().getDate();
+let sidebarExpanded = false;
+
+function save() {
+  localStorage.setItem('taameer_users', JSON.stringify(state.users));
+  localStorage.setItem('taameer_modules', JSON.stringify(state.modules));
+  localStorage.setItem('taameer_permissions', JSON.stringify(state.permissions));
+  localStorage.setItem('taameer_settings', JSON.stringify(state.settings));
+}
+
+// ============ ACCENT (system default) ============
+function setAccent(el) {
+  applySystemAccent(el.dataset.color, el.dataset.name);
+  document.querySelectorAll('#colorPicker .color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('customColor').value = el.dataset.color;
+  document.getElementById('customColorHex').textContent = el.dataset.color;
+}
+function setCustomAccent(color) {
+  applySystemAccent(color, 'Custom');
+  document.querySelectorAll('#colorPicker .color-swatch').forEach(s => s.classList.remove('active'));
+  document.getElementById('customColorHex').textContent = color;
+}
+function applySystemAccent(color, name) {
+  state.settings.accent = color;
+  state.settings.accentName = name;
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent-soft', color + '1F');
+  document.documentElement.style.setProperty('--accent-hover', color + '38');
+  save();
+}
+function loadSystemAccent() {
+  const s = state.settings;
+  if (s.accent) {
+    applySystemAccent(s.accent, s.accentName || 'Gray');
+    document.getElementById('customColor').value = s.accent;
+    document.getElementById('customColorHex').textContent = s.accent;
+    const swatch = document.querySelector(`#colorPicker .color-swatch[data-color="${s.accent}"]`);
+    if (swatch) { document.querySelectorAll('#colorPicker .color-swatch').forEach(s => s.classList.remove('active')); swatch.classList.add('active'); }
+  }
+}
+
+// ============ PERSONAL ACCENT ============
+function setPersonalAccent(el) {
+  applyPersonalAccent(el.dataset.color, el.dataset.name);
+  document.querySelectorAll('#personalColorPicker .color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('personalCustomColor').value = el.dataset.color;
+  document.getElementById('personalCustomColorHex').textContent = el.dataset.color;
+}
+function setPersonalCustomAccent(color) {
+  applyPersonalAccent(color, 'Custom');
+  document.querySelectorAll('#personalColorPicker .color-swatch').forEach(s => s.classList.remove('active'));
+  document.getElementById('personalCustomColorHex').textContent = color;
+}
+function applyPersonalAccent(color, name) {
+  if (!state.currentUser) return;
+  state.currentUser.accentColor = color;
+  const idx = state.users.findIndex(u => u.id === state.currentUser.id);
+  if (idx !== -1) state.users[idx].accentColor = color;
+  save();
+  localStorage.setItem('taameer_currentUser', JSON.stringify(state.currentUser));
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent-soft', color + '1F');
+  document.documentElement.style.setProperty('--accent-hover', color + '38');
+}
+function resetPersonalAccent() {
+  if (!state.currentUser) return;
+  state.currentUser.accentColor = null;
+  const idx = state.users.findIndex(u => u.id === state.currentUser.id);
+  if (idx !== -1) state.users[idx].accentColor = null;
+  save();
+  localStorage.setItem('taameer_currentUser', JSON.stringify(state.currentUser));
+  loadSystemAccent();
+  refreshPersonalColorPicker(null);
+}
+function refreshPersonalColorPicker(color) {
+  document.querySelectorAll('#personalColorPicker .color-swatch').forEach(s => s.classList.remove('active'));
+  if (color) {
+    const swatch = document.querySelector(`#personalColorPicker .color-swatch[data-color="${color}"]`);
+    if (swatch) swatch.classList.add('active');
+    document.getElementById('personalCustomColor').value = color;
+    document.getElementById('personalCustomColorHex').textContent = color;
+  } else {
+    document.getElementById('personalCustomColor').value = state.settings.accent;
+    document.getElementById('personalCustomColorHex').textContent = state.settings.accent;
+  }
+}
+
+// ============ AUTH ============
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const user = state.users.find(u => u.username === username && u.password === password);
+  if (user) {
+    if (user.status !== 'active') { alert('Account is ' + user.status + '. Contact admin.'); return; }
+    state.currentUser = user;
+    user.lastLogin = new Date().toISOString();
+    localStorage.setItem('taameer_currentUser', JSON.stringify(user));
+    save();
+    showDashboard();
+  } else {
+    const userNoPass = state.users.find(u => u.username === username && u.password === '');
+    if (userNoPass && userNoPass.status === 'active') {
+      state.pendingUser = userNoPass;
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('setPasswordView').classList.remove('hidden');
+      document.getElementById('spName').textContent = userNoPass.fullName.split(' ')[0];
+    } else {
+      alert('Invalid credentials!');
+    }
+  }
+});
+
+document.getElementById('setPasswordForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const pw = document.getElementById('spPassword').value;
+  const conf = document.getElementById('spConfirm').value;
+  if (pw.length < 6) { alert('Password must be at least 6 characters'); return; }
+  if (pw !== conf) { alert('Passwords do not match'); return; }
+  if (!state.pendingUser) { alert('Session expired. Please login again.'); location.reload(); return; }
+  const idx = state.users.findIndex(u => u.id === state.pendingUser.id);
+  if (idx !== -1) {
+    state.users[idx].password = pw;
+    state.users[idx].lastLogin = new Date().toISOString();
+    state.currentUser = state.users[idx];
+    save();
+    localStorage.setItem('taameer_currentUser', JSON.stringify(state.currentUser));
+  }
+  state.pendingUser = null;
+  document.getElementById('setPasswordView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('loginForm').reset();
+  showDashboard();
+});
+
+function checkAuth() {
+  const saved = localStorage.getItem('taameer_currentUser');
+  if (saved) {
+    const u = JSON.parse(saved);
+    const fresh = state.users.find(x => x.id === u.id);
+    if (fresh) {
+      if (!fresh.password) {
+        state.pendingUser = fresh;
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('setPasswordView').classList.remove('hidden');
+        document.getElementById('spName').textContent = fresh.fullName.split(' ')[0];
+        return;
+      }
+      state.currentUser = fresh;
+      showDashboard();
+    }
+  }
+}
+
+function logout() {
+  state.currentUser = null;
+  localStorage.removeItem('taameer_currentUser');
+  closeUserDropdown();
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('dashboardView').classList.add('hidden');
+  document.getElementById('setPasswordView').classList.add('hidden');
+  document.getElementById('loginForm').reset();
+}
+
+function showDashboard() {
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('setPasswordView').classList.add('hidden');
+  document.getElementById('dashboardView').classList.remove('hidden');
+  refreshUI();
+  renderSidebar();
+  showView('home');
+}
+
+function refreshUI() {
+  const u = state.currentUser;
+  document.getElementById('userName').textContent = u.fullName;
+  document.getElementById('ddName').textContent = u.fullName;
+  document.getElementById('welcomeName').textContent = u.fullName.split(' ')[0];
+  document.getElementById('userRole').textContent = u.role === 'admin' ? 'Administrator' : u.jobTitle || 'User';
+  document.getElementById('ddRole').textContent = u.role;
+  document.getElementById('ddEmail').textContent = u.email || '—';
+  document.getElementById('userAvatarText').textContent = u.fullName.charAt(0).toUpperCase();
+  document.getElementById('profileAvatarText').textContent = u.fullName.charAt(0).toUpperCase();
+  document.getElementById('profileFullName').textContent = u.fullName;
+  document.getElementById('profileUsername').textContent = u.username;
+  document.getElementById('profileJobTitle').textContent = u.jobTitle || '—';
+  document.getElementById('profileEmailDisplay').textContent = u.email || '—';
+  document.getElementById('profilePhoneDisplay').textContent = u.phone || '—';
+  document.getElementById('profileLastLogin').textContent = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '—';
+  document.getElementById('profileTz').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  document.getElementById('myJobTitle').textContent = u.jobTitle || '—';
+  document.getElementById('myRoleDisplay').textContent = u.role;
+  document.getElementById('myEmail').value = u.email || '';
+  document.getElementById('myPhone').value = u.phone || '';
+  document.getElementById('accNameDisplay').textContent = u.fullName;
+  document.getElementById('accJobDisplay').textContent = u.jobTitle || '—';
+
+  if (u.avatar) {
+    document.getElementById('userAvatarImg').src = u.avatar;
+    document.getElementById('userAvatarImg').classList.remove('hidden');
+    document.getElementById('userAvatarText').classList.add('hidden');
+    document.getElementById('profileAvatarImg').src = u.avatar;
+    document.getElementById('profileAvatarImg').classList.remove('hidden');
+    document.getElementById('profileAvatarText').classList.add('hidden');
+  } else {
+    document.getElementById('userAvatarImg').classList.add('hidden');
+    document.getElementById('userAvatarText').classList.remove('hidden');
+    document.getElementById('profileAvatarImg').classList.add('hidden');
+    document.getElementById('profileAvatarText').classList.remove('hidden');
+  }
+
+  const myModules = state.modules.filter(m => u.modules && u.modules.includes(m.id));
+  document.getElementById('myModulesCount').textContent = myModules.length;
+
+  document.getElementById('sysTotalUsers').textContent = state.users.length;
+  document.getElementById('sysOrgDisplay').textContent = state.settings.orgName;
+  document.getElementById('sysOrgName').value = state.settings.orgName;
+  document.getElementById('sysTagline').value = state.settings.tagline;
+  document.getElementById('moduleTestDate').textContent = new Date().toLocaleDateString();
+
+  const isDark = document.documentElement.classList.contains('dark');
+  document.getElementById('darkToggle').classList.toggle('on', isDark);
+
+  refreshPersonalColorPicker(u.accentColor);
+}
+
+// ============ SIDEBAR ============
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav');
+  const u = state.currentUser;
+  const isAdmin = u.role === 'admin';
+
+  let html = `
+    <div class="section-title sidebar-label">Main</div>
+    <div class="nav-item ${isActive('home') ? 'active' : ''}" onclick="showView('home')">
+      <span class="nav-icon"><i class="fas fa-home"></i></span>
+      <span class="nav-label sidebar-label">Home</span>
+    </div>
+    <div class="nav-item ${isActive('calendar') ? 'active' : ''}" onclick="showView('calendar')">
+      <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span>
+      <span class="nav-label sidebar-label">Calendar</span>
+    </div>
+  `;
+
+  const userModules = state.modules.filter(m => u.modules && u.modules.includes(m.id) && m.status !== 'disabled');
+  if (userModules.length > 0) {
+    html += `<div class="section-title sidebar-label mt-2">Modules</div>`;
+    userModules.forEach(m => {
+      const viewId = m.id.startsWith('module-') || m.id.startsWith('luts-') ? m.id : 'module-' + m.id;
+      html += `
+        <div class="nav-item ${isActive(viewId) ? 'active' : ''}" onclick="showView('${viewId}')">
+          <span class="nav-icon"><i class="fas ${m.icon}" style="color: ${m.color}"></i></span>
+          <span class="nav-label sidebar-label">${m.name}</span>
+        </div>
+      `;
+    });
+  }
+
+  // Creative Production section - show if user has luts-color module
+  const hasLuts = userModules.some(m => m.id === 'luts-color');
+  // (Already shown in Modules section above)
+
+  if (isAdmin) {
+    html += `
+      <div class="section-title sidebar-label mt-2">Administration</div>
+      <div class="nav-item ${isActive('users') ? 'active' : ''}" onclick="showView('users')">
+        <span class="nav-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-label sidebar-label">Users</span>
+      </div>
+      <div class="nav-item ${isActive('modules-admin') ? 'active' : ''}" onclick="showView('modules-admin')">
+        <span class="nav-icon"><i class="fas fa-cubes"></i></span>
+        <span class="nav-label sidebar-label">Modules</span>
+      </div>
+      <div class="nav-item ${isActive('permissions') ? 'active' : ''}" onclick="showView('permissions')">
+        <span class="nav-icon"><i class="fas fa-shield-alt"></i></span>
+        <span class="nav-label sidebar-label">Permissions</span>
+      </div>
+      <div class="nav-item ${isActive('settings') ? 'active' : ''}" onclick="showView('settings')">
+        <span class="nav-icon"><i class="fas fa-cog"></i></span>
+        <span class="nav-label sidebar-label">Settings</span>
+      </div>
+    `;
+  }
+
+  nav.innerHTML = html;
+}
+
+function isActive(view) {
+  return document.getElementById(`view-${view}`) && !document.getElementById(`view-${view}`).classList.contains('hidden');
+}
+
+function toggleSidebar() {
+  sidebarExpanded = !sidebarExpanded;
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('sidebar-expanded', sidebarExpanded);
+  sb.classList.toggle('sidebar-collapsed', !sidebarExpanded);
+  document.querySelectorAll('.sidebar-label').forEach(el => el.style.display = sidebarExpanded ? '' : 'none');
+  const icon = document.getElementById('toggleIcon');
+  if (icon) {
+    icon.style.transform = sidebarExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+}
+
+// ============ NAVIGATION ============
+const VIEW_TITLES = {
+  home: ['Home', 'TAAMEER Marketing Dashboard'],
+  calendar: ['Calendar', 'Schedule & events'],
+  'module-test': ['Module Test', 'Test module'],
+  'luts-color': ['LUTs & Color Matching', 'Creative Production · Color Grading'],
+  profile: ['My Profile', 'Your public profile'],
+  account: ['Account Settings', 'Personal settings'],
+  users: ['User Management', 'Admin controls'],
+  'modules-admin': ['Module Management', 'Create & assign modules'],
+  permissions: ['Permissions', 'Role access matrix'],
+  settings: ['System Settings', 'Full admin configuration']
+};
+
+function showView(viewName) {
+  if (['users','permissions','settings','modules-admin'].includes(viewName) && state.currentUser?.role !== 'admin') return;
+
+  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById(`view-${viewName}`);
+  if (target) { target.classList.remove('hidden'); target.classList.add('fade-in'); }
+
+  const titles = VIEW_TITLES[viewName] || ['TAAMEER', ''];
+  document.getElementById('headerTitle').textContent = titles[0];
+  document.getElementById('headerSubtitle').textContent = titles[1];
+
+  if (viewName === 'calendar') renderCalendar();
+  if (viewName === 'home') renderHomeModules();
+  if (viewName === 'users') loadUsers();
+  if (viewName === 'modules-admin') renderAdminModules();
+  if (viewName === 'permissions') renderPermissions();
+  if (viewName === 'luts-color') initLutsModule();
+
+  renderSidebar();
+  closeUserDropdown();
+}
+
+// ============ CLOCK ============
+function updateClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('clock').textContent = time;
+  document.getElementById('bigClock').textContent = time;
+  document.getElementById('date').textContent = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.getElementById('todayFullDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('tzSmall').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const h = now.getHours();
+  let greet = 'Good morning';
+  if (h >= 12 && h < 17) greet = 'Good afternoon';
+  else if (h >= 17) greet = 'Good evening';
+  document.getElementById('greetingText').textContent = greet;
+}
+
+// ============ THEME ============
+function toggleTheme() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  localStorage.setItem('taameer_theme', html.classList.contains('dark') ? 'dark' : 'light');
+  document.getElementById('darkToggle').classList.toggle('on', html.classList.contains('dark'));
+}
+function loadTheme() {
+  if (localStorage.getItem('taameer_theme') === 'dark') document.documentElement.classList.add('dark');
+}
+
+// ============ USER DROPDOWN ============
+function toggleUserDropdown() { document.getElementById('userDropdown').classList.toggle('show'); }
+function closeUserDropdown() { document.getElementById('userDropdown').classList.remove('show'); }
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dropdown')) closeUserDropdown();
+});
+
+// ============ AVATAR UPLOAD ============
+function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('Image too large (max 2MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    state.currentUser.avatar = ev.target.result;
+    const idx = state.users.findIndex(u => u.id === state.currentUser.id);
+    if (idx !== -1) state.users[idx].avatar = ev.target.result;
+    save();
+    localStorage.setItem('taameer_currentUser', JSON.stringify(state.currentUser));
+    refreshUI();
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveMyProfile() {
+  const email = document.getElementById('myEmail').value.trim();
+  const phone = document.getElementById('myPhone').value.trim();
+  state.currentUser.email = email;
+  state.currentUser.phone = phone;
+  const idx = state.users.findIndex(u => u.id === state.currentUser.id);
+  if (idx !== -1) state.users[idx] = { ...state.currentUser };
+  save();
+  localStorage.setItem('taameer_currentUser', JSON.stringify(state.currentUser));
+  refreshUI();
+  alert('Contact information updated!');
+}
+
+function changePassword() {
+  const cur = document.getElementById('curPass').value;
+  const np = document.getElementById('newPass').value;
+  const cp = document.getElementById('confPass').value;
+  if (cur !== state.currentUser.password) { alert('Current password incorrect'); return; }
+  if (np.length < 6) { alert('Password must be at least 6 characters'); return; }
+  if (np !== cp) { alert('Passwords do not match'); return; }
+  state.currentUser.password = np;
+  const idx = state.users.findIndex(u => u.id === state.currentUser.id);
+  if (idx !== -1) state.users[idx].password = np;
+  save();
+  localStorage.setItem('taameer_currentUser', JSON.stringify(state.currentUser));
+  document.getElementById('curPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('confPass').value = '';
+  alert('Password updated!');
+}
+
+// ============ CALENDAR ============
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const monthShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function renderMonthTabs() {
+  const c = document.getElementById('monthTabs'); c.innerHTML = '';
+  monthShort.forEach((m, i) => {
+    const t = document.createElement('button');
+    t.className = `month-tab flex-shrink-0 ${i === currentMonth.getMonth() ? 'active' : ''}`;
+    t.textContent = m;
+    t.onclick = () => { currentMonth.setMonth(i); renderMonthTabs(); renderDayStrip(); renderCalendar(); };
+    c.appendChild(t);
+  });
+}
+function renderDayStrip() {
+  const c = document.getElementById('dayStrip'); c.innerHTML = '';
+  const y = currentMonth.getFullYear(), mo = currentMonth.getMonth();
+  const dim = new Date(y, mo + 1, 0).getDate();
+  const today = new Date();
+  for (let d = 1; d <= dim; d++) {
+    const dt = new Date(y, mo, d);
+    const isToday = today.getDate() === d && today.getMonth() === mo && today.getFullYear() === y;
+    const el = document.createElement('div');
+    el.className = `day-circle flex-shrink-0 ${selectedDay === d ? 'active' : ''}`;
+    el.innerHTML = `<span class="text-[10px] opacity-70">${dayNames[dt.getDay()]}</span><span class="text-lg font-bold">${d}</span>`;
+    el.onclick = () => { selectedDay = d; renderDayStrip(); };
+    c.appendChild(el);
+  }
+}
+function renderCalendar() {
+  const y = currentMonth.getFullYear(), mo = currentMonth.getMonth();
+  document.getElementById('calTitle').textContent = `${monthNames[mo]} ${y}`;
+  renderMonthTabs(); renderDayStrip();
+  const firstDay = new Date(y, mo, 1).getDay();
+  const dim = new Date(y, mo + 1, 0).getDate();
+  const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+  const today = new Date();
+  for (let i = 0; i < firstDay; i++) { const e = document.createElement('div'); e.className = 'h-20'; grid.appendChild(e); }
+  for (let d = 1; d <= dim; d++) {
+    const isToday = today.getDate() === d && today.getMonth() === mo && today.getFullYear() === y;
+    const cell = document.createElement('div');
+    cell.className = `h-20 rounded-xl border border-gray-200 dark:border-gray-700 p-2 cursor-pointer hover:border-accent transition-all ${isToday ? 'bg-accent text-white border-accent' : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white'}`;
+    cell.innerHTML = `<div class="font-semibold text-sm">${d}</div>`;
+    cell.onclick = () => alert(`Selected: ${d} ${monthNames[mo]} ${y}`);
+    grid.appendChild(cell);
+  }
+}
+function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth() + d); renderCalendar(); }
+function goToday() { currentMonth = new Date(); selectedDay = new Date().getDate(); renderCalendar(); }
+
+// ============ HOME MODULES ============
+function renderHomeModules() {
+  const grid = document.getElementById('homeModulesGrid'); grid.innerHTML = '';
+  const u = state.currentUser;
+  const myModules = state.modules.filter(m => u.modules && u.modules.includes(m.id));
+  if (myModules.length === 0) {
+    grid.innerHTML = '<div class="col-span-full p-6 bg-gray-50 dark:bg-gray-800 rounded-xl text-center text-gray-500">No modules assigned to you yet. Contact your administrator.</div>';
+    return;
+  }
+  myModules.forEach(m => {
+    const isActive = m.status === 'active';
+    const viewId = m.id.startsWith('module-') || m.id.startsWith('luts-') ? m.id : 'module-' + m.id;
+    const card = document.createElement('div');
+    card.className = `stat-card bg-white dark:bg-gray-900 p-5 ${!isActive ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`;
+    card.innerHTML = `
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-accent" style="background: ${m.color}"><i class="fas ${m.icon} text-white text-xl"></i></div>
+        <span class="badge ${isActive ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : 'text-gray-500 bg-gray-100 dark:bg-gray-800'}">${isActive ? 'Active' : m.status === 'soon' ? 'Coming Soon' : 'Disabled'}</span>
+      </div>
+      <h4 class="font-bold text-gray-900 dark:text-white mb-1">${m.name}</h4>
+      <p class="text-sm text-gray-500 mb-4">${m.desc}</p>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-400">${isActive ? 'Click to open' : 'Unavailable'}</span>
+        <i class="fas fa-arrow-right text-accent"></i>
+      </div>
+    `;
+    if (isActive) card.onclick = () => showView(viewId);
+    grid.appendChild(card);
+  });
+}
+
+// ============ ADMIN: USERS ============
+function loadUsers() {
+  if (state.currentUser.role !== 'admin') return;
+  const tbody = document.getElementById('usersTableBody'); tbody.innerHTML = '';
+  state.users.forEach(user => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
+    const pwDisplay = user.password ? '••••••••' : '<span class="text-amber-600 text-xs font-medium">Not set</span>';
+    tr.innerHTML = `
+      <td class="px-6 py-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+            ${user.avatar ? `<img src="${user.avatar}" class="w-full h-full object-cover">` : user.fullName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div class="font-medium text-gray-900 dark:text-white">${user.fullName}</div>
+            <div class="text-xs text-gray-500">@${user.username}</div>
+          </div>
+        </div>
+      </td>
+      <td class="px-6 py-4"><span class="badge ${user.role === 'admin' ? 'bg-neutral-200 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'} capitalize">${user.role}</span></td>
+      <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">${user.jobTitle || '—'}</td>
+      <td class="px-6 py-4 text-xs">
+        <div class="text-gray-700 dark:text-gray-300"><i class="fas fa-envelope mr-1 text-gray-400"></i>${user.email || '—'}</div>
+        <div class="text-gray-700 dark:text-gray-300 mt-1"><i class="fas fa-phone mr-1 text-gray-400"></i>${user.phone || '—'}</div>
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex items-center space-x-2">
+          <span class="password-display" id="pw-display-${user.id}">${pwDisplay}</span>
+          <button onclick="toggleUserPassword(${user.id})" class="text-gray-400 hover:text-accent" title="Show/Hide password">
+            <i class="fas fa-eye" id="pw-eye-${user.id}"></i>
+          </button>
+        </div>
+      </td>
+      <td class="px-6 py-4"><span class="badge ${user.status === 'active' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' : user.status === 'suspended' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}">${user.status}</span></td>
+      <td class="px-6 py-4 text-sm text-gray-500">${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : '—'}</td>
+      <td class="px-6 py-4 text-right">
+        ${user.username !== 'admin' ? `
+          <button onclick="editUser(${user.id})" class="text-accent hover:opacity-70 text-sm font-medium mr-2"><i class="fas fa-edit"></i></button>
+          <button onclick="deleteUser(${user.id})" class="text-red-500 hover:text-red-700 text-sm font-medium"><i class="fas fa-trash"></i></button>
+        ` : '<span class="text-xs text-gray-400">System</span>'}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleUserPassword(userId) {
+  const user = state.users.find(u => u.id === userId);
+  if (!user) return;
+  const display = document.getElementById(`pw-display-${userId}`);
+  const eye = document.getElementById(`pw-eye-${userId}`);
+  if (display.textContent === '••••••••' || display.textContent.includes('Not set')) {
+    display.textContent = user.password || '(blank)';
+    eye.classList.remove('fa-eye');
+    eye.classList.add('fa-eye-slash');
+  } else {
+    display.textContent = user.password ? '••••••••' : '';
+    if (!user.password) display.innerHTML = '<span class="text-amber-600 text-xs font-medium">Not set</span>';
+    eye.classList.remove('fa-eye-slash');
+    eye.classList.add('fa-eye');
+  }
+}
+
+function openUserModal(userId = null) {
+  document.getElementById('userModal').classList.add('show');
+  document.getElementById('userForm').reset();
+  document.getElementById('editUserId').value = '';
+  document.getElementById('userModalTitle').textContent = 'Add New User';
+  document.getElementById('passHint').textContent = '(leave blank — user sets on first login)';
+  document.getElementById('uPassword').value = '';
+  document.getElementById('uPassword').placeholder = 'Leave blank for new users';
+  document.getElementById('modalPwEye').className = 'fas fa-eye';
+
+  const cb = document.getElementById('userModuleCheckboxes');
+  cb.innerHTML = '';
+  state.modules.forEach(m => {
+    cb.innerHTML += `
+      <label class="flex items-center space-x-2 p-2 bg-white dark:bg-gray-900 rounded-lg cursor-pointer">
+        <input type="checkbox" value="${m.id}" class="user-module-cb rounded border-gray-300 text-accent focus:ring-accent">
+        <i class="fas ${m.icon}" style="color: ${m.color}"></i>
+        <span class="text-sm text-gray-700 dark:text-gray-300">${m.name}</span>
+      </label>
+    `;
+  });
+
+  if (userId) {
+    const u = state.users.find(x => x.id === userId);
+    if (!u) return;
+    document.getElementById('userModalTitle').textContent = 'Edit User';
+    document.getElementById('editUserId').value = u.id;
+    document.getElementById('uUsername').value = u.username;
+    document.getElementById('uFullName').value = u.fullName;
+    document.getElementById('uJobTitle').value = u.jobTitle || '';
+    document.getElementById('uEmail').value = u.email || '';
+    document.getElementById('uPhone').value = u.phone || '';
+    document.getElementById('uRole').value = u.role;
+    document.getElementById('uStatus').value = u.status;
+    document.getElementById('uPassword').value = u.password || '';
+    document.getElementById('uPassword').placeholder = u.password ? 'Current password shown' : 'Leave blank — user sets on first login';
+    document.getElementById('passHint').textContent = u.password ? '(visible — edit to change)' : '(leave blank — user sets on first login)';
+    document.querySelectorAll('.user-module-cb').forEach(cb => {
+      cb.checked = u.modules && u.modules.includes(cb.value);
+    });
+  }
+}
+function closeUserModal() { document.getElementById('userModal').classList.remove('show'); }
+
+function toggleModalPasswordVisibility() {
+  const input = document.getElementById('uPassword');
+  const eye = document.getElementById('modalPwEye');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.classList.remove('fa-eye');
+    eye.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    eye.classList.remove('fa-eye-slash');
+    eye.classList.add('fa-eye');
+  }
+}
+
+function editUser(id) { openUserModal(id); }
+
+document.getElementById('userForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const editId = document.getElementById('editUserId').value;
+  const modules = Array.from(document.querySelectorAll('.user-module-cb:checked')).map(cb => cb.value);
+  const password = document.getElementById('uPassword').value;
+
+  if (editId) {
+    const idx = state.users.findIndex(u => u.id === parseInt(editId));
+    if (idx !== -1) {
+      state.users[idx].username = document.getElementById('uUsername').value.trim();
+      state.users[idx].fullName = document.getElementById('uFullName').value.trim();
+      state.users[idx].jobTitle = document.getElementById('uJobTitle').value.trim();
+      state.users[idx].email = document.getElementById('uEmail').value.trim();
+      state.users[idx].phone = document.getElementById('uPhone').value.trim();
+      state.users[idx].role = document.getElementById('uRole').value;
+      state.users[idx].status = document.getElementById('uStatus').value;
+      state.users[idx].modules = modules;
+      if (password !== '') state.users[idx].password = password;
+    }
+  } else {
+    state.users.push({
+      id: Date.now(),
+      username: document.getElementById('uUsername').value.trim(),
+      password: password,
+      fullName: document.getElementById('uFullName').value.trim(),
+      jobTitle: document.getElementById('uJobTitle').value.trim(),
+      email: document.getElementById('uEmail').value.trim(),
+      phone: document.getElementById('uPhone').value.trim(),
+      role: document.getElementById('uRole').value,
+      status: document.getElementById('uStatus').value,
+      avatar: null,
+      lastLogin: null,
+      modules: modules,
+      accentColor: null
+    });
+  }
+  save();
+  closeUserModal();
+  loadUsers();
+  refreshUI();
+});
+
+function deleteUser(id) {
+  if (!confirm('Delete this user? This cannot be undone.')) return;
+  state.users = state.users.filter(u => u.id !== id);
+  save();
+  loadUsers();
+  refreshUI();
+}
+
+// ============ ADMIN: MODULES ============
+function renderAdminModules() {
+  const grid = document.getElementById('adminModulesGrid'); grid.innerHTML = '';
+  state.modules.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'stat-card bg-white dark:bg-gray-900 p-5';
+    const assignedUsers = state.users.filter(u => u.modules && u.modules.includes(m.id)).length;
+    card.innerHTML = `
+      <div class="flex items-start justify-between mb-3">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-accent" style="background: ${m.color}"><i class="fas ${m.icon} text-white text-xl"></i></div>
+        <span class="badge ${m.status === 'active' ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : m.status === 'soon' ? 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' : 'text-gray-500 bg-gray-100 dark:bg-gray-800'}">${m.status === 'active' ? 'Active' : m.status === 'soon' ? 'Coming Soon' : 'Disabled'}</span>
+      </div>
+      <h4 class="font-bold text-gray-900 dark:text-white mb-1">${m.name}</h4>
+      <p class="text-sm text-gray-500 mb-3">${m.desc}</p>
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+        <span><i class="fas fa-users mr-1"></i>${assignedUsers} users</span>
+        <span class="font-mono">${m.id}</span>
+      </div>
+      <div class="flex space-x-2">
+        <button onclick="editModule('${m.id}')" class="btn-secondary flex-1 text-xs"><i class="fas fa-edit mr-1"></i>Edit</button>
+        ${!['calendar','module-test','luts-color'].includes(m.id) ? `<button onclick="deleteModule('${m.id}')" class="btn-secondary flex-1 text-xs" style="color: #EF4444;"><i class="fas fa-trash mr-1"></i>Delete</button>` : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function openModuleModal(moduleId = null) {
+  document.getElementById('moduleModal').classList.add('show');
+  document.getElementById('moduleForm').reset();
+  document.getElementById('editModuleId').value = '';
+  document.getElementById('moduleModalTitle').textContent = 'New Module';
+  document.getElementById('mIcon').value = 'fa-cube';
+  document.getElementById('mColor').value = '#757575';
+
+  if (moduleId) {
+    const m = state.modules.find(x => x.id === moduleId);
+    if (!m) return;
+    document.getElementById('moduleModalTitle').textContent = 'Edit Module';
+    document.getElementById('editModuleId').value = m.id;
+    document.getElementById('mName').value = m.name;
+    document.getElementById('mDesc').value = m.desc;
+    document.getElementById('mIcon').value = m.icon;
+    document.getElementById('mColor').value = m.color;
+    document.getElementById('mStatus').value = m.status;
+  }
+}
+function closeModuleModal() { document.getElementById('moduleModal').classList.remove('show'); }
+
+function editModule(id) { openModuleModal(id); }
+
+document.getElementById('moduleForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const editId = document.getElementById('editModuleId').value;
+  const name = document.getElementById('mName').value.trim();
+  const id = editId || 'module-' + name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+  const moduleData = {
+    id: id,
+    name: name,
+    desc: document.getElementById('mDesc').value.trim(),
+    icon: document.getElementById('mIcon').value.trim() || 'fa-cube',
+    color: document.getElementById('mColor').value,
+    status: document.getElementById('mStatus').value
+  };
+
+  if (editId) {
+    const idx = state.modules.findIndex(m => m.id === editId);
+    if (idx !== -1) state.modules[idx] = { ...state.modules[idx], ...moduleData };
+  } else {
+    if (state.modules.find(m => m.id === id)) { alert('Module ID already exists'); return; }
+    state.modules.push(moduleData);
+    ['user','admin'].forEach(role => {
+      if (!state.permissions[role]) state.permissions[role] = {};
+      state.permissions[role][id] = { view: role === 'admin', edit: role === 'admin', delete: role === 'admin' };
+    });
+  }
+  save();
+  closeModuleModal();
+  renderAdminModules();
+  refreshUI();
+});
+
+function deleteModule(id) {
+  if (['calendar','module-test','luts-color'].includes(id)) { alert('System modules cannot be deleted'); return; }
+  if (!confirm('Delete this module? Users will lose access.')) return;
+  state.modules = state.modules.filter(m => m.id !== id);
+  state.users.forEach(u => { if (u.modules) u.modules = u.modules.filter(x => x !== id); });
+  save();
+  renderAdminModules();
+  refreshUI();
+}
+
+// ============ PERMISSIONS ============
+function renderPermissions() {
+  const role = document.getElementById('permRoleSelect').value;
+  const list = document.getElementById('permissionsList');
+  list.innerHTML = '';
+  if (!state.permissions[role]) state.permissions[role] = {};
+
+  state.modules.forEach(m => {
+    const perm = state.permissions[role][m.id] || { view: false, edit: false, delete: false };
+    const row = document.createElement('div');
+    row.className = 'flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl flex-wrap gap-3';
+    row.innerHTML = `
+      <div class="flex items-center space-x-4">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: ${m.color}20"><i class="fas ${m.icon}" style="color: ${m.color}"></i></div>
+        <div>
+          <p class="font-semibold text-gray-900 dark:text-white">${m.name}</p>
+          <p class="text-sm text-gray-500">${m.desc}</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+          <input type="checkbox" ${perm.view ? 'checked' : ''} onchange="updatePerm('${role}','${m.id}','view',this.checked)" class="rounded border-gray-300 text-accent focus:ring-accent">
+          <span>View</span>
+        </label>
+        <label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+          <input type="checkbox" ${perm.edit ? 'checked' : ''} onchange="updatePerm('${role}','${m.id}','edit',this.checked)" class="rounded border-gray-300 text-accent focus:ring-accent">
+          <span>Edit</span>
+        </label>
+        <label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+          <input type="checkbox" ${perm.delete ? 'checked' : ''} onchange="updatePerm('${role}','${m.id}','delete',this.checked)" class="rounded border-gray-300 text-accent focus:ring-accent">
+          <span>Delete</span>
+        </label>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function updatePerm(role, moduleId, action, value) {
+  if (!state.permissions[role]) state.permissions[role] = {};
+  if (!state.permissions[role][moduleId]) state.permissions[role][moduleId] = { view: false, edit: false, delete: false };
+  state.permissions[role][moduleId][action] = value;
+  save();
+}
+
+function saveBranding() {
+  state.settings.orgName = document.getElementById('sysOrgName').value.trim() || 'TAAMEER Group';
+  state.settings.tagline = document.getElementById('sysTagline').value.trim() || 'Marketing Dashboard';
+  save();
+  document.getElementById('sysOrgDisplay').textContent = state.settings.orgName;
+  document.getElementById('headerSubtitle').textContent = state.settings.tagline;
+  alert('Branding updated!');
+}
+
+// ===================================================================
+// ===== LUTS & COLOR MATCHING MODULE - FULL FUNCTIONALITY =====
+// ===================================================================
+
+const LUT_PRESETS = [
+  { id: 'none', name: 'No LUT', gradient: 'linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%)', apply: (p) => p },
+  { id: 'taameer-teal-orange', name: 'TAAMEER Teal & Orange', gradient: 'linear-gradient(135deg, #0891B2 0%, #F97316 100%)', apply: tealOrange },
+  { id: 'warm-film', name: 'Warm Film', gradient: 'linear-gradient(135deg, #F59E0B 0%, #92400E 100%)', apply: warmFilm },
+  { id: 'cool-noir', name: 'Cool Noir', gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%)', apply: coolNoir },
+  { id: 'bw-fade', name: 'B&W Fade', gradient: 'linear-gradient(135deg, #E5E7EB 0%, #6B7280 100%)', apply: bwFade },
+  { id: 'vintage', name: 'Vintage', gradient: 'linear-gradient(135deg, #D97706 0%, #78350F 100%)', apply: vintage },
+  { id: 'punchy', name: 'Punchy', gradient: 'linear-gradient(135deg, #DC2626 0%, #7C2D12 100%)', apply: punchy },
+  { id: 'commercial', name: 'Commercial', gradient: 'linear-gradient(135deg, #0EA5E9 0%, #1E293B 100%)', apply: commercial }
+];
+
+let lutState = {
+  refImage: null,
+  tgtImage: null,
+  currentPreset: 'none',
+  strength: 100,
+  lutSize: 17,
+  splitView: true,
+  splitPos: 50,
+  currentScope: 'histogram'
+};
+
+function initLutsModule() {
+  renderPresets();
+  initSplitView();
+  if (lutState.tgtImage) {
+    renderTargetCanvas();
+    drawScope();
+  }
+}
+
+function renderPresets() {
+  const grid = document.getElementById('presetGrid');
+  grid.innerHTML = '';
+  LUT_PRESETS.forEach(p => {
+    const card = document.createElement('div');
+    card.className = `preset-card ${lutState.currentPreset === p.id ? 'active' : ''}`;
+    card.onclick = () => applyPreset(p.id);
+    card.innerHTML = `
+      <div class="preset-swatch" style="background: ${p.gradient}"></div>
+      <div class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">${p.name}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function applyPreset(id) {
+  lutState.currentPreset = id;
+  renderPresets();
+  if (lutState.tgtImage) {
+    renderTargetCanvas();
+    drawScope();
+  }
+}
+
+function handleLutImageUpload(event, type) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      if (type === 'ref') {
+        lutState.refImage = img;
+        document.getElementById('refPreview').src = e.target.result;
+        document.getElementById('refPreview').classList.remove('hidden');
+        document.getElementById('refUploadContent').classList.add('hidden');
+        document.getElementById('refUploadZone').classList.add('has-image');
+      } else {
+        lutState.tgtImage = img;
+        document.getElementById('tgtPreview').src = e.target.result;
+        document.getElementById('tgtPreview').classList.remove('hidden');
+        document.getElementById('tgtUploadContent').classList.add('hidden');
+        document.getElementById('tgtUploadZone').classList.add('has-image');
+        document.getElementById('emptyPlaceholder').classList.add('hidden');
+        document.getElementById('imageDimensions').textContent = `${img.width} × ${img.height}`;
+        renderTargetCanvas();
+        drawScope();
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderTargetCanvas() {
+  if (!lutState.tgtImage) return;
+  const beforeCanvas = document.getElementById('beforeCanvas');
+  const afterCanvas = document.getElementById('afterCanvas');
+  const container = document.getElementById('splitContainer');
+  
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  beforeCanvas.width = w;
+  beforeCanvas.height = h;
+  afterCanvas.width = w;
+  afterCanvas.height = h;
+
+  // Draw original on before canvas
+  const bCtx = beforeCanvas.getContext('2d');
+  bCtx.fillStyle = '#000';
+  bCtx.fillRect(0, 0, w, h);
+  drawImageContain(bCtx, lutState.tgtImage, w, h);
+
+  // Draw graded on after canvas
+  const aCtx = afterCanvas.getContext('2d');
+  aCtx.fillStyle = '#000';
+  aCtx.fillRect(0, 0, w, h);
+  drawImageContain(aCtx, lutState.tgtImage, w, h);
+  
+  // Apply preset
+  if (lutState.currentPreset !== 'none') {
+    const preset = LUT_PRESETS.find(p => p.id === lutState.currentPreset);
+    if (preset) {
+      const imageData = aCtx.getImageData(0, 0, w, h);
+      const strength = lutState.strength / 100;
+      applyColorTransform(imageData, preset.apply, strength);
+      aCtx.putImageData(imageData, 0, 0);
+    }
+  }
+
+  updateSplitView();
+}
+
+function drawImageContain(ctx, img, w, h) {
+  const scale = Math.min(w / img.width, h / img.height);
+  const dw = img.width * scale;
+  const dh = img.height * scale;
+  const dx = (w - dw) / 2;
+  const dy = (h - dh) / 2;
+  ctx.drawImage(img, dx, dy, dw, dh);
+}
+
+function applyColorTransform(imageData, transformFn, strength) {
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i], g = data[i+1], b = data[i+2];
+    const transformed = transformFn({ r, g, b });
+    data[i] = Math.round(r + (transformed.r - r) * strength);
+    data[i+1] = Math.round(g + (transformed.g - g) * strength);
+    data[i+2] = Math.round(b + (transformed.b - b) * strength);
+  }
+}
+
+// ===== COLOR TRANSFORM FUNCTIONS =====
+function tealOrange(p) {
+  const lum = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+  if (lum < 128) {
+    // Shadows -> teal
+    return {
+      r: Math.max(0, p.r - 30),
+      g: Math.min(255, p.g + 10),
+      b: Math.min(255, p.b + 40)
+    };
+  } else {
+    // Highlights -> orange
+    return {
+      r: Math.min(255, p.r + 40),
+      g: Math.min(255, p.g + 10),
+      b: Math.max(0, p.b - 30)
+    };
+  }
+}
+
+function warmFilm(p) {
+  return {
+    r: Math.min(255, p.r + 25),
+    g: Math.min(255, p.g + 10),
+    b: Math.max(0, p.b - 15)
+  };
+}
+
+function coolNoir(p) {
+  const lum = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+  const contrast = 1.3;
+  const newLum = ((lum - 128) * contrast) + 128;
+  const factor = newLum / (lum || 1);
+  return {
+    r: Math.max(0, Math.min(255, p.r * factor - 10)),
+    g: Math.max(0, Math.min(255, p.g * factor)),
+    b: Math.max(0, Math.min(255, p.b * factor + 15))
+  };
+}
+
+function bwFade(p) {
+  const lum = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+  const faded = lum * 0.7 + 60;
+  return { r: faded, g: faded, b: faded };
+}
+
+function vintage(p) {
+  return {
+    r: Math.min(255, p.r * 1.2 + 20),
+    g: Math.min(255, p.g * 1.0 + 10),
+    b: Math.max(0, p.b * 0.8)
+  };
+}
+
+function punchy(p) {
+  const contrast = 1.4;
+  const sat = 1.3;
+  const lum = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+  const newLum = ((lum - 128) * contrast) + 128;
+  const gray = lum;
+  return {
+    r: Math.max(0, Math.min(255, gray + (p.r - gray) * sat * (newLum/lum || 1))),
+    g: Math.max(0, Math.min(255, gray + (p.g - gray) * sat * (newLum/lum || 1))),
+    b: Math.max(0, Math.min(255, gray + (p.b - gray) * sat * (newLum/lum || 1)))
+  };
+}
+
+function commercial(p) {
+  // Clean, balanced, slight contrast boost
+  const contrast = 1.15;
+  const lum = 0.299 * p.r + 0.587 * p.g + 0.114 * p.b;
+  const newLum = ((lum - 128) * contrast) + 128;
+  const factor = newLum / (lum || 1);
+  return {
+    r: Math.max(0, Math.min(255, p.r * factor)),
+    g: Math.max(0, Math.min(255, p.g * factor)),
+    b: Math.max(0, Math.min(255, p.b * factor))
+  };
+}
+
+// ===== SPLIT VIEW =====
+function initSplitView() {
+  const container = document.getElementById('splitContainer');
+  const divider = document.getElementById('splitDivider');
+  let dragging = false;
+
+  container.addEventListener('mousedown', (e) => { dragging = true; updateSplitFromEvent(e); });
+  window.addEventListener('mousemove', (e) => { if (dragging) updateSplitFromEvent(e); });
+  window.addEventListener('mouseup', () => { dragging = false; });
+  
+  container.addEventListener('touchstart', (e) => { dragging = true; updateSplitFromEvent(e.touches[0]); });
+  window.addEventListener('touchmove', (e) => { if (dragging) { e.preventDefault(); updateSplitFromEvent(e.touches[0]); } });
+  window.addEventListener('touchend', () => { dragging = false; });
+}
+
+function updateSplitFromEvent(e) {
+  const container = document.getElementById('splitContainer');
+  const rect = container.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  x = Math.max(0, Math.min(rect.width, x));
+  lutState.splitPos = (x / rect.width) * 100;
+  updateSplitView();
+}
+
+function updateSplitView() {
+  const afterCanvas = document.getElementById('afterCanvas');
+  const divider = document.getElementById('splitDivider');
+  if (lutState.splitView) {
+    afterCanvas.style.clipPath = `inset(0 0 0 ${lutState.splitPos}%)`;
+    divider.style.left = lutState.splitPos + '%';
+    divider.style.display = 'block';
+  } else {
+    afterCanvas.style.clipPath = 'none';
+    divider.style.display = 'none';
+  }
+}
+
+function toggleSplitView() {
+  lutState.splitView = !lutState.splitView;
+  document.getElementById('splitToggle').classList.toggle('on', lutState.splitView);
+  document.getElementById('splitLabel').textContent = lutState.splitView ? 'Split View' : 'Full View';
+  updateSplitView();
+}
+
+function updateStrength(val) {
+  lutState.strength = parseInt(val);
+  document.getElementById('strengthValue').textContent = val + '%';
+  if (lutState.tgtImage) {
+    renderTargetCanvas();
+    drawScope();
+  }
+}
+
+function setLutSize(size) {
+  lutState.lutSize = size;
+  document.querySelectorAll('.lut-size-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.size) === size);
+  });
+}
+
+function autoGenerateLUT() {
+  if (!lutState.refImage || !lutState.tgtImage) {
+    alert('Please upload both Reference and Target images first.');
+    return;
+  }
+  // Auto-detect best preset by comparing reference characteristics
+  const refCanvas = document.createElement('canvas');
+  refCanvas.width = 100; refCanvas.height = 100;
+  const rCtx = refCanvas.getContext('2d');
+  rCtx.drawImage(lutState.refImage, 0, 0, 100, 100);
+  const refData = rCtx.getImageData(0, 0, 100, 100).data;
+  
+  // Calculate average color temperature
+  let avgR = 0, avgB = 0;
+  for (let i = 0; i < refData.length; i += 4) {
+    avgR += refData[i];
+    avgB += refData[i+2];
+  }
+  avgR /= (refData.length / 4);
+  avgB /= (refData.length / 4);
+  
+  // Heuristic preset selection
+  let bestPreset = 'commercial';
+  if (avgR > avgB + 20) bestPreset = 'warm-film';
+  else if (avgB > avgR + 20) bestPreset = 'cool-noir';
+  else if (Math.abs(avgR - avgB) < 10) bestPreset = 'bw-fade';
+  else bestPreset = 'taameer-teal-orange';
+  
+  applyPreset(bestPreset);
+  alert(`Auto LUT generated (${lutState.lutSize}³ cube) — Applied: ${LUT_PRESETS.find(p => p.id === bestPreset).name}`);
+}
+
+function compareLooks() {
+  if (!lutState.tgtImage) { alert('Upload a target image first'); return; }
+  lutState.splitView = true;
+  lutState.splitPos = 50;
+  document.getElementById('splitToggle').classList.add('on');
+  updateSplitView();
+}
+
+function resetAllLut() {
+  lutState.currentPreset = 'none';
+  lutState.strength = 100;
+  document.getElementById('strengthSlider').value = 100;
+  document.getElementById('strengthValue').textContent = '100%';
+  renderPresets();
+  if (lutState.tgtImage) {
+    renderTargetCanvas();
+    drawScope();
+  }
+}
+
+// ===== SCOPES =====
+function setScope(scope) {
+  lutState.currentScope = scope;
+  document.querySelectorAll('.scope-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.scope === scope);
+  });
+  drawScope();
+}
+
+function drawScope() {
+  const canvas = document.getElementById('scopeCanvas');
+  const container = canvas.parentElement;
+  canvas.width = container.clientWidth - 40;
+  canvas.height = 120;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (!lutState.tgtImage) {
+    ctx.fillStyle = '#4B5563';
+    ctx.font = '12px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText('Upload an image to view scopes', canvas.width/2, canvas.height/2);
+    return;
+  }
+
+  // Get image data from after canvas
+  const afterCanvas = document.getElementById('afterCanvas');
+  const aCtx = afterCanvas.getContext('2d');
+  const imageData = aCtx.getImageData(0, 0, afterCanvas.width, afterCanvas.height);
+  const data = imageData.data;
+
+  if (lutState.currentScope === 'histogram') drawHistogram(ctx, canvas, data);
+  else if (lutState.currentScope === 'waveform') drawWaveform(ctx, canvas, data);
+  else if (lutState.currentScope === 'vectorscope') drawVectorscope(ctx, canvas, data);
+}
+
+function drawHistogram(ctx, canvas, data) {
+  const rHist = new Array(256).fill(0);
+  const gHist = new Array(256).fill(0);
+  const bHist = new Array(256).fill(0);
+  
+  for (let i = 0; i < data.length; i += 4) {
+    rHist[data[i]]++;
+    gHist[data[i+1]]++;
+    bHist[data[i+2]]++;
+  }
+  
+  const max = Math.max(...rHist, ...gHist, ...bHist);
+  const w = canvas.width;
+  const h = canvas.height;
+  const barW = w / 256;
+  
+  [['#EF4444', rHist], ['#10B981', gHist], ['#3B82F6', bHist]].forEach(([color, hist]) => {
+    ctx.fillStyle = color + '80';
+    ctx.beginPath();
+    ctx.moveTo(0, h);
+    for (let i = 0; i < 256; i++) {
+      const x = i * barW;
+      const y = h - (hist[i] / max) * h * 0.95;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+  });
+}
+
+function drawWaveform(ctx, canvas, data) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const pixelW = Math.max(1, Math.floor(data.length / 4 / w));
+  
+  ctx.fillStyle = '#FBBF24';
+  for (let x = 0; x < w; x++) {
+    const idx = x * pixelW * 4;
+    if (idx >= data.length) break;
+    const lum = (data[idx] + data[idx+1] + data[idx+2]) / 3;
+    const y = h - (lum / 255) * h;
+    ctx.fillRect(x, y, 1, h - y);
+  }
+}
+
+function drawVectorscope(ctx, canvas, data) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const radius = Math.min(w, h) / 2 - 10;
+  
+  // Draw reference circle
+  ctx.strokeStyle = '#374151';
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.stroke();
+  
+  // Plot pixels
+  ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+  const step = Math.max(1, Math.floor(data.length / 4 / 2000));
+  for (let i = 0; i < data.length; i += 4 * step) {
+    const r = data[i], g = data[i+1], b = data[i+2];
+    const u = (r - b) / 255;
+    const v = (2 * g - r - b) / (255 * 1.732);
+    const x = cx + u * radius;
+    const y = cy - v * radius;
+    ctx.fillRect(x, y, 2, 2);
+  }
+}
+
+// ===== EXPORT =====
+function exportJpeg() {
+  if (!lutState.tgtImage) { alert('Upload a target image first'); return; }
+  const afterCanvas = document.getElementById('afterCanvas');
+  const link = document.createElement('a');
+  link.download = 'taameer-graded-' + Date.now() + '.jpg';
+  link.href = afterCanvas.toDataURL('image/jpeg', 0.92);
+  link.click();
+}
+
+function exportCube() {
+  const size = lutState.lutSize;
+  let cube = `# Created by TAAMEER LUTs & Color Matching\n`;
+  cube += `# Preset: ${LUT_PRESETS.find(p => p.id === lutState.currentPreset)?.name || 'None'}\n`;
+  cube += `# Strength: ${lutState.strength}%\n`;
+  cube += `LUT_3D_SIZE ${size}\n\n`;
+  
+  const preset = LUT_PRESETS.find(p => p.id === lutState.currentPreset);
+  const strength = lutState.strength / 100;
+  
+  for (let b = 0; b < size; b++) {
+    for (let g = 0; g < size; g++) {
+      for (let r = 0; r < size; r++) {
+        const ri = Math.round((r / (size-1)) * 255);
+        const gi = Math.round((g / (size-1)) * 255);
+        const bi = Math.round((b / (size-1)) * 255);
+        
+        let out = { r: ri, g: gi, b: bi };
+        if (preset && preset.id !== 'none') {
+          const transformed = preset.apply({ r: ri, g: gi, b: bi });
+          out = {
+            r: Math.round(ri + (transformed.r - ri) * strength),
+            g: Math.round(gi + (transformed.g - gi) * strength),
+            b: Math.round(bi + (transformed.b - bi) * strength)
+          };
+        }
+        
+        cube += `${(out.r/255).toFixed(6)} ${(out.g/255).toFixed(6)} ${(out.b/255).toFixed(6)}\n`;
+      }
+    }
+  }
+  
+  const blob = new Blob([cube], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.download = 'taameer-lut-' + Date.now() + '.cube';
+  link.href = URL.createObjectURL(blob);
+  link.click();
+}
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  loadTheme();
+  loadSystemAccent();
+  checkAuth();
+  
+  // Handle window resize for LUT canvas
+  window.addEventListener('resize', () => {
+    if (!document.getElementById('view-luts-color').classList.contains('hidden')) {
+      if (lutState.tgtImage) {
+        renderTargetCanvas();
+        drawScope();
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>
