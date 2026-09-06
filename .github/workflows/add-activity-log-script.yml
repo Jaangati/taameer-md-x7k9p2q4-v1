@@ -1,0 +1,39 @@
+name: Add activity log script
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/add-activity-log-script.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Insert activity log script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text()
+          needle = '<script src="js/admin-users-v2.js"></script>\n<script src="js/app.js"></script>'
+          repl = '<script src="js/admin-users-v2.js"></script>\n<script src="js/activity-log.js"></script>\n<script src="js/app.js"></script>'
+          if 'js/activity-log.js' not in text:
+              if needle not in text:
+                  raise SystemExit('script insertion point not found')
+              text = text.replace(needle, repl, 1)
+              p.write_text(text)
+          PY
+      - name: Check JavaScript syntax
+        run: |
+          for f in js/*.js; do node --check "$f"; done
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Enable Activity Log'
+          git push
