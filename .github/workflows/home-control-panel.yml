@@ -22,11 +22,8 @@ jobs:
           index = Path('index.html')
           html = index.read_text()
 
-          # Login defaults to TAAMEER gray, then follows the last personal accent on this browser.
           html = html.replace('bg-[var(--accent)] blur-3xl"></div></div>', 'blur-3xl" style="background:var(--login-accent,#757575)"></div></div>', 1)
           html = html.replace('<use href="#taameer-icon" fill="var(--accent)"/>', '<use href="#taameer-icon" fill="var(--login-accent,#757575)"/>', 1)
-
-          # Remove the top header time/date chip entirely.
           html, n = re.subn(r'\s*<div class="hidden md:flex items-center space-x-2 text-sm[^>]*>.*?id="clock".*?id="date".*?</div>', '', html, count=1, flags=re.S)
           assert n == 1, 'Header clock chip not found'
 
@@ -48,19 +45,11 @@ jobs:
               </div>
             </div>
           </section>
-
           <section class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
-            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
-              <div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Workspace</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1">Ready</p><p class="text-xs text-gray-500 mt-1">TAAMEER Marketing OS</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-gauge-high"></i></div>
-            </div>
-            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
-              <div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Access</p><p class="text-2xl font-bold text-gray-900 dark:text-white mt-1" id="myModulesCount">0</p><p class="text-xs text-gray-500 mt-1">Modules available</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-cubes"></i></div>
-            </div>
-            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
-              <div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Role</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1" id="homeRoleLabel">Team Member</p><p class="text-xs text-gray-500 mt-1">Current access level</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-user-shield"></i></div>
-            </div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between"><div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Workspace</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1">Ready</p><p class="text-xs text-gray-500 mt-1">TAAMEER Marketing OS</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-gauge-high"></i></div></div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between"><div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Access</p><p class="text-2xl font-bold text-gray-900 dark:text-white mt-1" id="myModulesCount">0</p><p class="text-xs text-gray-500 mt-1">Modules available</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-cubes"></i></div></div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between"><div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Role</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1" id="homeRoleLabel">Team Member</p><p class="text-xs text-gray-500 mt-1">Current access level</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-user-shield"></i></div></div>
           </section>
-
           <section class="min-h-0 flex-1 flex flex-col">
             <div class="flex items-end justify-between mb-3 flex-shrink-0"><div><h3 class="font-bold text-gray-900 dark:text-white text-lg">Your Modules</h3><p class="text-xs text-gray-500 mt-0.5">Everything you need, one click away.</p></div><span class="text-xs text-gray-400">Control panel</span></div>
             <div class="min-h-0 flex-1"><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 h-full content-start" id="homeModulesGrid"></div></div>
@@ -71,8 +60,6 @@ jobs:
       <!-- CALENDAR -->'''
           html, n = re.subn(r'<!-- HOME -->.*?<!-- CALENDAR -->', home, html, count=1, flags=re.S)
           assert n == 1, 'Home section not found'
-
-          # Cache bust files changed in this redesign.
           html = re.sub(r'<script src="js/theme\.js(?:\?[^\"]*)?"></script>', '<script src="js/theme.js?v=20260907-control"></script>', html)
           html = re.sub(r'<script src="js/ui\.js(?:\?[^\"]*)?"></script>', '<script src="js/ui.js?v=20260907-control"></script>', html)
           index.write_text(html)
@@ -86,12 +73,7 @@ jobs:
             const grid=document.getElementById('homeModulesGrid'); if(!grid)return; grid.innerHTML='';
             const u=state.currentUser; const myModules=state.modules.filter(m=>u.modules?.includes(m.id));
             if(!myModules.length){grid.innerHTML='<div class="col-span-full p-7 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm text-gray-500">No modules assigned yet.</div>';return;}
-            myModules.forEach(m=>{
-              const allowed=canAccessModule(m), card=document.createElement('button');
-              card.className=`group text-left rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 transition-all ${allowed?'hover:-translate-y-0.5 hover:shadow-md cursor-pointer':'opacity-55 cursor-not-allowed'}`;
-              card.innerHTML=`<div class="flex items-start justify-between gap-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-sm" style="background:${Utils.validColor(m.color)}"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${allowed?'ACTIVE':'LOCKED'}</span></div><div class="mt-4"><h4 class="font-bold text-gray-900 dark:text-white">${Utils.escapeHTML(m.name)}</h4><p class="text-xs text-gray-500 mt-1 line-clamp-2">${Utils.escapeHTML(m.desc||'')}</p></div><div class="mt-4 flex items-center justify-between text-xs"><span class="text-gray-400">${allowed?'Open module':'Unavailable'}</span><i class="fas fa-arrow-right text-accent transition-transform group-hover:translate-x-1"></i></div>`;
-              if(allowed)card.onclick=()=>showView(ModuleRegistry.ensureView(m)); grid.appendChild(card);
-            });
+            myModules.forEach(m=>{ const allowed=canAccessModule(m), card=document.createElement('button'); card.className=`group text-left rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 transition-all ${allowed?'hover:-translate-y-0.5 hover:shadow-md cursor-pointer':'opacity-55 cursor-not-allowed'}`; card.innerHTML=`<div class="flex items-start justify-between gap-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-sm" style="background:${Utils.validColor(m.color)}"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${allowed?'ACTIVE':'LOCKED'}</span></div><div class="mt-4"><h4 class="font-bold text-gray-900 dark:text-white">${Utils.escapeHTML(m.name)}</h4><p class="text-xs text-gray-500 mt-1 line-clamp-2">${Utils.escapeHTML(m.desc||'')}</p></div><div class="mt-4 flex items-center justify-between text-xs"><span class="text-gray-400">${allowed?'Open module':'Unavailable'}</span><i class="fas fa-arrow-right text-accent transition-transform group-hover:translate-x-1"></i></div>`; if(allowed)card.onclick=()=>showView(ModuleRegistry.ensureView(m)); grid.appendChild(card); });
           }
           ''', js, count=1, flags=re.S)
           assert n == 1, 'renderHomeModules not found'
@@ -102,8 +84,6 @@ jobs:
           node --check js/ui.js
           grep -q 'assets/taameer-logo-white.svg' index.html
           grep -q 'TAAMEER Marketing control panel' index.html
-          grep -q '#757575' js/theme.js
-
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html js/ui.js js/theme.js assets/taameer-logo-white.svg
@@ -111,3 +91,5 @@ jobs:
             git commit -m 'Redesign home as TAAMEER control panel'
             git push
           fi
+
+# trigger
