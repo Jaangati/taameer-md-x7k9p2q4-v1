@@ -1,0 +1,68 @@
+name: Security profile patch
+on:
+  push:
+    branches: [security-v3]
+    paths: ['.github/workflows/security-profile-patch.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: security-v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch secure profile actions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('>Team Member</label>', '>Work Email / Username</label>')
+          s=s.replace('placeholder="Enter your username"', 'placeholder="Enter your work email"')
+          p.write_text(s)
+
+          p=Path('js/ui.js')
+          s=p.read_text()
+          old="function handleAvatarUpload(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 2*1024*1024) return alert('Image too large (max 2MB)'); const reader = new FileReader(); reader.onload = ev => { state.currentUser.avatar = ev.target.result; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx].avatar = ev.target.result; save(); refreshUI(); }; reader.readAsDataURL(file); }"
+          new="function handleAvatarUpload(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 2*1024*1024) return alert('Image too large (max 2MB)'); const reader = new FileReader(); reader.onload = async ev => { const avatar = ev.target.result; const { error } = await supabaseClient.from('profiles').update({ avatar }).eq('id', state.currentUser.id); if (error) return alert('Could not update profile image.'); state.currentUser.avatar = avatar; refreshUI(); }; reader.readAsDataURL(file); }"
+          if old not in s: raise SystemExit('avatar target not found')
+          s=s.replace(old,new)
+
+          old="function saveMyProfile() { const email = document.getElementById('myEmail').value.trim(); const phone = document.getElementById('myPhone').value.trim(); state.currentUser.email = email; state.currentUser.phone = phone; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx] = { ...state.currentUser }; save(); refreshUI(); alert('Contact information updated!'); }"
+          new="async function saveMyProfile() { const email = document.getElementById('myEmail').value.trim(); const phone = document.getElementById('myPhone').value.trim(); if (email && email !== state.currentUser.email) { const { error: authError } = await supabaseClient.auth.updateUser({ email }); if (authError) return alert(authError.message); } const { error } = await supabaseClient.from('profiles').update({ email, phone }).eq('id', state.currentUser.id); if (error) return alert('Could not update contact information.'); state.currentUser.email = email; state.currentUser.phone = phone; refreshUI(); alert(email ? 'Contact information updated. Email changes may require confirmation.' : 'Contact information updated!'); }"
+          if old not in s: raise SystemExit('profile target not found')
+          s=s.replace(old,new)
+
+          old="async function changePassword() { const cur = document.getElementById('curPass').value; const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!(await Utils.verifyPassword(cur, state.currentUser.password))) return alert('Current password incorrect'); if (np.length < 6) return alert('Password must be at least 6 characters'); if (np !== cp) return alert('Passwords do not match'); const hash = await Utils.hashPassword(np); state.currentUser.password = hash; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx].password = hash; save(); ['curPass','newPass','confPass'].forEach(id => document.getElementById(id).value = ''); alert('Password updated!'); }"
+          new="async function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (np.length < 8) return alert('Password must be at least 8 characters'); if (np !== cp) return alert('Passwords do not match'); const { error } = await supabaseClient.auth.updateUser({ password: np }); if (error) return alert(error.message); ['curPass','newPass','confPass'].forEach(id => document.getElementById(id).value = ''); alert('Password updated securely.'); }"
+          if old not in s: raise SystemExit('password target not found')
+          s=s.replace(old,new)
+          p.write_text(s)
+
+          p=Path('js/theme.js')
+          s=p.read_text()
+          old="function applyPersonalAccent(color) { if (!state.currentUser) return; const c = Utils.validColor(color); state.currentUser.accentColor = c; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx].accentColor = c; localStorage.setItem('taameer_currentUser', JSON.stringify({ id: state.currentUser.id })); applyAccentCSS(c); save(); }"
+          new="async function applyPersonalAccent(color) { if (!state.currentUser) return; const c = Utils.validColor(color); const { error } = await supabaseClient.from('profiles').update({ accent_color: c }).eq('id', state.currentUser.id); if (error) return alert('Could not save personal color.'); state.currentUser.accentColor = c; applyAccentCSS(c); }"
+          if old not in s: raise SystemExit('accent target not found')
+          s=s.replace(old,new)
+          old="function resetPersonalAccent() { if (!state.currentUser) return; state.currentUser.accentColor = null; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx].accentColor = null; applyAccentCSS(state.settings.accent); refreshPersonalColorPicker(null); save(); }"
+          new="async function resetPersonalAccent() { if (!state.currentUser) return; const { error } = await supabaseClient.from('profiles').update({ accent_color: null }).eq('id', state.currentUser.id); if (error) return alert('Could not reset personal color.'); state.currentUser.accentColor = null; applyAccentCSS(state.settings.accent); refreshPersonalColorPicker(null); }"
+          if old not in s: raise SystemExit('reset accent target not found')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+      - name: Check JavaScript syntax
+        run: |
+          for f in js/*.js; do node --check "$f"; done
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html js/ui.js js/theme.js
+          git commit -m 'Security: move personal account changes to Supabase Auth profiles'
+          git push origin security-v3
