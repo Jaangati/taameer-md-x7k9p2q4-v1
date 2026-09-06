@@ -367,29 +367,33 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function syncToCloud() {
   try {
-    await supabaseClient.from('app_data').upsert({ id: 'users', data: state.users });
-    await supabaseClient.from('app_data').upsert({ id: 'modules', data: state.modules });
-    await supabaseClient.from('app_data').upsert({ id: 'permissions', data: state.permissions });
-    await supabaseClient.from('app_data').upsert({ id: 'settings', data: state.settings });
-    console.log('✅ Data synced to cloud');
-  } catch (err) { console.error('Cloud sync error:', err); }
-}
-
-async function loadFromCloud() {
-  try {
-    const { data, error } = await supabaseClient.from('app_data').select('id, data');
-    if (error) throw error;
-    if (data && data.length > 0) {
-      data.forEach(row => {
-        if (row.id === 'users') state.users = row.data;
-        if (row.id === 'modules') state.modules = row.data;
-        if (row.id === 'permissions') state.permissions = row.data;
-        if (row.id === 'settings') state.settings = row.data;
-      });
-      console.log('✅ Data loaded from cloud');
-      refreshUI();
-    }
-  } catch (err) { console.error('Cloud load error:', err); }
+    // Upsert all data with proper error handling
+    const { error: usersError } = await supabaseClient
+      .from('app_data')
+      .upsert({ id: 'users', data: state.users }, { onConflict: 'id' });
+    
+    const { error: modulesError } = await supabaseClient
+      .from('app_data')
+      .upsert({ id: 'modules', data: state.modules }, { onConflict: 'id' });
+    
+    const { error: permsError } = await supabaseClient
+      .from('app_data')
+      .upsert({ id: 'permissions', data: state.permissions }, { onConflict: 'id' });
+    
+    const { error: settingsError } = await supabaseClient
+      .from('app_data')
+      .upsert({ id: 'settings', data: state.settings }, { onConflict: 'id' });
+    
+    if (usersError) throw usersError;
+    if (modulesError) throw modulesError;
+    if (permsError) throw permsError;
+    if (settingsError) throw settingsError;
+    
+    console.log('✅ All data synced to cloud successfully');
+  } catch (err) {
+    console.error('❌ Cloud sync error:', err.message);
+    console.error('Error details:', err);
+  }
 }
 
 // ===== STATE =====
@@ -421,7 +425,9 @@ function save() {
   localStorage.setItem('taameer_modules', JSON.stringify(state.modules));
   localStorage.setItem('taameer_permissions', JSON.stringify(state.permissions));
   localStorage.setItem('taameer_settings', JSON.stringify(state.settings));
-  syncToCloud(); // Auto-sync to Supabase invisibly
+  
+  // Always sync to cloud
+  syncToCloud();
 }
 
 // ... (All other existing functions remain exactly the same) ...
