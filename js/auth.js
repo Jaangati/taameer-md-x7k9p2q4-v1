@@ -1,64 +1,125 @@
 // ---------- Authentication ----------
+function profileToUser(profile, authUser) {
+  return {
+    id: profile.id,
+    username: profile.username || authUser?.email?.split('@')[0] || 'user',
+    password: '',
+    fullName: profile.full_name || authUser?.email || 'User',
+    jobTitle: profile.job_title || '',
+    email: profile.email || authUser?.email || '',
+    phone: profile.phone || '',
+    role: profile.role === 'admin' ? 'admin' : 'user',
+    status: profile.status || 'active',
+    avatar: profile.avatar || null,
+    lastLogin: authUser?.last_sign_in_at || null,
+    modules: Array.isArray(profile.modules) ? profile.modules : [],
+    accentColor: profile.accent_color || null
+  };
+}
+
+async function loadAuthenticatedProfile(authUser) {
+  if (!supabaseClient || !authUser) return null;
+  const { data, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', authUser.id)
+    .single();
+  if (error) throw error;
+  return profileToUser(data, authUser);
+}
+
+async function completeAuthenticatedSession(authUser) {
+  await loadFromCloud();
+  Store.normalize();
+  const profileUser = await loadAuthenticatedProfile(authUser);
+  if (!profileUser || profileUser.status !== 'active') {
+    await supabaseClient.auth.signOut();
+    throw new Error('Your account is not active. Contact Department Management.');
+  }
+  state.currentUser = profileUser;
+  loadSystemAccent();
+  ModuleRegistry.ensureAll();
+  showDashboard();
+}
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const username = document.getElementById('username').value.trim();
+  const identity = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
-  const user = state.users.find(u => u.username === username);
-  if (!user) return alert('Invalid credentials!');
-  if (user.status !== 'active') return alert('Account is ' + user.status + '. Contact admin.');
+  if (!identity || !password) return;
 
-  if (!user.password) {
-    state.pendingUser = user;
-    document.getElementById('loginView').classList.add('hidden');
-    document.getElementById('setPasswordView').classList.remove('hidden');
-    document.getElementById('spName').textContent = user.fullName.split(' ')[0];
-    return;
+  let email = identity;
+  if (!identity.includes('@')) {
+    const cached = state.users.find(u => u.username?.toLowerCase() === identity.toLowerCase());
+    email = cached?.email || '';
   }
+  if (!email) return alert('Please sign in using your work email.');
 
-  if (!(await Utils.verifyPassword(password, user.password))) return alert('Invalid credentials!');
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (!error && data?.user) {
+      await completeAuthenticatedSession(data.user);
+      return;
+    }
 
-  // Transparently upgrade legacy plaintext passwords.
-  if (!user.password.startsWith('sha256:')) user.password = await Utils.hashPassword(password);
-  user.lastLogin = new Date().toISOString();
-  state.currentUser = user;
-  localStorage.setItem('taameer_currentUser', JSON.stringify({ id: user.id }));
-  save();
-  showDashboard();
+    // First secure login: create the Supabase Auth account.
+    // The database trigger only allows emails already approved by Department Management.
+    const { data: signup, error: signupError } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: { data: { source: 'taameer-dashboard-activation' } }
+    });
+    if (signupError) throw signupError;
+    if (signup?.session && signup?.user) {
+      await completeAuthenticatedSession(signup.user);
+      return;
+    }
+    alert('Account activation started. Please check your work email to confirm your account, then sign in again.');
+  } catch (error) {
+    console.error('TAAMEER Auth error', error);
+    alert(error?.message || 'Unable to sign in. Please contact Department Management.');
+  }
 });
 
+// Legacy first-login screen now activates the secure Supabase account.
 document.getElementById('setPasswordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const pw = document.getElementById('spPassword').value;
   const conf = document.getElementById('spConfirm').value;
-  if (pw.length < 6) return alert('Password must be at least 6 characters');
+  if (pw.length < 8) return alert('Password must be at least 8 characters');
   if (pw !== conf) return alert('Passwords do not match');
-  if (!state.pendingUser) return alert('Session expired. Please login again.');
-  const idx = state.users.findIndex(u => u.id === state.pendingUser.id);
-  if (idx === -1) return alert('User not found.');
-  state.users[idx].password = await Utils.hashPassword(pw);
-  state.users[idx].lastLogin = new Date().toISOString();
-  state.currentUser = state.users[idx];
+  const email = state.pendingUser?.email;
+  if (!email) return alert('Please return to sign in and use your work email.');
+  const { data, error } = await supabaseClient.auth.signUp({ email, password: pw });
+  if (error) return alert(error.message);
   state.pendingUser = null;
-  localStorage.setItem('taameer_currentUser', JSON.stringify({ id: state.currentUser.id }));
-  save();
   document.getElementById('setPasswordView').classList.add('hidden');
-  document.getElementById('loginForm').reset();
-  showDashboard();
+  if (data?.session && data?.user) return completeAuthenticatedSession(data.user);
+  alert('Please check your work email to confirm your account, then sign in.');
+  document.getElementById('loginView').classList.remove('hidden');
 });
 
-function checkAuth() {
-  const saved = Utils.parseJSON(localStorage.getItem('taameer_currentUser'), null);
-  if (!saved?.id) return;
-  const fresh = state.users.find(x => x.id === saved.id && x.status === 'active');
-  if (!fresh) { localStorage.removeItem('taameer_currentUser'); return; }
-  if (!fresh.password) {
-    state.pendingUser = fresh;
-    document.getElementById('loginView').classList.add('hidden');
-    document.getElementById('setPasswordView').classList.remove('hidden');
-    document.getElementById('spName').textContent = fresh.fullName.split(' ')[0];
-    return;
+async function checkAuth() {
+  if (!supabaseClient) return false;
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
+    if (error) throw error;
+    if (!data?.session?.user) return false;
+    await completeAuthenticatedSession(data.session.user);
+    return true;
+  } catch (error) {
+    console.error('TAAMEER session restore failed', error);
+    await supabaseClient.auth.signOut();
+    return false;
   }
-  state.currentUser = fresh;
-  showDashboard();
 }
-function logout() { state.currentUser = null; localStorage.removeItem('taameer_currentUser'); closeUserDropdown(); document.getElementById('loginView').classList.remove('hidden'); document.getElementById('dashboardView').classList.add('hidden'); document.getElementById('setPasswordView').classList.add('hidden'); document.getElementById('loginForm').reset(); }
+
+async function logout() {
+  try { await supabaseClient?.auth.signOut(); } catch (error) { console.warn('Sign out failed', error); }
+  state.currentUser = null;
+  closeUserDropdown();
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('dashboardView').classList.add('hidden');
+  document.getElementById('setPasswordView').classList.add('hidden');
+  document.getElementById('loginForm').reset();
+}
