@@ -12,17 +12,5 @@ async function boot(){
   }
 }
 
-function loadScript(src){
-  return new Promise(resolve=>{
-    const script=document.createElement('script');
-    script.src=src;
-    script.onload=resolve;
-    script.onerror=resolve;
-    document.head.appendChild(script);
-  });
-}
-
-document.addEventListener('DOMContentLoaded',async()=>{
-  await loadScript('js/notifications-runtime-v5.js?v=5');
-  boot();
-});
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+else boot();
