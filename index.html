@@ -90,11 +90,13 @@ tailwind.config = {
   .password-display { font-family: 'Courier New', monospace; background: #F3F4F6; padding: 4px 10px; border-radius: 6px; font-size: 13px; letter-spacing: 1px; }
   .dark .password-display { background: #374151; }
   .sidebar-header { min-height: 64px; position: relative; }
-  .sidebar-toggle-btn { opacity: 0; transform: translateX(-4px); transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s; }
-  .sidebar-expanded .sidebar-toggle-btn { opacity: 1; transform: translateX(0); }
+  .sidebar-toggle-btn { transition: background 0.2s; }
   .sidebar-toggle-btn:hover { background: rgba(255,255,255,0.1) !important; }
   .sidebar-collapsed .sidebar-label { display: none !important; }
-  .sidebar-collapsed .sidebar-header { cursor: pointer; }
+  .sidebar-collapsed .sidebar-toggle-btn { display: none !important; }
+  .sidebar-collapsed .sidebar-header { cursor: pointer; justify-content: center; }
+  .sidebar-collapsed .sidebar-header > div { justify-content: center; }
+  .sidebar-expanded .sidebar-toggle-btn { display: flex !important; }
   #toggleIcon { transition: transform 0.3s ease; }
 </style>
 </head>
@@ -157,7 +159,7 @@ tailwind.config = {
 <!-- DASHBOARD -->
 <div id="dashboardView" class="hidden h-screen flex">
   <aside id="sidebar" class="sidebar-collapsed bg-gray-950 flex flex-col flex-shrink-0 border-r border-gray-900 transition-all duration-300 overflow-hidden">
-    <div class="sidebar-header flex items-center justify-between px-3 py-4 border-b border-gray-900 relative" onclick="if (!sidebarExpanded) toggleSidebar()">
+    <div class="sidebar-header flex items-center justify-between px-3 py-4 border-b border-gray-900 relative">
       <div class="flex items-center space-x-3 overflow-hidden flex-1">
         <div class="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center flex-shrink-0"><svg width="22" height="22" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg></div>
         <div class="sidebar-label whitespace-nowrap"><div class="font-arabic text-lg font-bold leading-none text-white">تعمير</div><div class="text-[10px] font-semibold tracking-wider text-gray-400">TAAMEER</div></div>
@@ -707,7 +709,22 @@ function renderSidebar() {
   nav.innerHTML = html;
 }
 function isActive(view) { const el = document.getElementById(`view-${view}`); return !!el && !el.classList.contains('hidden'); }
-function toggleSidebar() { sidebarExpanded = !sidebarExpanded; const sb = document.getElementById('sidebar'); sb.classList.toggle('sidebar-expanded', sidebarExpanded); sb.classList.toggle('sidebar-collapsed', !sidebarExpanded); const icon = document.getElementById('toggleIcon'); if (icon) icon.style.transform = sidebarExpanded ? 'rotate(0deg)' : 'rotate(180deg)'; }
+function toggleSidebar() {
+  sidebarExpanded = !sidebarExpanded;
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('sidebar-expanded', sidebarExpanded);
+  sb.classList.toggle('sidebar-collapsed', !sidebarExpanded);
+  const icon = document.getElementById('toggleIcon');
+  if (icon) icon.style.transform = sidebarExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+const sidebarHeader = document.querySelector('.sidebar-header');
+if (sidebarHeader) {
+  sidebarHeader.addEventListener('click', (e) => {
+    if (e.target.closest('.sidebar-toggle-btn')) return;
+    if (!sidebarExpanded) toggleSidebar();
+  });
+}
 
 const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','Schedule & events'], 'module-test': ['Module Test','Test module'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
 function showView(viewName) {
