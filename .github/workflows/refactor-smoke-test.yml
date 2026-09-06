@@ -1,8 +1,8 @@
-name: Refactor smoke test
+name: Dashboard smoke test
 
 on:
   push:
-    branches: [refactor-v2]
+    branches: [refactor-v2, security-v3, main]
 
 jobs:
   smoke-test:
