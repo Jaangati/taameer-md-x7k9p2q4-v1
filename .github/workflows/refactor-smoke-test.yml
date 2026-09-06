@@ -1,0 +1,35 @@
+name: Refactor smoke test
+
+on:
+  push:
+    branches: [refactor-v2]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          for f in js/*.js; do node --check "$f"; done
+      - name: Check required files
+        run: |
+          test -f index.html
+          test -f css/styles.css
+          test -f js/core.js
+          test -f js/modules.js
+          test -f js/theme.js
+          test -f js/auth.js
+          test -f js/ui.js
+          test -f js/admin.js
+          test -f js/app.js
+      - name: Check index references
+        run: |
+          grep -q 'css/styles.css' index.html
+          grep -q 'js/core.js' index.html
+          grep -q 'js/modules.js' index.html
+          grep -q 'js/theme.js' index.html
+          grep -q 'js/auth.js' index.html
+          grep -q 'js/ui.js' index.html
+          grep -q 'js/admin.js' index.html
+          grep -q 'js/app.js' index.html
