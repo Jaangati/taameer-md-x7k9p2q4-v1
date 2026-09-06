@@ -40,6 +40,17 @@ async function completeAuthenticatedSession(authUser) {
   loadSystemAccent();
   ModuleRegistry.ensureAll();
   showDashboard();
+
+  // Team Updates must start for every authenticated session, even when the user
+  // never opens the notification centre. This drives the unread badge, sound,
+  // desktop/in-app alerts, and live seen/confirmation state.
+  if (typeof initTeamUpdates === 'function') {
+    try {
+      await initTeamUpdates();
+    } catch (error) {
+      console.error('TAAMEER Team Updates failed to initialize', error);
+    }
+  }
 }
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
