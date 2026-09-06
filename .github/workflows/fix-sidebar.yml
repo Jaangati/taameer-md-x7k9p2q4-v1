@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - '.github/workflows/fix-sidebar.yml'
-      - '.github/scripts/fix_sidebar.py'
 
 jobs:
   fix-sidebar:
@@ -13,13 +12,80 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Apply sidebar patch
-        run: python .github/scripts/fix_sidebar.py
-      - name: Commit sidebar fix
+      - name: Apply TAAMEER home control panel redesign
         run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          index = Path('index.html')
+          html = index.read_text()
+          html = html.replace('bg-[var(--accent)] blur-3xl"></div></div>', 'blur-3xl" style="background:var(--login-accent,#757575)"></div></div>', 1)
+          html = html.replace('<use href="#taameer-icon" fill="var(--accent)"/>', '<use href="#taameer-icon" fill="var(--login-accent,#757575)"/>', 1)
+          html, n = re.subn(r'\s*<div class="hidden md:flex items-center space-x-2 text-sm[^>]*>.*?id="clock".*?id="date".*?</div>', '', html, count=1, flags=re.S)
+          assert n == 1, 'Header clock chip not found'
+
+          home = '''<!-- HOME -->
+      <div id="view-home" class="view-section fade-in h-full overflow-hidden">
+        <div class="h-full flex flex-col gap-5 min-h-0">
+          <section class="relative overflow-hidden rounded-3xl border border-gray-800 shadow-sm text-white flex-shrink-0" style="background:linear-gradient(135deg,#111318 0%,#1d2026 56%,var(--accent) 165%);">
+            <div class="absolute -top-24 -right-12 w-80 h-80 rounded-full opacity-30 blur-3xl" style="background:var(--accent)"></div>
+            <div class="absolute -bottom-28 left-1/3 w-64 h-64 rounded-full bg-white opacity-[0.04] blur-3xl"></div>
+            <div class="relative px-7 py-7 md:px-9 md:py-8 flex items-center justify-between gap-8">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 mb-3"><span class="w-2 h-2 rounded-full" style="background:var(--accent)"></span><p id="greetingText" class="text-sm text-gray-300">Good morning</p></div>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Welcome back, <span id="welcomeName">Admin</span> 👋</h2>
+                <p id="todayFullDate" class="text-sm text-gray-400 mt-3"></p>
+                <p class="text-sm text-gray-400 mt-4 max-w-xl">Your TAAMEER Marketing control panel — quick access to the tools, modules and workspace you use every day.</p>
+              </div>
+              <div class="hidden md:flex items-center justify-center flex-shrink-0 w-60 h-28 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-sm px-6">
+                <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="w-full h-full object-contain opacity-95">
+              </div>
+            </div>
+          </section>
+          <section class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between"><div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Workspace</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1">Ready</p><p class="text-xs text-gray-500 mt-1">TAAMEER Marketing OS</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-gauge-high"></i></div></div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between"><div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Access</p><p class="text-2xl font-bold text-gray-900 dark:text-white mt-1" id="myModulesCount">0</p><p class="text-xs text-gray-500 mt-1">Modules available</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-cubes"></i></div></div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between"><div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Role</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1" id="homeRoleLabel">Team Member</p><p class="text-xs text-gray-500 mt-1">Current access level</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-user-shield"></i></div></div>
+          </section>
+          <section class="min-h-0 flex-1 flex flex-col">
+            <div class="flex items-end justify-between mb-3 flex-shrink-0"><div><h3 class="font-bold text-gray-900 dark:text-white text-lg">Your Modules</h3><p class="text-xs text-gray-500 mt-0.5">Everything you need, one click away.</p></div><span class="text-xs text-gray-400">Control panel</span></div>
+            <div class="min-h-0 flex-1"><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 h-full content-start" id="homeModulesGrid"></div></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->'''
+          html, n = re.subn(r'<!-- HOME -->.*?<!-- CALENDAR -->', home, html, count=1, flags=re.S)
+          assert n == 1, 'Home section not found'
+          html = re.sub(r'<script src="js/theme\.js(?:\?[^\"]*)?"></script>', '<script src="js/theme.js?v=20260907-control"></script>', html)
+          html = re.sub(r'<script src="js/ui\.js(?:\?[^\"]*)?"></script>', '<script src="js/ui.js?v=20260907-control"></script>', html)
+          index.write_text(html)
+
+          ui = Path('js/ui.js')
+          js = ui.read_text()
+          js = js.replace("setText('userRole', u.role === 'admin' ? 'Administrator' : u.jobTitle || 'User');", "setText('userRole', u.role === 'admin' ? 'Administrator' : u.jobTitle || 'User'); setText('homeRoleLabel', u.role === 'admin' ? 'Administrator' : (u.jobTitle || 'Team Member'));")
+          js, n = re.subn(r"function updateClock\(\) \{.*?\}\nfunction toggleUserDropdown", "function updateClock() { const now = new Date(); const time = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); const clock=document.getElementById('clock'); if(clock) clock.textContent=time; const date=document.getElementById('date'); if(date) date.textContent=now.toLocaleDateString('en-US',{month:'short',day:'numeric'}); const full=document.getElementById('todayFullDate'); if(full) full.textContent=now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); const tz=document.getElementById('tzSmall'); if(tz) tz.textContent=Intl.DateTimeFormat().resolvedOptions().timeZone; const h=now.getHours(); const greeting=document.getElementById('greetingText'); if(greeting) greeting.textContent=h>=17?'Good evening':h>=12?'Good afternoon':'Good morning'; }\nfunction toggleUserDropdown", js, count=1, flags=re.S)
+          assert n == 1, 'updateClock not found'
+          js, n = re.subn(r"function renderHomeModules\(\) \{.*?\}\n$", '''function renderHomeModules() {
+            const grid=document.getElementById('homeModulesGrid'); if(!grid)return; grid.innerHTML='';
+            const u=state.currentUser; const myModules=state.modules.filter(m=>u.modules?.includes(m.id));
+            if(!myModules.length){grid.innerHTML='<div class="col-span-full p-7 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm text-gray-500">No modules assigned yet.</div>';return;}
+            myModules.forEach(m=>{ const allowed=canAccessModule(m), card=document.createElement('button'); card.className=`group text-left rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 transition-all ${allowed?'hover:-translate-y-0.5 hover:shadow-md cursor-pointer':'opacity-55 cursor-not-allowed'}`; card.innerHTML=`<div class="flex items-start justify-between gap-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-sm" style="background:${Utils.validColor(m.color)}"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${allowed?'ACTIVE':'LOCKED'}</span></div><div class="mt-4"><h4 class="font-bold text-gray-900 dark:text-white">${Utils.escapeHTML(m.name)}</h4><p class="text-xs text-gray-500 mt-1 line-clamp-2">${Utils.escapeHTML(m.desc||'')}</p></div><div class="mt-4 flex items-center justify-between text-xs"><span class="text-gray-400">${allowed?'Open module':'Unavailable'}</span><i class="fas fa-arrow-right text-accent transition-transform group-hover:translate-x-1"></i></div>`; if(allowed)card.onclick=()=>showView(ModuleRegistry.ensureView(m)); grid.appendChild(card); });
+          }
+          ''', js, count=1, flags=re.S)
+          assert n == 1, 'renderHomeModules not found'
+          ui.write_text(js)
+          PY
+      - name: Validate and commit
+        run: |
+          node --check js/theme.js
+          node --check js/ui.js
+          grep -q 'assets/taameer-logo-white.svg' index.html
+          grep -q 'TAAMEER Marketing control panel' index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html js/ui.js js/theme.js assets/taameer-logo-white.svg
           git diff --cached --quiet && exit 0
-          git commit -m "Fix sidebar alignment and toggle behavior"
+          git commit -m "Redesign home as TAAMEER control panel"
           git push
