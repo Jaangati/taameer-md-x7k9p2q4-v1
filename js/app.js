@@ -12,10 +12,18 @@ async function boot(){
   }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  const script=document.createElement('script');
-  script.src='js/notifications-v2.js';
-  script.onload=boot;
-  script.onerror=boot;
-  document.head.appendChild(script);
+function loadScript(src){
+  return new Promise(resolve=>{
+    const script=document.createElement('script');
+    script.src=src;
+    script.onload=resolve;
+    script.onerror=resolve;
+    document.head.appendChild(script);
+  });
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  await loadScript('js/notifications-v2.js');
+  await loadScript('js/notifications-hotfix.js');
+  boot();
 });
