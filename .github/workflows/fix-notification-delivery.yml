@@ -1,0 +1,59 @@
+name: Fix notification delivery
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-notification-delivery.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch notifications and user loading
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('js/notifications.js')
+          s = p.read_text()
+          s = s.replace("let notificationOpenId = null;", "let notificationOpenId = null;\nlet notificationRealtimeChannel = null;")
+
+          old = "async function playTeamNotificationSound(){\n  if(!notificationSoundEnabled())return;\n  try{notificationSound.pause();notificationSound.currentTime=0;notificationSound.volume=.7;await notificationSound.play();}catch(err){console.warn('Notification sound blocked',err);}\n}"
+          new = "async function playTeamNotificationSound(){\n  if(!notificationSoundEnabled())return;\n  try{\n    const sound=new Audio('assets/confirm-notification.mp3?v=20260907-live');\n    sound.volume=.85;\n    await sound.play();\n  }catch(err){\n    try{notificationSound.pause();notificationSound.currentTime=0;notificationSound.volume=.85;await notificationSound.play();}\n    catch(err2){console.warn('Notification sound blocked',err2);}\n  }\n}"
+          if old not in s:
+              raise SystemExit('sound function marker not found')
+          s = s.replace(old, new)
+
+          old_init = "async function initTeamUpdates(){\n  if(!state.currentUser||!supabaseClient)return;\n  ensureNotificationUI();\n  if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}\n  notificationLastServerState=null;\n  try{await loadTeamDirectory();await notificationTick(true);}catch(err){console.error('Team Updates initialization failed',err);}\n  notificationPollTimer=setInterval(()=>notificationTick(false),1500);\n  document.addEventListener('visibilitychange',()=>{if(!document.hidden)notificationTick(false);},{passive:true});\n  window.addEventListener('focus',()=>notificationTick(false));\n}"
+          new_init = "async function initTeamUpdates(){\n  if(!state.currentUser||!supabaseClient)return;\n  ensureNotificationUI();\n  if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}\n  if(notificationRealtimeChannel){try{await supabaseClient.removeChannel(notificationRealtimeChannel);}catch(_){} notificationRealtimeChannel=null;}\n  notificationLastServerState=null;\n  try{await loadTeamDirectory();await notificationTick(true);}catch(err){console.error('Team Updates initialization failed',err);}\n\n  // Realtime is the primary incoming-alert path. Polling remains as a safety net.\n  notificationRealtimeChannel=supabaseClient.channel(`team-notify-live-${state.currentUser.id}-${Date.now()}`)\n    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},async payload=>{\n      const n=payload.new||{};\n      if(String(n.sender_id)===String(state.currentUser?.id))return;\n      await new Promise(r=>setTimeout(r,120));\n      await notificationTick(true);\n      announceNotification(`New Team Update — ${n.title||'Team Update'}`,`${notificationUserName(n.sender_id)} shared an update.`,n.id);\n    })\n    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notification_events'},async payload=>{\n      const e=payload.new||{};\n      if(String(e.recipient_id)!==String(state.currentUser?.id))return;\n      await new Promise(r=>setTimeout(r,120));\n      await notificationTick(true);\n      announceNotification(`${notificationUserName(e.actor_id)} ${eventLabel(e.event_type)}`,e.message||'Team Update',e.notification_id);\n    })\n    .subscribe(status=>{if(status==='CHANNEL_ERROR')console.warn('Team Updates realtime channel error');});\n\n  notificationPollTimer=setInterval(()=>notificationTick(false),1500);\n  document.addEventListener('visibilitychange',()=>{if(!document.hidden)notificationTick(false);},{passive:true});\n  window.addEventListener('focus',()=>notificationTick(false));\n}"
+          if old_init not in s:
+              raise SystemExit('init marker not found')
+          s = s.replace(old_init, new_init)
+          s = s.replace("function stopTeamUpdates(){if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}notificationLastServerState=null;notificationUnreadCount=0;updateNotificationBadge();}", "async function stopTeamUpdates(){if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}if(notificationRealtimeChannel){try{await supabaseClient.removeChannel(notificationRealtimeChannel);}catch(_){}notificationRealtimeChannel=null;}notificationLastServerState=null;notificationUnreadCount=0;updateNotificationBadge();}")
+          p.write_text(s)
+
+          p = Path('js/admin-users-v2.js')
+          s = p.read_text()
+          old = "async function refreshAdminUsers(){if(state.currentUser?.role!=='admin')return[];const data=await adminUsersRequest({action:'list'});state.users=(data.users||[]).map(mapProfileUser);return state.users;}"
+          new = "async function refreshAdminUsers(){if(state.currentUser?.role!=='admin')return[];try{const data=await adminUsersRequest({action:'list'});state.users=(data.users||[]).map(mapProfileUser);return state.users;}catch(edgeErr){console.warn('Admin user function unavailable; using secure profile fallback',edgeErr);const {data,error}=await supabaseClient.from('profiles').select('id,username,full_name,job_title,email,phone,role,status,modules,avatar,accent_color,created_at,updated_at').order('created_at',{ascending:true});if(error)throw edgeErr;state.users=(data||[]).map(mapProfileUser);return state.users;}}"
+          if old not in s:
+              raise SystemExit('admin users marker not found')
+          s = s.replace(old, new)
+          p.write_text(s)
+          PY
+      - name: Syntax check
+        run: |
+          node --check js/notifications.js
+          node --check js/admin-users-v2.js
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add js/notifications.js js/admin-users-v2.js
+          git commit -m "Fix incoming notification delivery and user list fallback" || exit 0
+          git push
