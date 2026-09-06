@@ -9,6 +9,7 @@ let notificationPollBusy = false;
 let notificationUnreadCount = 0;
 let notificationLastServerState = null;
 let notificationOpenId = null;
+let notificationRealtimeChannel = null;
 
 const notificationSound = new Audio('assets/confirm-notification.mp3?v=20260907');
 notificationSound.preload = 'auto';
@@ -102,7 +103,14 @@ function showDesktopTeamNotification(title,body,id){
 }
 async function playTeamNotificationSound(){
   if(!notificationSoundEnabled())return;
-  try{notificationSound.pause();notificationSound.currentTime=0;notificationSound.volume=.7;await notificationSound.play();}catch(err){console.warn('Notification sound blocked',err);}
+  try{
+    const sound=new Audio('assets/confirm-notification.mp3?v=20260907-live');
+    sound.volume=.85;
+    await sound.play();
+  }catch(err){
+    try{notificationSound.pause();notificationSound.currentTime=0;notificationSound.volume=.85;await notificationSound.play();}
+    catch(err2){console.warn('Notification sound blocked',err2);}
+  }
 }
 function announceNotification(title,body,id){ playTeamNotificationSound(); showInAppNotification(title,body,id); showDesktopTeamNotification(title,body,id); }
 
@@ -187,13 +195,33 @@ async function initTeamUpdates(){
   if(!state.currentUser||!supabaseClient)return;
   ensureNotificationUI();
   if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}
+  if(notificationRealtimeChannel){try{await supabaseClient.removeChannel(notificationRealtimeChannel);}catch(_){} notificationRealtimeChannel=null;}
   notificationLastServerState=null;
   try{await loadTeamDirectory();await notificationTick(true);}catch(err){console.error('Team Updates initialization failed',err);}
+
+  // Realtime is the primary incoming-alert path. Polling remains as a safety net.
+  notificationRealtimeChannel=supabaseClient.channel(`team-notify-live-${state.currentUser.id}-${Date.now()}`)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications'},async payload=>{
+      const n=payload.new||{};
+      if(String(n.sender_id)===String(state.currentUser?.id))return;
+      await new Promise(r=>setTimeout(r,120));
+      await notificationTick(true);
+      announceNotification(`New Team Update — ${n.title||'Team Update'}`,`${notificationUserName(n.sender_id)} shared an update.`,n.id);
+    })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notification_events'},async payload=>{
+      const e=payload.new||{};
+      if(String(e.recipient_id)!==String(state.currentUser?.id))return;
+      await new Promise(r=>setTimeout(r,120));
+      await notificationTick(true);
+      announceNotification(`${notificationUserName(e.actor_id)} ${eventLabel(e.event_type)}`,e.message||'Team Update',e.notification_id);
+    })
+    .subscribe(status=>{if(status==='CHANNEL_ERROR')console.warn('Team Updates realtime channel error');});
+
   notificationPollTimer=setInterval(()=>notificationTick(false),1500);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)notificationTick(false);},{passive:true});
   window.addEventListener('focus',()=>notificationTick(false));
 }
-function stopTeamUpdates(){if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}notificationLastServerState=null;notificationUnreadCount=0;updateNotificationBadge();}
+async function stopTeamUpdates(){if(notificationPollTimer){clearInterval(notificationPollTimer);notificationPollTimer=null;}if(notificationRealtimeChannel){try{await supabaseClient.removeChannel(notificationRealtimeChannel);}catch(_){}notificationRealtimeChannel=null;}notificationLastServerState=null;notificationUnreadCount=0;updateNotificationBadge();}
 
 // Browser audio permission: one silent play/pause after first interaction helps later notification playback.
 document.addEventListener('pointerdown',()=>{try{notificationSound.volume=0;const p=notificationSound.play();if(p?.then)p.then(()=>{notificationSound.pause();notificationSound.currentTime=0;notificationSound.volume=.7;}).catch(()=>{notificationSound.volume=.7;});}catch(_){notificationSound.volume=.7;}},{capture:true,once:true});
