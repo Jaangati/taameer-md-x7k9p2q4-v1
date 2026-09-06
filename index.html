@@ -8,7 +8,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-<!-- Supabase Cloud Database -->
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 tailwind.config = {
@@ -198,6 +198,7 @@ tailwind.config = {
     </header>
 
     <main class="flex-1 overflow-auto p-6" id="mainContent">
+
       <!-- HOME -->
       <div id="view-home" class="view-section fade-in">
         <div class="stat-card bg-white dark:bg-gray-900 p-6 mb-5 relative overflow-hidden">
@@ -241,7 +242,7 @@ tailwind.config = {
         <div class="stat-card bg-white dark:bg-gray-900 p-6">
           <div class="flex items-center space-x-4 mb-6"><div class="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center shadow-accent"><i class="fas fa-flask text-white text-2xl"></i></div><div><h2 class="text-2xl font-bold text-gray-900 dark:text-white">Module Test</h2><p class="text-sm text-gray-500">This is a placeholder module for testing the system architecture</p></div></div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-sm text-gray-500 mb-1">Status</div><div class="text-xl font-bold text-green-600">Active</div></div><div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-sm text-gray-500 mb-1">Version</div><div class="text-xl font-bold text-gray-900 dark:text-white">0.1.0</div></div><div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-sm text-gray-500 mb-1">Last Updated</div><div class="text-xl font-bold text-gray-900 dark:text-white" id="moduleTestDate">—</div></div></div>
-          <div class="p-6 bg-accent-soft border border-accent/20 rounded-xl"><h4 class="font-semibold text-gray-900 dark:text-white mb-2">🚧 Under Development</h4><p class="text-sm text-gray-600 dark:text-gray-400">This module is a test placeholder. Future modules will follow the same pattern and appear directly in the sidebar once assigned to your role by the administrator.</p></div>
+          <div class="p-6 bg-accent-soft border border-accent/20 rounded-xl"><h4 class="font-semibold text-gray-900 dark:text-white mb-2"> Under Development</h4><p class="text-sm text-gray-600 dark:text-gray-400">This module is a test placeholder. Future modules will follow the same pattern and appear directly in the sidebar once assigned to your role by the administrator.</p></div>
         </div>
       </div>
 
@@ -362,58 +363,89 @@ tailwind.config = {
 <script>
 // ===== SUPABASE CLOUD DATABASE =====
 const SUPABASE_URL = 'https://owuchwubosdooburvfr.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93dWNod3Vib3Nkb29pYnVydmZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3MDYxOTUsImV4cCI6MjEwNDI4MjE5NX0.epxCT51aE89mueYZ_oKyOJQpACU57rU1v11Ul9qy69Q';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93dWNod3Vib3Nkb29pYnVydmZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3MDYxOTUsImV4cCI6MjEwNDI4MjE5NX0.epxCT51aE89mueYZ_oKyOJQpACU57rU1v11Ul9qy69Q';
 
+// Initialize Supabase client
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let cloudConnected = false;
+
+// Save to cloud
 async function syncToCloud() {
+  if (!cloudConnected) return;
+  
   try {
-    // Upsert all data with proper error handling
-    const { error: usersError } = await supabaseClient
-      .from('app_data')
-      .upsert({ id: 'users', data: state.users }, { onConflict: 'id' });
+    const operations = [
+      supabase.from('app_data').upsert({ id: 'users', data: state.users }),
+      supabase.from('app_data').upsert({ id: 'modules', data: state.modules }),
+      supabase.from('app_data').upsert({ id: 'permissions', data: state.permissions }),
+      supabase.from('app_data').upsert({ id: 'settings', data: state.settings })
+    ];
     
-    const { error: modulesError } = await supabaseClient
-      .from('app_data')
-      .upsert({ id: 'modules', data: state.modules }, { onConflict: 'id' });
+    const results = await Promise.all(operations);
+    const errors = results.filter(r => r.error);
     
-    const { error: permsError } = await supabaseClient
-      .from('app_data')
-      .upsert({ id: 'permissions', data: state.permissions }, { onConflict: 'id' });
-    
-    const { error: settingsError } = await supabaseClient
-      .from('app_data')
-      .upsert({ id: 'settings', data: state.settings }, { onConflict: 'id' });
-    
-    if (usersError) throw usersError;
-    if (modulesError) throw modulesError;
-    if (permsError) throw permsError;
-    if (settingsError) throw settingsError;
-    
-    console.log('✅ All data synced to cloud successfully');
+    if (errors.length > 0) {
+      console.error('❌ Sync errors:', errors);
+    } else {
+      console.log('✅ All data synced to cloud');
+    }
   } catch (err) {
-    console.error('❌ Cloud sync error:', err.message);
-    console.error('Error details:', err);
+    console.error('❌ Cloud sync failed:', err.message);
+  }
+}
+
+// Load from cloud
+async function loadFromCloud() {
+  try {
+    const { data, error } = await supabase.from('app_data').select('id, data');
+    
+    if (error) {
+      console.error('❌ Failed to load from cloud:', error.message);
+      cloudConnected = false;
+      return;
+    }
+    
+    if (data && data.length > 0) {
+      cloudConnected = true;
+      data.forEach(row => {
+        if (row.id === 'users') state.users = row.data;
+        if (row.id === 'modules') state.modules = row.data;
+        if (row.id === 'permissions') state.permissions = row.data;
+        if (row.id === 'settings') state.settings = row.data;
+      });
+      console.log('✅ Data loaded from cloud');
+      refreshUI();
+    } else {
+      console.log('️ No cloud data found, using local storage');
+      cloudConnected = true;
+    }
+  } catch (err) {
+    console.error('❌ Cloud connection failed:', err.message);
+    cloudConnected = false;
   }
 }
 
 // ===== STATE =====
 const DEFAULT_MODULES = [
   { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-alt', desc: 'Schedule management and event tracking', color: '#757575', roles: ['admin','user'], status: 'active' },
-  { id: 'module-test', name: 'Module Test', icon: 'fa-flask', desc: 'Placeholder test module', color: '#757575', roles: ['admin','user'], status: 'active' }
+  { id: 'module-test', name: 'Module Test', icon: 'fa-flask', desc: 'Placeholder test module', color: '#757575', roles: ['admin','user'], status: 'active' },
+  { id: 'luts-color', name: 'LUTs & Color Matching', icon: 'fa-palette', desc: 'Professional color grading and look development', color: '#EC4899', roles: ['admin','user'], status: 'active' }
 ];
 
 let state = {
   users: JSON.parse(localStorage.getItem('taameer_users')) || [
-    { id: 1, username: 'admin', password: 'admin123', fullName: 'Admin User', jobTitle: 'System Administrator', email: 'admin@taameer.com', phone: '+974 0000 0001', role: 'admin', status: 'active', avatar: null, lastLogin: new Date().toISOString(), modules: ['calendar','module-test'], accentColor: null },
-    { id: 2, username: 'user', password: '', fullName: 'Test User', jobTitle: 'Marketing Specialist', email: 'user@taameer.com', phone: '+974 0000 0002', role: 'user', status: 'active', avatar: null, lastLogin: null, modules: ['calendar','module-test'], accentColor: null }
+    { id: 1, username: 'admin', password: 'admin123', fullName: 'Admin User', jobTitle: 'System Administrator', email: 'admin@taameer.com', phone: '+974 0000 0001', role: 'admin', status: 'active', avatar: null, lastLogin: new Date().toISOString(), modules: ['calendar','module-test','luts-color'], accentColor: null },
+    { id: 2, username: 'user', password: '', fullName: 'Test User', jobTitle: 'Marketing Specialist', email: 'user@taameer.com', phone: '+974 0000 0002', role: 'user', status: 'active', avatar: null, lastLogin: null, modules: ['calendar','module-test','luts-color'], accentColor: null }
   ],
   modules: JSON.parse(localStorage.getItem('taameer_modules')) || DEFAULT_MODULES,
   permissions: JSON.parse(localStorage.getItem('taameer_permissions')) || {
-    user: { calendar: { view: true, edit: true, delete: false }, 'module-test': { view: true, edit: false, delete: false } },
-    admin: { calendar: { view: true, edit: true, delete: true }, 'module-test': { view: true, edit: true, delete: true } }
+    user: { calendar: { view: true, edit: true, delete: false }, 'module-test': { view: true, edit: false, delete: false }, 'luts-color': { view: true, edit: true, delete: false } },
+    admin: { calendar: { view: true, edit: true, delete: true }, 'module-test': { view: true, edit: true, delete: true }, 'luts-color': { view: true, edit: true, delete: true } }
   },
   settings: JSON.parse(localStorage.getItem('taameer_settings')) || { orgName: 'TAAMEER Group', tagline: 'Marketing Dashboard', accent: '#757575', accentName: 'Gray' },
-  currentUser: null, pendingUser: null
+  currentUser: null,
+  pendingUser: null
 };
 
 let currentMonth = new Date();
@@ -425,12 +457,9 @@ function save() {
   localStorage.setItem('taameer_modules', JSON.stringify(state.modules));
   localStorage.setItem('taameer_permissions', JSON.stringify(state.permissions));
   localStorage.setItem('taameer_settings', JSON.stringify(state.settings));
-  
-  // Always sync to cloud
   syncToCloud();
 }
 
-// ... (All other existing functions remain exactly the same) ...
 function setAccent(el) { applySystemAccent(el.dataset.color, el.dataset.name); document.querySelectorAll('#colorPicker .color-swatch').forEach(s => s.classList.remove('active')); el.classList.add('active'); document.getElementById('customColor').value = el.dataset.color; document.getElementById('customColorHex').textContent = el.dataset.color; }
 function setCustomAccent(color) { applySystemAccent(color, 'Custom'); document.querySelectorAll('#colorPicker .color-swatch').forEach(s => s.classList.remove('active')); document.getElementById('customColorHex').textContent = color; }
 function applySystemAccent(color, name) { state.settings.accent = color; state.settings.accentName = name; document.documentElement.style.setProperty('--accent', color); document.documentElement.style.setProperty('--accent-soft', color + '1F'); document.documentElement.style.setProperty('--accent-hover', color + '38'); save(); }
@@ -485,12 +514,12 @@ function editUser(id) { openUserModal(id); }
 document.getElementById('userForm').addEventListener('submit', (e) => { e.preventDefault(); const editId = document.getElementById('editUserId').value; const modules = Array.from(document.querySelectorAll('.user-module-cb:checked')).map(cb => cb.value); const password = document.getElementById('uPassword').value; if (editId) { const idx = state.users.findIndex(u => u.id === parseInt(editId)); if (idx !== -1) { state.users[idx].username = document.getElementById('uUsername').value.trim(); state.users[idx].fullName = document.getElementById('uFullName').value.trim(); state.users[idx].jobTitle = document.getElementById('uJobTitle').value.trim(); state.users[idx].email = document.getElementById('uEmail').value.trim(); state.users[idx].phone = document.getElementById('uPhone').value.trim(); state.users[idx].role = document.getElementById('uRole').value; state.users[idx].status = document.getElementById('uStatus').value; state.users[idx].modules = modules; if (password !== '') state.users[idx].password = password; } } else { state.users.push({ id: Date.now(), username: document.getElementById('uUsername').value.trim(), password: password, fullName: document.getElementById('uFullName').value.trim(), jobTitle: document.getElementById('uJobTitle').value.trim(), email: document.getElementById('uEmail').value.trim(), phone: document.getElementById('uPhone').value.trim(), role: document.getElementById('uRole').value, status: document.getElementById('uStatus').value, avatar: null, lastLogin: null, modules: modules, accentColor: null }); } save(); closeUserModal(); loadUsers(); refreshUI(); });
 function deleteUser(id) { if (!confirm('Delete this user? This cannot be undone.')) return; state.users = state.users.filter(u => u.id !== id); save(); loadUsers(); refreshUI(); }
 
-function renderAdminModules() { const grid = document.getElementById('adminModulesGrid'); grid.innerHTML = ''; state.modules.forEach(m => { const card = document.createElement('div'); card.className = 'stat-card bg-white dark:bg-gray-900 p-5'; const assignedUsers = state.users.filter(u => u.modules && u.modules.includes(m.id)).length; card.innerHTML = `<div class="flex items-start justify-between mb-3"><div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-accent" style="background: ${m.color}"><i class="fas ${m.icon} text-white text-xl"></i></div><span class="badge ${m.status === 'active' ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : m.status === 'soon' ? 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' : 'text-gray-500 bg-gray-100 dark:bg-gray-800'}">${m.status === 'active' ? 'Active' : m.status === 'soon' ? 'Coming Soon' : 'Disabled'}</span></div><h4 class="font-bold text-gray-900 dark:text-white mb-1">${m.name}</h4><p class="text-sm text-gray-500 mb-3">${m.desc}</p><div class="flex items-center justify-between text-xs text-gray-500 mb-4"><span><i class="fas fa-users mr-1"></i>${assignedUsers} users</span><span class="font-mono">${m.id}</span></div><div class="flex space-x-2"><button onclick="editModule('${m.id}')" class="btn-secondary flex-1 text-xs"><i class="fas fa-edit mr-1"></i>Edit</button>${!['calendar','module-test'].includes(m.id) ? `<button onclick="deleteModule('${m.id}')" class="btn-secondary flex-1 text-xs" style="color: #EF4444;"><i class="fas fa-trash mr-1"></i>Delete</button>` : ''}</div>`; grid.appendChild(card); }); }
+function renderAdminModules() { const grid = document.getElementById('adminModulesGrid'); grid.innerHTML = ''; state.modules.forEach(m => { const card = document.createElement('div'); card.className = 'stat-card bg-white dark:bg-gray-900 p-5'; const assignedUsers = state.users.filter(u => u.modules && u.modules.includes(m.id)).length; card.innerHTML = `<div class="flex items-start justify-between mb-3"><div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-accent" style="background: ${m.color}"><i class="fas ${m.icon} text-white text-xl"></i></div><span class="badge ${m.status === 'active' ? 'text-green-600 bg-green-50 dark:bg-green-900/20' : m.status === 'soon' ? 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' : 'text-gray-500 bg-gray-100 dark:bg-gray-800'}">${m.status === 'active' ? 'Active' : m.status === 'soon' ? 'Coming Soon' : 'Disabled'}</span></div><h4 class="font-bold text-gray-900 dark:text-white mb-1">${m.name}</h4><p class="text-sm text-gray-500 mb-3">${m.desc}</p><div class="flex items-center justify-between text-xs text-gray-500 mb-4"><span><i class="fas fa-users mr-1"></i>${assignedUsers} users</span><span class="font-mono">${m.id}</span></div><div class="flex space-x-2"><button onclick="editModule('${m.id}')" class="btn-secondary flex-1 text-xs"><i class="fas fa-edit mr-1"></i>Edit</button>${!['calendar','module-test','luts-color'].includes(m.id) ? `<button onclick="deleteModule('${m.id}')" class="btn-secondary flex-1 text-xs" style="color: #EF4444;"><i class="fas fa-trash mr-1"></i>Delete</button>` : ''}</div>`; grid.appendChild(card); }); }
 function openModuleModal(moduleId = null) { document.getElementById('moduleModal').classList.add('show'); document.getElementById('moduleForm').reset(); document.getElementById('editModuleId').value = ''; document.getElementById('moduleModalTitle').textContent = 'New Module'; document.getElementById('mIcon').value = 'fa-cube'; document.getElementById('mColor').value = '#757575'; if (moduleId) { const m = state.modules.find(x => x.id === moduleId); if (!m) return; document.getElementById('moduleModalTitle').textContent = 'Edit Module'; document.getElementById('editModuleId').value = m.id; document.getElementById('mName').value = m.name; document.getElementById('mDesc').value = m.desc; document.getElementById('mIcon').value = m.icon; document.getElementById('mColor').value = m.color; document.getElementById('mStatus').value = m.status; } }
 function closeModuleModal() { document.getElementById('moduleModal').classList.remove('show'); }
 function editModule(id) { openModuleModal(id); }
 document.getElementById('moduleForm').addEventListener('submit', (e) => { e.preventDefault(); const editId = document.getElementById('editModuleId').value; const name = document.getElementById('mName').value.trim(); const id = editId || 'module-' + name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); const moduleData = { id: id, name: name, desc: document.getElementById('mDesc').value.trim(), icon: document.getElementById('mIcon').value.trim() || 'fa-cube', color: document.getElementById('mColor').value, status: document.getElementById('mStatus').value }; if (editId) { const idx = state.modules.findIndex(m => m.id === editId); if (idx !== -1) state.modules[idx] = { ...state.modules[idx], ...moduleData }; } else { if (state.modules.find(m => m.id === id)) { alert('Module ID already exists'); return; } state.modules.push(moduleData); ['user','admin'].forEach(role => { if (!state.permissions[role]) state.permissions[role] = {}; state.permissions[role][id] = { view: role === 'admin', edit: role === 'admin', delete: role === 'admin' }; }); } save(); closeModuleModal(); renderAdminModules(); refreshUI(); });
-function deleteModule(id) { if (['calendar','module-test'].includes(id)) { alert('System modules cannot be deleted'); return; } if (!confirm('Delete this module? Users will lose access.')) return; state.modules = state.modules.filter(m => m.id !== id); state.users.forEach(u => { if (u.modules) u.modules = u.modules.filter(x => x !== id); }); save(); renderAdminModules(); refreshUI(); }
+function deleteModule(id) { if (['calendar','module-test','luts-color'].includes(id)) { alert('System modules cannot be deleted'); return; } if (!confirm('Delete this module? Users will lose access.')) return; state.modules = state.modules.filter(m => m.id !== id); state.users.forEach(u => { if (u.modules) u.modules = u.modules.filter(x => x !== id); }); save(); renderAdminModules(); refreshUI(); }
 
 function renderPermissions() { const role = document.getElementById('permRoleSelect').value; const list = document.getElementById('permissionsList'); list.innerHTML = ''; if (!state.permissions[role]) state.permissions[role] = {}; state.modules.forEach(m => { const perm = state.permissions[role][m.id] || { view: false, edit: false, delete: false }; const row = document.createElement('div'); row.className = 'flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl flex-wrap gap-3'; row.innerHTML = `<div class="flex items-center space-x-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: ${m.color}20"><i class="fas ${m.icon}" style="color: ${m.color}"></i></div><div><p class="font-semibold text-gray-900 dark:text-white">${m.name}</p><p class="text-sm text-gray-500">${m.desc}</p></div></div><div class="flex items-center space-x-4"><label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer"><input type="checkbox" ${perm.view ? 'checked' : ''} onchange="updatePerm('${role}','${m.id}','view',this.checked)" class="rounded border-gray-300 text-accent focus:ring-accent"><span>View</span></label><label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer"><input type="checkbox" ${perm.edit ? 'checked' : ''} onchange="updatePerm('${role}','${m.id}','edit',this.checked)" class="rounded border-gray-300 text-accent focus:ring-accent"><span>Edit</span></label><label class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer"><input type="checkbox" ${perm.delete ? 'checked' : ''} onchange="updatePerm('${role}','${m.id}','delete',this.checked)" class="rounded border-gray-300 text-accent focus:ring-accent"><span>Delete</span></label></div>`; list.appendChild(row); }); }
 function updatePerm(role, moduleId, action, value) { if (!state.permissions[role]) state.permissions[role] = {}; if (!state.permissions[role][moduleId]) state.permissions[role][moduleId] = { view: false, edit: false, delete: false }; state.permissions[role][moduleId][action] = value; save(); }
@@ -502,7 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
   loadSystemAccent();
   checkAuth();
-  // Load from cloud database on startup
   loadFromCloud();
 });
 </script>
