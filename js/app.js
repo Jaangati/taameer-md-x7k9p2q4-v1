@@ -11,4 +11,11 @@ async function boot(){
     document.getElementById('dashboardView').classList.add('hidden');
   }
 }
-document.addEventListener('DOMContentLoaded', boot);
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const script=document.createElement('script');
+  script.src='js/notifications-v2.js';
+  script.onload=boot;
+  script.onerror=boot;
+  document.head.appendChild(script);
+});
