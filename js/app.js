@@ -23,7 +23,6 @@ function loadScript(src){
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
-  await loadScript('js/notifications-v2.js?v=4');
-  await loadScript('js/notifications-runtime-v4.js?v=4');
+  await loadScript('js/notifications-runtime-v5.js?v=5');
   boot();
 });
