@@ -19,11 +19,7 @@ function profileToUser(profile, authUser) {
 
 async function loadAuthenticatedProfile(authUser) {
   if (!supabaseClient || !authUser) return null;
-  const { data, error } = await supabaseClient
-    .from('profiles')
-    .select('*')
-    .eq('id', authUser.id)
-    .single();
+  const { data, error } = await supabaseClient.from('profiles').select('*').eq('id', authUser.id).single();
   if (error) throw error;
   return profileToUser(data, authUser);
 }
@@ -40,16 +36,9 @@ async function completeAuthenticatedSession(authUser) {
   loadSystemAccent();
   ModuleRegistry.ensureAll();
   showDashboard();
-
-  // Team Updates must start for every authenticated session, even when the user
-  // never opens the notification centre. This drives the unread badge, sound,
-  // desktop/in-app alerts, and live seen/confirmation state.
   if (typeof initTeamUpdates === 'function') {
-    try {
-      await initTeamUpdates();
-    } catch (error) {
-      console.error('TAAMEER Team Updates failed to initialize', error);
-    }
+    try { await initTeamUpdates(); }
+    catch (error) { console.error('TAAMEER Team Updates failed to initialize', error); }
   }
 }
 
@@ -58,33 +47,18 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const identity = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   if (!identity || !password) return;
-
   let email = identity;
   if (!identity.includes('@')) {
     const cached = state.users.find(u => u.username?.toLowerCase() === identity.toLowerCase());
     email = cached?.email || '';
   }
   if (!email) return alert('Please sign in using your work email.');
-
   try {
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (!error && data?.user) {
-      await completeAuthenticatedSession(data.user);
-      return;
-    }
-
-    // First secure login: create the Supabase Auth account.
-    // The database trigger only allows emails already approved by Department Management.
-    const { data: signup, error: signupError } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: { data: { source: 'taameer-dashboard-activation' } }
-    });
+    if (!error && data?.user) { await completeAuthenticatedSession(data.user); return; }
+    const { data: signup, error: signupError } = await supabaseClient.auth.signUp({email,password,options:{data:{source:'taameer-dashboard-activation'}}});
     if (signupError) throw signupError;
-    if (signup?.session && signup?.user) {
-      await completeAuthenticatedSession(signup.user);
-      return;
-    }
+    if (signup?.session && signup?.user) { await completeAuthenticatedSession(signup.user); return; }
     alert('Account activation started. Please check your work email to confirm your account, then sign in again.');
   } catch (error) {
     console.error('TAAMEER Auth error', error);
@@ -92,7 +66,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
-// Legacy first-login screen now activates the secure Supabase account.
 document.getElementById('setPasswordForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const pw = document.getElementById('spPassword').value;
@@ -126,6 +99,7 @@ async function checkAuth() {
 }
 
 async function logout() {
+  try { if (typeof stopTeamUpdates === 'function') stopTeamUpdates(); } catch (_) {}
   try { await supabaseClient?.auth.signOut(); } catch (error) { console.warn('Sign out failed', error); }
   state.currentUser = null;
   closeUserDropdown();
