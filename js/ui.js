@@ -1,0 +1,92 @@
+// ---------- Dashboard / navigation ----------
+function showDashboard() { document.getElementById('loginView').classList.add('hidden'); document.getElementById('setPasswordView').classList.add('hidden'); document.getElementById('dashboardView').classList.remove('hidden'); ModuleRegistry.ensureAll(); applyActiveAccent(); refreshUI(); renderSidebar(); showView('home'); }
+
+function refreshUI() {
+  const u = state.currentUser; if (!u) return;
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setText('userName', u.fullName); setText('ddName', u.fullName); setText('welcomeName', u.fullName.split(' ')[0]);
+  setText('userRole', u.role === 'admin' ? 'Administrator' : u.jobTitle || 'User'); setText('ddRole', u.role); setText('ddEmail', u.email || '—');
+  setText('userAvatarText', u.fullName.charAt(0).toUpperCase()); setText('profileAvatarText', u.fullName.charAt(0).toUpperCase());
+  setText('profileFullName', u.fullName); setText('profileUsername', u.username); setText('profileJobTitle', u.jobTitle || '—');
+  setText('profileEmailDisplay', u.email || '—'); setText('profilePhoneDisplay', u.phone || '—');
+  setText('profileLastLogin', u.lastLogin ? new Date(u.lastLogin).toLocaleString() : '—'); setText('profileTz', Intl.DateTimeFormat().resolvedOptions().timeZone);
+  setText('myJobTitle', u.jobTitle || '—'); setText('myRoleDisplay', u.role); setText('accNameDisplay', u.fullName); setText('accJobDisplay', u.jobTitle || '—');
+  document.getElementById('myEmail').value = u.email || ''; document.getElementById('myPhone').value = u.phone || '';
+  const setAvatar = (imgId, textId, value) => { const img = document.getElementById(imgId), txt = document.getElementById(textId); if (!img || !txt) return; if (value) { img.src = value; img.classList.remove('hidden'); txt.classList.add('hidden'); } else { img.classList.add('hidden'); txt.classList.remove('hidden'); } };
+  setAvatar('userAvatarImg','userAvatarText',u.avatar); setAvatar('profileAvatarImg','profileAvatarText',u.avatar);
+  const myModules = state.modules.filter(m => u.modules?.includes(m.id)); setText('myModulesCount', myModules.length); setText('sysTotalUsers', state.users.length);
+  setText('sysOrgDisplay', state.settings.orgName); document.getElementById('sysOrgName').value = state.settings.orgName; document.getElementById('sysTagline').value = state.settings.tagline;
+  setText('moduleTestDate', new Date().toLocaleDateString()); document.getElementById('darkToggle').classList.toggle('on', document.documentElement.classList.contains('dark'));
+  refreshPersonalColorPicker(u.accentColor); applyActiveAccent();
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebarNav'); const u = state.currentUser; if (!u) return;
+  const isAdmin = u.role === 'admin';
+  let html = `<div class="section-title sidebar-label">Main</div><div class="nav-item ${isActive('home') ? 'active' : ''}" onclick="showView('home')"><span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label sidebar-label">Home</span></div><div class="nav-item ${isActive('calendar') ? 'active' : ''}" onclick="showView('calendar')"><span class="nav-icon"><i class="fas fa-calendar-alt"></i></span><span class="nav-label sidebar-label">Calendar</span></div>`;
+  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.id !== 'calendar' && m.status !== 'disabled' && (isAdmin || canAccessModule(m)));
+  if (userModules.length) {
+    html += `<div class="section-title sidebar-label mt-2">Modules</div>`;
+    for (const m of userModules) {
+      const viewId = ModuleRegistry.ensureView(m);
+      html += `<div class="nav-item ${isActive(viewId) ? 'active' : ''}" onclick="showView('${Utils.escapeHTML(viewId)}')"><span class="nav-icon"><i class="fas ${Utils.validIcon(m.icon)}" style="color:${Utils.validColor(m.color)}"></i></span><span class="nav-label sidebar-label">${Utils.escapeHTML(m.name)}</span></div>`;
+    }
+  }
+  if (isAdmin) html += `<div class="section-title sidebar-label mt-2">Administration</div><div class="nav-item ${isActive('users') ? 'active' : ''}" onclick="showView('users')"><span class="nav-icon"><i class="fas fa-users"></i></span><span class="nav-label sidebar-label">Users</span></div><div class="nav-item ${isActive('modules-admin') ? 'active' : ''}" onclick="showView('modules-admin')"><span class="nav-icon"><i class="fas fa-cubes"></i></span><span class="nav-label sidebar-label">Modules</span></div><div class="nav-item ${isActive('permissions') ? 'active' : ''}" onclick="showView('permissions')"><span class="nav-icon"><i class="fas fa-shield-alt"></i></span><span class="nav-label sidebar-label">Permissions</span></div><div class="nav-item ${isActive('settings') ? 'active' : ''}" onclick="showView('settings')"><span class="nav-icon"><i class="fas fa-cog"></i></span><span class="nav-label sidebar-label">Settings</span></div>`;
+  nav.innerHTML = html;
+}
+function isActive(view) { const el = document.getElementById(`view-${view}`); return !!el && !el.classList.contains('hidden'); }
+function toggleSidebar() {
+  sidebarExpanded = !sidebarExpanded;
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('sidebar-expanded', sidebarExpanded);
+  sb.classList.toggle('sidebar-collapsed', !sidebarExpanded);
+  const icon = document.getElementById('toggleIcon');
+  if (icon) icon.style.transform = sidebarExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+const sidebarHeader = document.querySelector('.sidebar-header');
+if (sidebarHeader) {
+  sidebarHeader.addEventListener('click', (e) => {
+    if (e.target.closest('.sidebar-toggle-btn')) return;
+    if (!sidebarExpanded) toggleSidebar();
+  });
+}
+
+const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','Schedule & events'], 'module-test': ['Module Test','Test module'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
+function showView(viewName) {
+  if (!state.currentUser) return;
+  if (['users','permissions','settings','modules-admin'].includes(viewName) && state.currentUser.role !== 'admin') return;
+  const module = getModuleByView(viewName);
+  if (module && !canAccessModule(module)) return;
+  if (module) ModuleRegistry.ensureView(module);
+  document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById(`view-${viewName}`); if (!target) return;
+  target.classList.remove('hidden'); target.classList.add('fade-in');
+  const titles = VIEW_TITLES[viewName] || (module ? [module.name, module.desc || 'Module'] : ['TAAMEER','']);
+  document.getElementById('headerTitle').textContent = titles[0]; document.getElementById('headerSubtitle').textContent = titles[1];
+  if (viewName === 'calendar') renderCalendar(); if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
+  renderSidebar(); closeUserDropdown();
+}
+
+// ---------- Clock / dropdown / profile ----------
+function updateClock() { const now = new Date(); const time = now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); document.getElementById('clock').textContent = time; document.getElementById('bigClock').textContent = time; document.getElementById('date').textContent = now.toLocaleDateString('en-US',{month:'short',day:'numeric'}); document.getElementById('todayFullDate').textContent = now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); document.getElementById('tzSmall').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone; const h = now.getHours(); document.getElementById('greetingText').textContent = h >= 17 ? 'Good evening' : h >= 12 ? 'Good afternoon' : 'Good morning'; }
+function toggleUserDropdown() { document.getElementById('userDropdown').classList.toggle('show'); }
+function closeUserDropdown() { document.getElementById('userDropdown').classList.remove('show'); }
+document.addEventListener('click', e => { if (!e.target.closest('.dropdown')) closeUserDropdown(); });
+function handleAvatarUpload(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 2*1024*1024) return alert('Image too large (max 2MB)'); const reader = new FileReader(); reader.onload = ev => { state.currentUser.avatar = ev.target.result; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx].avatar = ev.target.result; save(); refreshUI(); }; reader.readAsDataURL(file); }
+function saveMyProfile() { const email = document.getElementById('myEmail').value.trim(); const phone = document.getElementById('myPhone').value.trim(); state.currentUser.email = email; state.currentUser.phone = phone; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx] = { ...state.currentUser }; save(); refreshUI(); alert('Contact information updated!'); }
+async function changePassword() { const cur = document.getElementById('curPass').value; const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (!(await Utils.verifyPassword(cur, state.currentUser.password))) return alert('Current password incorrect'); if (np.length < 6) return alert('Password must be at least 6 characters'); if (np !== cp) return alert('Passwords do not match'); const hash = await Utils.hashPassword(np); state.currentUser.password = hash; const idx = state.users.findIndex(u => u.id === state.currentUser.id); if (idx !== -1) state.users[idx].password = hash; save(); ['curPass','newPass','confPass'].forEach(id => document.getElementById(id).value = ''); alert('Password updated!'); }
+
+// ---------- Calendar ----------
+const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const monthShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function renderMonthTabs() { const c = document.getElementById('monthTabs'); c.innerHTML=''; monthShort.forEach((m,i)=>{ const t=document.createElement('button'); t.className=`month-tab flex-shrink-0 ${i===currentMonth.getMonth()?'active':''}`; t.textContent=m; t.onclick=()=>{ currentMonth.setMonth(i); renderCalendar(); }; c.appendChild(t); }); }
+function renderDayStrip() { const c=document.getElementById('dayStrip'); c.innerHTML=''; const y=currentMonth.getFullYear(), mo=currentMonth.getMonth(), dim=new Date(y,mo+1,0).getDate(); for(let d=1;d<=dim;d++){ const dt=new Date(y,mo,d), el=document.createElement('div'); el.className=`day-circle flex-shrink-0 ${selectedDay===d?'active':''}`; const a=document.createElement('span'); a.className='text-[10px] opacity-70'; a.textContent=dayNames[dt.getDay()]; const b=document.createElement('span'); b.className='text-lg font-bold'; b.textContent=d; el.append(a,b); el.onclick=()=>{selectedDay=d;renderDayStrip();}; c.appendChild(el);} }
+function renderCalendar() { const y=currentMonth.getFullYear(), mo=currentMonth.getMonth(); document.getElementById('calTitle').textContent=`${monthNames[mo]} ${y}`; renderMonthTabs(); renderDayStrip(); const firstDay=new Date(y,mo,1).getDay(), dim=new Date(y,mo+1,0).getDate(), grid=document.getElementById('calendarGrid'), today=new Date(); grid.innerHTML=''; for(let i=0;i<firstDay;i++){const e=document.createElement('div');e.className='h-20';grid.appendChild(e);} for(let d=1;d<=dim;d++){ const isToday=today.getDate()===d&&today.getMonth()===mo&&today.getFullYear()===y; const cell=document.createElement('div'); cell.className=`h-20 rounded-xl border border-gray-200 dark:border-gray-700 p-2 cursor-pointer hover:border-accent transition-all ${isToday?'bg-accent text-white border-accent':'bg-white dark:bg-gray-900 text-gray-900 dark:text-white'}`; const num=document.createElement('div'); num.className='font-semibold text-sm'; num.textContent=d; cell.appendChild(num); cell.onclick=()=>alert(`Selected: ${d} ${monthNames[mo]} ${y}`); grid.appendChild(cell);} }
+function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth()+d); selectedDay=Math.min(selectedDay,new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,0).getDate()); renderCalendar(); }
+function goToday() { currentMonth=new Date(); selectedDay=currentMonth.getDate(); renderCalendar(); }
+
+// ---------- Home modules ----------
+function renderHomeModules() { const grid=document.getElementById('homeModulesGrid'); grid.innerHTML=''; const u=state.currentUser; const myModules=state.modules.filter(m=>u.modules?.includes(m.id)); if(!myModules.length){grid.innerHTML='<div class="col-span-full p-6 bg-gray-50 dark:bg-gray-800 rounded-xl text-center text-gray-500">No modules assigned to you yet. Contact your administrator.</div>';return;} myModules.forEach(m=>{ const allowed=canAccessModule(m); const card=document.createElement('div'); card.className=`stat-card bg-white dark:bg-gray-900 p-5 ${!allowed?'opacity-60 cursor-not-allowed':'cursor-pointer'}`; const top=document.createElement('div'); top.className='flex items-start justify-between mb-3'; const icon=document.createElement('div'); icon.className='w-12 h-12 rounded-xl flex items-center justify-center shadow-accent'; icon.style.background=Utils.validColor(m.color); icon.innerHTML=`<i class="fas ${Utils.validIcon(m.icon)} text-white text-xl"></i>`; const badge=document.createElement('span'); badge.className=`badge ${allowed?'text-green-600 bg-green-50 dark:bg-green-900/20':'text-gray-500 bg-gray-100 dark:bg-gray-800'}`; badge.textContent=allowed?'Active':m.status==='soon'?'Coming Soon':'Unavailable'; top.append(icon,badge); const title=document.createElement('h4'); title.className='font-bold text-gray-900 dark:text-white mb-1'; title.textContent=m.name; const desc=document.createElement('p'); desc.className='text-sm text-gray-500 mb-4'; desc.textContent=m.desc; const footer=document.createElement('div'); footer.className='flex items-center justify-between'; footer.innerHTML=`<span class="text-xs text-gray-400">${allowed?'Click to open':'Unavailable'}</span><i class="fas fa-arrow-right text-accent"></i>`; card.append(top,title,desc,footer); if(allowed) card.onclick=()=>showView(ModuleRegistry.ensureView(m)); grid.appendChild(card); }); }
