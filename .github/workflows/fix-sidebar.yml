@@ -4,80 +4,22 @@ on:
   push:
     paths:
       - '.github/workflows/fix-sidebar.yml'
-
-permissions:
-  contents: write
+      - '.github/scripts/fix_sidebar.py'
 
 jobs:
   fix-sidebar:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Patch sidebar CSS and behavior
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path('index.html')
-          text = path.read_text(encoding='utf-8')
-
-          old_css = """  .sidebar-header { min-height: 64px; position: relative; }
-  .sidebar-toggle-btn { opacity: 0; transform: translateX(-4px); transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s; }
-  .sidebar-expanded .sidebar-toggle-btn { opacity: 1; transform: translateX(0); }
-  .sidebar-toggle-btn:hover { background: rgba(255,255,255,0.1) !important; }
-  .sidebar-collapsed .sidebar-label { display: none !important; }
-  .sidebar-collapsed .sidebar-header { cursor: pointer; }
-  #toggleIcon { transition: transform 0.3s ease; }"""
-
-          new_css = """  .sidebar-header { min-height: 64px; position: relative; }
-  .sidebar-toggle-btn { transition: background 0.2s; }
-  .sidebar-toggle-btn:hover { background: rgba(255,255,255,0.1) !important; }
-  .sidebar-collapsed .sidebar-label { display: none !important; }
-  .sidebar-collapsed .sidebar-toggle-btn { display: none !important; }
-  .sidebar-collapsed .sidebar-header { cursor: pointer; justify-content: center; }
-  .sidebar-collapsed .sidebar-header > div { justify-content: center; }
-  .sidebar-expanded .sidebar-toggle-btn { display: flex !important; }
-  #toggleIcon { transition: transform 0.3s ease; }"""
-
-          old_js = """function toggleSidebar() { sidebarExpanded = !sidebarExpanded; const sb = document.getElementById('sidebar'); sb.classList.toggle('sidebar-expanded', sidebarExpanded); sb.classList.toggle('sidebar-collapsed', !sidebarExpanded); const icon = document.getElementById('toggleIcon'); if (icon) icon.style.transform = sidebarExpanded ? 'rotate(0deg)' : 'rotate(180deg)'; }
-
-const VIEW_TITLES"""
-
-          new_js = """function toggleSidebar() {
-  sidebarExpanded = !sidebarExpanded;
-  const sb = document.getElementById('sidebar');
-  sb.classList.toggle('sidebar-expanded', sidebarExpanded);
-  sb.classList.toggle('sidebar-collapsed', !sidebarExpanded);
-  const icon = document.getElementById('toggleIcon');
-  if (icon) icon.style.transform = sidebarExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
-}
-
-const sidebarHeader = document.querySelector('.sidebar-header');
-if (sidebarHeader) {
-  sidebarHeader.addEventListener('click', (e) => {
-    if (e.target.closest('.sidebar-toggle-btn')) return;
-    if (!sidebarExpanded) toggleSidebar();
-  });
-}
-
-const VIEW_TITLES"""
-
-          if old_css not in text:
-              raise SystemExit('Expected sidebar CSS block not found; no changes made.')
-          if old_js not in text:
-              raise SystemExit('Expected toggleSidebar block not found; no changes made.')
-
-          text = text.replace(old_css, new_css, 1)
-          text = text.replace(old_js, new_js, 1)
-          path.write_text(text, encoding='utf-8')
-          PY
-
-      - name: Commit fix
+      - name: Apply sidebar patch
+        run: python .github/scripts/fix_sidebar.py
+      - name: Commit sidebar fix
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Fix collapsed sidebar alignment and toggle"
+          git commit -m "Fix sidebar alignment and toggle behavior"
           git push
