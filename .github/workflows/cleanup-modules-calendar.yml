@@ -1,6 +1,5 @@
-name: Calendar module cleanup
+name: TAAMEER logo sizing patch
 
-# one-time workspace cleanup
 on:
   push:
     paths:
@@ -13,81 +12,34 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Apply module cleanup
+      - name: Update TAAMEER logos
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           p = Path('index.html')
           s = p.read_text()
-          s = s.replace('class="h-10 w-auto object-contain"', 'class="h-12 w-36 object-contain object-left"', 1)
-          calendar = '''<!-- CALENDAR -->
-      <div id="view-calendar" class="view-section hidden fade-in h-full">
-        <div class="h-full flex items-center justify-center">
-          <div class="text-center px-6">
-            <div class="w-16 h-16 rounded-2xl bg-gray-600 text-white flex items-center justify-center mx-auto mb-4 shadow-sm"><i class="fas fa-calendar-alt text-2xl"></i></div>
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Calendar</h2>
-            <p class="text-sm text-gray-500 mt-2">Coming soon.</p>
-          </div>
-        </div>
-      </div>
 
-      <!-- PROFILE -->'''
-          s, n = re.subn(r'<!-- CALENDAR -->.*?<!-- PROFILE -->', calendar, s, count=1, flags=re.S)
-          assert n == 1
-          s = re.sub(r'\s*<!-- MODULE TEST -->.*?(?=<!-- PROFILE -->)', '\n', s, count=1, flags=re.S)
-          p.write_text(s)
+          old_login = '<img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="h-10 w-auto object-contain">'
+          new_login = '<img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="h-14 w-44 object-contain object-left">'
+          assert old_login in s, 'Login logo not found'
+          s = s.replace(old_login, new_login, 1)
 
-          p = Path('js/ui.js')
-          s = p.read_text()
-          old = "let html = `<div class=\"section-title sidebar-label\">Main</div><div class=\"nav-item ${isActive('home') ? 'active' : ''}\" onclick=\"showView('home')\"><span class=\"nav-icon\"><i class=\"fas fa-home\"></i></span><span class=\"nav-label sidebar-label\">Home</span></div><div class=\"nav-item ${isActive('calendar') ? 'active' : ''}\" onclick=\"showView('calendar')\"><span class=\"nav-icon\"><i class=\"fas fa-calendar-alt\"></i></span><span class=\"nav-label sidebar-label\">Calendar</span></div>`;\n  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.id !== 'calendar' && m.status !== 'disabled' && (isAdmin || canAccessModule(m)));"
-          new = "let html = `<div class=\"section-title sidebar-label\">Main</div><div class=\"nav-item ${isActive('home') ? 'active' : ''}\" onclick=\"showView('home')\"><span class=\"nav-icon\"><i class=\"fas fa-home\"></i></span><span class=\"nav-label sidebar-label\">Home</span></div>`;\n  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.status !== 'disabled' && (isAdmin || canAccessModule(m)));"
-          assert old in s
-          s = s.replace(old, new, 1)
-          s = s.replace("<i class=\"fas ${Utils.validIcon(m.icon)}\" style=\"color:${Utils.validColor(m.color)}\"></i>", "<i class=\"fas ${Utils.validIcon(m.icon)} text-white\"></i>")
-          s = s.replace("if (viewName === 'calendar') renderCalendar(); if (viewName === 'home') renderHomeModules();", "if (viewName === 'home') renderHomeModules();")
-          old_card = "<div class=\"w-11 h-11 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400\" ><i class=\"fas ${Utils.validIcon(m.icon)}\"></i></div><span class=\"text-[10px] font-semibold px-2.5 py-1 rounded-full ${allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}\">${allowed?'ACTIVE':'LOCKED'}</span>"
-          new_card = "<div class=\"w-11 h-11 rounded-xl flex items-center justify-center bg-gray-600 text-white\"><i class=\"fas ${Utils.validIcon(m.icon)}\"></i></div><span class=\"text-[10px] font-semibold px-2.5 py-1 rounded-full ${m.status==='soon'?'bg-amber-50 text-amber-600 dark:bg-amber-900/20':allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}\">${m.status==='soon'?'COMING SOON':allowed?'ACTIVE':'LOCKED'}</span>"
-          assert old_card in s
-          s = s.replace(old_card, new_card, 1)
-          s = s.replace("<span class=\"text-gray-400\">${allowed?'Open module':'Unavailable'}</span>", "<span class=\"text-gray-400\">${m.status==='soon'?'Coming soon':allowed?'Open module':'Unavailable'}</span>")
-          p.write_text(s)
+          old_sidebar = '<div class="sidebar-label whitespace-nowrap"><div class="font-arabic text-lg font-bold leading-none text-white">تعمير</div><div class="text-[10px] font-semibold tracking-wider text-gray-400">TAAMEER</div></div>'
+          new_sidebar = '<img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="sidebar-label h-9 w-28 object-contain object-left flex-shrink-0">'
+          assert old_sidebar in s, 'Sidebar text logo not found'
+          s = s.replace(old_sidebar, new_sidebar, 1)
 
-          p = Path('js/modules.js')
-          s = p.read_text().replace('style="background:${Utils.validColor(module.color)}"','style="background:#757575"')
-          s = s.replace("return assigned && permission && module.status !== 'disabled';", "return assigned && permission && module.status === 'active';")
-          s = s.replace("if (state.currentUser.role === 'admin') return true;", "if (state.currentUser.role === 'admin') return module.status === 'active';")
-          p.write_text(s)
-
-          p = Path('js/core.js')
-          s = p.read_text()
-          s, n = re.subn(r"const DEFAULT_MODULES = \[.*?\];", "const DEFAULT_MODULES = [\n  { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-alt', desc: 'Calendar workspace', color: '#757575', roles: ['admin','user'], status: 'soon' }\n];", s, count=1, flags=re.S)
-          assert n == 1
-          s, n = re.subn(r"const DEFAULT_PERMISSIONS = \{.*?\};", "const DEFAULT_PERMISSIONS = {\n  user: { calendar: { view: true, edit: false, delete: false } },\n  admin: { calendar: { view: true, edit: true, delete: true } }\n};", s, count=1, flags=re.S)
-          assert n == 1
-          s = s.replace("modules: ['calendar','module-test']", "modules: ['calendar']")
-          p.write_text(s)
-
-          p = Path('js/admin.js')
-          s = p.read_text()
-          s = re.sub(r"icon\.style\.color=Utils\.validColor\(m\.color\);", "icon.classList.add('text-white');", s)
-          s = s.replace("style=\"background:${Utils.validColor(m.color)}\"", "style=\"background:#757575\"")
-          s = s.replace("style=\"background:${Utils.validColor(m.color)}20\"><i class=\"fas ${Utils.validIcon(m.icon)}\" style=\"color:${Utils.validColor(m.color)}\"></i>", "style=\"background:#757575\"><i class=\"fas ${Utils.validIcon(m.icon)} text-white\"></i>")
           p.write_text(s)
           PY
+
       - name: Validate and commit
         run: |
-          node --check js/core.js
-          node --check js/modules.js
-          node --check js/ui.js
-          node --check js/admin.js
-          grep -q 'Coming soon.' index.html
-          grep -q 'h-12 w-36' index.html
-          ! grep -q 'module-test' js/core.js
+          grep -q 'h-14 w-44' index.html
+          grep -q 'sidebar-label h-9 w-28' index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html js/core.js js/modules.js js/ui.js js/admin.js
+          git add index.html
           git diff --cached --quiet && exit 0
-          git commit -m "Reset modules and prepare Calendar workspace"
+          git commit -m "Use full TAAMEER logo in sidebar and enlarge login logo"
           git push
