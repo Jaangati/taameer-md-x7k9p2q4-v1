@@ -1,5 +1,16 @@
 // ---------- Dashboard / navigation ----------
-function showDashboard() { document.getElementById('loginView').classList.add('hidden'); document.getElementById('setPasswordView').classList.add('hidden'); document.getElementById('dashboardView').classList.remove('hidden'); ModuleRegistry.ensureAll(); applyActiveAccent(); refreshUI(); renderSidebar(); showView('home'); }
+function showDashboard() {
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('setPasswordView').classList.add('hidden');
+  document.getElementById('dashboardView').classList.remove('hidden');
+  ModuleRegistry.ensureAll();
+  applyActiveAccent();
+  refreshUI();
+  prepareCalendarPlaceholder();
+  resizeLoginBrandLogo();
+  renderSidebar();
+  showView('home');
+}
 
 function refreshUI() {
   const u = state.currentUser; if (!u) return;
@@ -20,16 +31,32 @@ function refreshUI() {
   refreshPersonalColorPicker(u.accentColor); applyActiveAccent();
 }
 
+function resizeLoginBrandLogo() {
+  const logo = document.querySelector('#loginView img[src="assets/taameer-logo-white.svg"]');
+  if (!logo) return;
+  logo.className = 'h-12 w-36 object-contain object-left flex-shrink-0';
+}
+
+function prepareCalendarPlaceholder() {
+  const view = document.getElementById('view-calendar');
+  if (!view || view.dataset.placeholderReady === 'true') return;
+  view.className = 'view-section hidden fade-in h-full';
+  view.innerHTML = `<div class="h-full flex items-center justify-center"><div class="text-center px-6"><div class="w-16 h-16 rounded-2xl bg-gray-600 text-white flex items-center justify-center mx-auto mb-4 shadow-sm"><i class="fas fa-calendar-alt text-2xl"></i></div><h2 class="text-2xl font-bold text-gray-900 dark:text-white">Calendar</h2><p class="text-sm text-gray-500 mt-2">Coming soon.</p></div></div>`;
+  view.dataset.placeholderReady = 'true';
+  document.getElementById('view-module-test')?.remove();
+}
+
 function renderSidebar() {
   const nav = document.getElementById('sidebarNav'); const u = state.currentUser; if (!u) return;
   const isAdmin = u.role === 'admin';
-  let html = `<div class="section-title sidebar-label">Main</div><div class="nav-item ${isActive('home') ? 'active' : ''}" onclick="showView('home')"><span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label sidebar-label">Home</span></div><div class="nav-item ${isActive('calendar') ? 'active' : ''}" onclick="showView('calendar')"><span class="nav-icon"><i class="fas fa-calendar-alt"></i></span><span class="nav-label sidebar-label">Calendar</span></div>`;
-  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.id !== 'calendar' && m.status !== 'disabled' && (isAdmin || canAccessModule(m)));
+  let html = `<div class="section-title sidebar-label">Main</div><div class="nav-item ${isActive('home') ? 'active' : ''}" onclick="showView('home')"><span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label sidebar-label">Home</span></div>`;
+  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.status !== 'disabled');
   if (userModules.length) {
     html += `<div class="section-title sidebar-label mt-2">Modules</div>`;
     for (const m of userModules) {
       const viewId = ModuleRegistry.ensureView(m);
-      html += `<div class="nav-item ${isActive(viewId) ? 'active' : ''}" onclick="showView('${Utils.escapeHTML(viewId)}')"><span class="nav-icon"><i class="fas ${Utils.validIcon(m.icon)}" style="color:${Utils.validColor(m.color)}"></i></span><span class="nav-label sidebar-label">${Utils.escapeHTML(m.name)}</span></div>`;
+      const inactive = m.status !== 'active';
+      html += `<div class="nav-item ${isActive(viewId) ? 'active' : ''} ${inactive ? 'opacity-60 cursor-default' : ''}" ${inactive ? '' : `onclick="showView('${Utils.escapeHTML(viewId)}')"`}><span class="nav-icon"><i class="fas ${Utils.validIcon(m.icon)} text-white"></i></span><span class="nav-label sidebar-label">${Utils.escapeHTML(m.name)}</span></div>`;
     }
   }
   if (isAdmin) html += `<div class="section-title sidebar-label mt-2">Administration</div><div class="nav-item ${isActive('users') ? 'active' : ''}" onclick="showView('users')"><span class="nav-icon"><i class="fas fa-users"></i></span><span class="nav-label sidebar-label">Users</span></div><div class="nav-item ${isActive('modules-admin') ? 'active' : ''}" onclick="showView('modules-admin')"><span class="nav-icon"><i class="fas fa-cubes"></i></span><span class="nav-label sidebar-label">Modules</span></div><div class="nav-item ${isActive('permissions') ? 'active' : ''}" onclick="showView('permissions')"><span class="nav-icon"><i class="fas fa-shield-alt"></i></span><span class="nav-label sidebar-label">Permissions</span></div><div class="nav-item ${isActive('settings') ? 'active' : ''}" onclick="showView('settings')"><span class="nav-icon"><i class="fas fa-cog"></i></span><span class="nav-label sidebar-label">Settings</span></div>`;
@@ -53,11 +80,12 @@ if (sidebarHeader) {
   });
 }
 
-const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','Schedule & events'], 'module-test': ['Module Test','Test module'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
+const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','Coming soon'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
 function showView(viewName) {
   if (!state.currentUser) return;
   if (['users','permissions','settings','modules-admin'].includes(viewName) && state.currentUser.role !== 'admin') return;
   const module = getModuleByView(viewName);
+  if (module && module.status !== 'active') return;
   if (module && !canAccessModule(module)) return;
   if (module) ModuleRegistry.ensureView(module);
   document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
@@ -65,7 +93,7 @@ function showView(viewName) {
   target.classList.remove('hidden'); target.classList.add('fade-in');
   const titles = VIEW_TITLES[viewName] || (module ? [module.name, module.desc || 'Module'] : ['TAAMEER','']);
   document.getElementById('headerTitle').textContent = titles[0]; document.getElementById('headerSubtitle').textContent = titles[1];
-  if (viewName === 'calendar') renderCalendar(); if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
+  if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
 }
 
@@ -78,25 +106,28 @@ function handleAvatarUpload(e) { const file = e.target.files[0]; if (!file) retu
 async function saveMyProfile() { const email = document.getElementById('myEmail').value.trim(); const phone = document.getElementById('myPhone').value.trim(); if (email && email !== state.currentUser.email) { const { error: authError } = await supabaseClient.auth.updateUser({ email }); if (authError) return alert(authError.message); } const { error } = await supabaseClient.from('profiles').update({ email, phone }).eq('id', state.currentUser.id); if (error) return alert('Could not update contact information.'); state.currentUser.email = email; state.currentUser.phone = phone; refreshUI(); alert(email ? 'Contact information updated. Email changes may require confirmation.' : 'Contact information updated!'); }
 async function changePassword() { const np = document.getElementById('newPass').value; const cp = document.getElementById('confPass').value; if (np.length < 8) return alert('Password must be at least 8 characters'); if (np !== cp) return alert('Passwords do not match'); const { error } = await supabaseClient.auth.updateUser({ password: np }); if (error) return alert(error.message); ['curPass','newPass','confPass'].forEach(id => document.getElementById(id).value = ''); alert('Password updated securely.'); }
 
-// ---------- Calendar ----------
+// ---------- Legacy calendar helpers retained until Calendar module build ----------
 const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const monthShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-function renderMonthTabs() { const c = document.getElementById('monthTabs'); c.innerHTML=''; monthShort.forEach((m,i)=>{ const t=document.createElement('button'); t.className=`month-tab flex-shrink-0 ${i===currentMonth.getMonth()?'active':''}`; t.textContent=m; t.onclick=()=>{ currentMonth.setMonth(i); renderCalendar(); }; c.appendChild(t); }); }
-function renderDayStrip() { const c=document.getElementById('dayStrip'); c.innerHTML=''; const y=currentMonth.getFullYear(), mo=currentMonth.getMonth(), dim=new Date(y,mo+1,0).getDate(); for(let d=1;d<=dim;d++){ const dt=new Date(y,mo,d), el=document.createElement('div'); el.className=`day-circle flex-shrink-0 ${selectedDay===d?'active':''}`; const a=document.createElement('span'); a.className='text-[10px] opacity-70'; a.textContent=dayNames[dt.getDay()]; const b=document.createElement('span'); b.className='text-lg font-bold'; b.textContent=d; el.append(a,b); el.onclick=()=>{selectedDay=d;renderDayStrip();}; c.appendChild(el);} }
-function renderCalendar() { const y=currentMonth.getFullYear(), mo=currentMonth.getMonth(); document.getElementById('calTitle').textContent=`${monthNames[mo]} ${y}`; renderMonthTabs(); renderDayStrip(); const firstDay=new Date(y,mo,1).getDay(), dim=new Date(y,mo+1,0).getDate(), grid=document.getElementById('calendarGrid'), today=new Date(); grid.innerHTML=''; for(let i=0;i<firstDay;i++){const e=document.createElement('div');e.className='h-20';grid.appendChild(e);} for(let d=1;d<=dim;d++){ const isToday=today.getDate()===d&&today.getMonth()===mo&&today.getFullYear()===y; const cell=document.createElement('div'); cell.className=`h-20 rounded-xl border border-gray-200 dark:border-gray-700 p-2 cursor-pointer hover:border-accent transition-all ${isToday?'bg-accent text-white border-accent':'bg-white dark:bg-gray-900 text-gray-900 dark:text-white'}`; const num=document.createElement('div'); num.className='font-semibold text-sm'; num.textContent=d; cell.appendChild(num); cell.onclick=()=>alert(`Selected: ${d} ${monthNames[mo]} ${y}`); grid.appendChild(cell);} }
-function changeMonth(d) { currentMonth.setMonth(currentMonth.getMonth()+d); selectedDay=Math.min(selectedDay,new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,0).getDate()); renderCalendar(); }
-function goToday() { currentMonth=new Date(); selectedDay=currentMonth.getDate(); renderCalendar(); }
+function renderMonthTabs() {}
+function renderDayStrip() {}
+function renderCalendar() {}
+function changeMonth() {}
+function goToday() {}
 
 // ---------- Home modules ----------
 function renderHomeModules() {
   const grid=document.getElementById('homeModulesGrid'); if(!grid)return; grid.innerHTML='';
   const u=state.currentUser; const myModules=state.modules.filter(m=>u.modules?.includes(m.id));
-  if(!myModules.length){grid.innerHTML='<div class="col-span-full p-7 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm text-gray-500">No modules assigned yet.</div>';return;}
+  if(!myModules.length){grid.innerHTML='<div class="col-span-full p-7 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm text-gray-500">No modules yet.</div>';return;}
   myModules.forEach(m=>{
     const allowed=canAccessModule(m), card=document.createElement('button');
-    card.className=`group text-left rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 transition-all ${allowed?'hover:-translate-y-0.5 hover:shadow-md cursor-pointer':'opacity-55 cursor-not-allowed'}`;
-    card.innerHTML=`<div class="flex items-start justify-between gap-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400" ><i class="fas ${Utils.validIcon(m.icon)}"></i></div><span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${allowed?'ACTIVE':'LOCKED'}</span></div><div class="mt-4"><h4 class="font-bold text-gray-900 dark:text-white">${Utils.escapeHTML(m.name)}</h4><p class="text-xs text-gray-500 mt-1 line-clamp-2">${Utils.escapeHTML(m.desc||'')}</p></div><div class="mt-4 flex items-center justify-between text-xs"><span class="text-gray-400">${allowed?'Open module':'Unavailable'}</span><i class="fas fa-arrow-right text-accent transition-transform group-hover:translate-x-1"></i></div>`;
+    const soon=m.status==='soon';
+    card.className=`group text-left rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 transition-all ${allowed?'hover:-translate-y-0.5 hover:shadow-md cursor-pointer':'opacity-70 cursor-default'}`;
+    card.innerHTML=`<div class="flex items-start justify-between gap-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center bg-gray-600 text-white"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${soon?'bg-amber-50 text-amber-600 dark:bg-amber-900/20':allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${soon?'COMING SOON':allowed?'ACTIVE':'LOCKED'}</span></div><div class="mt-4"><h4 class="font-bold text-gray-900 dark:text-white">${Utils.escapeHTML(m.name)}</h4><p class="text-xs text-gray-500 mt-1 line-clamp-2">${Utils.escapeHTML(m.desc||'')}</p></div><div class="mt-4 flex items-center justify-between text-xs"><span class="text-gray-400">${soon?'Coming soon':allowed?'Open module':'Unavailable'}</span><i class="fas fa-arrow-right ${allowed?'text-accent':'text-gray-300'} transition-transform group-hover:translate-x-1"></i></div>`;
     if(allowed)card.onclick=()=>showView(ModuleRegistry.ensureView(m)); grid.appendChild(card);
   });
 }
+
+resizeLoginBrandLogo();
