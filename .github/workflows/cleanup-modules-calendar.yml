@@ -1,5 +1,6 @@
 name: Calendar module cleanup
 
+# one-time workspace cleanup
 on:
   push:
     paths:
@@ -18,11 +19,9 @@ jobs:
           from pathlib import Path
           import re
 
-          # index.html
           p = Path('index.html')
           s = p.read_text()
           s = s.replace('class="h-10 w-auto object-contain"', 'class="h-12 w-36 object-contain object-left"', 1)
-
           calendar = '''<!-- CALENDAR -->
       <div id="view-calendar" class="view-section hidden fade-in h-full">
         <div class="h-full flex items-center justify-center">
@@ -36,48 +35,40 @@ jobs:
 
       <!-- PROFILE -->'''
           s, n = re.subn(r'<!-- CALENDAR -->.*?<!-- PROFILE -->', calendar, s, count=1, flags=re.S)
-          assert n == 1, 'Calendar/Profile block not found'
-          # remove old static module-test section if present before profile was moved around in older markup
+          assert n == 1
           s = re.sub(r'\s*<!-- MODULE TEST -->.*?(?=<!-- PROFILE -->)', '\n', s, count=1, flags=re.S)
           p.write_text(s)
 
-          # ui.js
           p = Path('js/ui.js')
           s = p.read_text()
           old = "let html = `<div class=\"section-title sidebar-label\">Main</div><div class=\"nav-item ${isActive('home') ? 'active' : ''}\" onclick=\"showView('home')\"><span class=\"nav-icon\"><i class=\"fas fa-home\"></i></span><span class=\"nav-label sidebar-label\">Home</span></div><div class=\"nav-item ${isActive('calendar') ? 'active' : ''}\" onclick=\"showView('calendar')\"><span class=\"nav-icon\"><i class=\"fas fa-calendar-alt\"></i></span><span class=\"nav-label sidebar-label\">Calendar</span></div>`;\n  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.id !== 'calendar' && m.status !== 'disabled' && (isAdmin || canAccessModule(m)));"
           new = "let html = `<div class=\"section-title sidebar-label\">Main</div><div class=\"nav-item ${isActive('home') ? 'active' : ''}\" onclick=\"showView('home')\"><span class=\"nav-icon\"><i class=\"fas fa-home\"></i></span><span class=\"nav-label sidebar-label\">Home</span></div>`;\n  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.status !== 'disabled' && (isAdmin || canAccessModule(m)));"
-          assert old in s, 'Sidebar main block not found'
+          assert old in s
           s = s.replace(old, new, 1)
           s = s.replace("<i class=\"fas ${Utils.validIcon(m.icon)}\" style=\"color:${Utils.validColor(m.color)}\"></i>", "<i class=\"fas ${Utils.validIcon(m.icon)} text-white\"></i>")
           s = s.replace("if (viewName === 'calendar') renderCalendar(); if (viewName === 'home') renderHomeModules();", "if (viewName === 'home') renderHomeModules();")
-          # home module icon + soon state
           old_card = "<div class=\"w-11 h-11 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400\" ><i class=\"fas ${Utils.validIcon(m.icon)}\"></i></div><span class=\"text-[10px] font-semibold px-2.5 py-1 rounded-full ${allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}\">${allowed?'ACTIVE':'LOCKED'}</span>"
           new_card = "<div class=\"w-11 h-11 rounded-xl flex items-center justify-center bg-gray-600 text-white\"><i class=\"fas ${Utils.validIcon(m.icon)}\"></i></div><span class=\"text-[10px] font-semibold px-2.5 py-1 rounded-full ${m.status==='soon'?'bg-amber-50 text-amber-600 dark:bg-amber-900/20':allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}\">${m.status==='soon'?'COMING SOON':allowed?'ACTIVE':'LOCKED'}</span>"
-          assert old_card in s, 'Home module card block not found'
+          assert old_card in s
           s = s.replace(old_card, new_card, 1)
           s = s.replace("<span class=\"text-gray-400\">${allowed?'Open module':'Unavailable'}</span>", "<span class=\"text-gray-400\">${m.status==='soon'?'Coming soon':allowed?'Open module':'Unavailable'}</span>")
           p.write_text(s)
 
-          # modules.js: only active modules are openable; generated icons standardized
           p = Path('js/modules.js')
-          s = p.read_text()
-          s = s.replace('style="background:${Utils.validColor(module.color)}"', 'style="background:#757575"')
+          s = p.read_text().replace('style="background:${Utils.validColor(module.color)}"','style="background:#757575"')
           s = s.replace("return assigned && permission && module.status !== 'disabled';", "return assigned && permission && module.status === 'active';")
           s = s.replace("if (state.currentUser.role === 'admin') return true;", "if (state.currentUser.role === 'admin') return module.status === 'active';")
           p.write_text(s)
 
-          # core.js defaults: Calendar only, coming soon
           p = Path('js/core.js')
           s = p.read_text()
           s, n = re.subn(r"const DEFAULT_MODULES = \[.*?\];", "const DEFAULT_MODULES = [\n  { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-alt', desc: 'Calendar workspace', color: '#757575', roles: ['admin','user'], status: 'soon' }\n];", s, count=1, flags=re.S)
           assert n == 1
           s, n = re.subn(r"const DEFAULT_PERMISSIONS = \{.*?\};", "const DEFAULT_PERMISSIONS = {\n  user: { calendar: { view: true, edit: false, delete: false } },\n  admin: { calendar: { view: true, edit: true, delete: true } }\n};", s, count=1, flags=re.S)
           assert n == 1
-          # normalize default user module arrays so stale fallback doesn't restore test modules
           s = s.replace("modules: ['calendar','module-test']", "modules: ['calendar']")
           p.write_text(s)
 
-          # admin.js: standardized white module icons everywhere
           p = Path('js/admin.js')
           s = p.read_text()
           s = re.sub(r"icon\.style\.color=Utils\.validColor\(m\.color\);", "icon.classList.add('text-white');", s)
@@ -85,7 +76,6 @@ jobs:
           s = s.replace("style=\"background:${Utils.validColor(m.color)}20\"><i class=\"fas ${Utils.validIcon(m.icon)}\" style=\"color:${Utils.validColor(m.color)}\"></i>", "style=\"background:#757575\"><i class=\"fas ${Utils.validIcon(m.icon)} text-white\"></i>")
           p.write_text(s)
           PY
-
       - name: Validate and commit
         run: |
           node --check js/core.js
