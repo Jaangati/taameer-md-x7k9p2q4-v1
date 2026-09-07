@@ -64,3 +64,10 @@ async function homeCards(grid){const [{data:cal=[]},{data:bs=[]}]=await Promise.
 return{open,homeCards}})();
 window.ThinkspaceApp=ThinkspaceApp;
 window.renderHomeModules=function(){const g=document.getElementById('homeModulesGrid');if(!g)return;g.className='grid grid-cols-1 md:grid-cols-2 gap-4';g.innerHTML='<div class="col-span-full p-5 rounded-2xl border bg-white text-gray-400">Loading workspace…</div>';ThinkspaceApp.homeCards(g).catch(()=>{g.innerHTML='<button onclick="showView(\'calendar\')" class="rounded-2xl border bg-white p-4 text-left"><b>Calendar</b></button><button onclick="showView(\'thinkspace\')" class="rounded-2xl border bg-white p-4 text-left"><b>Thinkspace</b></button>'})};
+
+// THINKSPACE VIEW ROUTER
+const _thinkspaceShowView = window.showView;
+window.showView = function(viewName){
+  _thinkspaceShowView(viewName);
+  if(viewName === 'thinkspace' && window.ThinkspaceApp) ThinkspaceApp.open();
+};
