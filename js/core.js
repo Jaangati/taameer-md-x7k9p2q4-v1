@@ -15,7 +15,7 @@ const CONFIG = Object.freeze({
 const supabaseClient = window.supabase?.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey) || null;
 
 const DEFAULT_MODULES = [
-  { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-alt', desc: 'Calendar workspace', color: '#757575', roles: ['admin','user'], status: 'soon' }
+  { id: 'calendar', name: 'Calendar', icon: 'fa-calendar-alt', desc: 'Team schedule and department calendar', color: '#757575', roles: ['admin','user'], status: 'active' }
 ];
 
 const DEFAULT_USERS = [
@@ -24,7 +24,7 @@ const DEFAULT_USERS = [
 ];
 
 const DEFAULT_PERMISSIONS = {
-  user: { calendar: { view: true, edit: false, delete: false } },
+  user: { calendar: { view: true, edit: true, delete: true } },
   admin: { calendar: { view: true, edit: true, delete: true } }
 };
 
