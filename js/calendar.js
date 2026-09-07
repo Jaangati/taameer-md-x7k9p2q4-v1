@@ -1,252 +1,40 @@
-// TAAMEER Team Calendar v1
-// Personal + department calendar. Simple by design.
-const CalendarApp = (() => {
-  const TYPES = [
-    ['meeting','Meeting','fa-users'],
-    ['deadline','Deadline','fa-flag-checkered'],
-    ['appointment','Appointment','fa-clock'],
-    ['shoot','Shoot / Production','fa-video'],
-    ['content','Content / Campaign','fa-bullhorn'],
-    ['review','Review / Approval','fa-check-circle'],
-    ['event','Event','fa-calendar-day'],
-    ['reminder','Reminder','fa-bell'],
-    ['other','Other','fa-circle']
-  ];
-  const typeMap = Object.fromEntries(TYPES.map(x => [x[0], x]));
-  let mode = 'my';
-  let viewMode = 'week';
-  let anchor = new Date();
-  let events = [];
-  let profiles = [];
-  let personFilter = 'all';
-  let typeFilter = 'all';
-
-  const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const startOfDay = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
-  const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
-  const mondayOf = d => { const x = startOfDay(d); const day=x.getDay(); x.setDate(x.getDate() - (day===0?6:day-1)); return x; };
-  const sameDay = (a,b) => new Date(a).toDateString() === new Date(b).toDateString();
-  const personName = id => profiles.find(p=>p.id===id)?.full_name || profiles.find(p=>p.id===id)?.username || 'Team member';
-  const currentId = () => state?.currentUser?.id;
-  const isAdmin = () => state?.currentUser?.role === 'admin';
-
-  function shell() {
-    const view = document.getElementById('view-calendar');
-    if (!view) return null;
-    view.className = 'view-section fade-in h-full';
-    view.innerHTML = `
-      <div class="h-full flex flex-col gap-4 overflow-hidden">
-        <section class="rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-[var(--accent)] text-white p-5 lg:p-6 flex items-center justify-between gap-4 flex-shrink-0 shadow-sm">
-          <div class="min-w-0">
-            <div class="text-xs uppercase tracking-[.18em] text-white/55 font-semibold">TAAMEER TEAM CALENDAR</div>
-            <h2 class="text-2xl font-bold mt-1">Your schedule. Your team. One view.</h2>
-            <p class="text-sm text-white/60 mt-1">Plan your work without turning it into project management.</p>
-          </div>
-          <button id="calNewBtn" class="flex-shrink-0 bg-white text-gray-950 px-4 py-2.5 rounded-xl font-semibold text-sm hover:scale-[1.02] transition-transform"><i class="fas fa-plus mr-2"></i>New Event</button>
-        </section>
-
-        <section class="flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
-          <div class="inline-flex p-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-            <button data-cal-mode="my" class="calMode px-4 py-2 rounded-lg text-sm font-semibold">My Calendar</button>
-            <button data-cal-mode="department" class="calMode px-4 py-2 rounded-lg text-sm font-semibold">Department</button>
-          </div>
-          <div class="flex items-center gap-2 flex-wrap justify-end">
-            <select id="calPersonFilter" class="input-field !w-auto !py-2 text-sm hidden"></select>
-            <select id="calTypeFilter" class="input-field !w-auto !py-2 text-sm"><option value="all">All types</option>${TYPES.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select>
-            <div class="inline-flex p-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
-              <button data-cal-view="month" class="calView px-3 py-1.5 rounded-lg text-xs font-semibold">Month</button>
-              <button data-cal-view="week" class="calView px-3 py-1.5 rounded-lg text-xs font-semibold">Week</button>
-              <button data-cal-view="agenda" class="calView px-3 py-1.5 rounded-lg text-xs font-semibold">Agenda</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl flex-1 min-h-0 overflow-hidden flex flex-col">
-          <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-2"><button id="calPrev" class="w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-chevron-left"></i></button><button id="calToday" class="px-3 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-semibold">Today</button><button id="calNext" class="w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-chevron-right"></i></button></div>
-            <div id="calRangeTitle" class="font-bold text-gray-900 dark:text-white"></div>
-            <div id="calCount" class="text-xs text-gray-400 min-w-[70px] text-right"></div>
-          </div>
-          <div id="calCanvas" class="flex-1 min-h-0 overflow-auto"></div>
-        </section>
-      </div>
-
-      <div id="calModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[80] p-4">
-        <div class="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-          <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between"><div><h3 id="calModalTitle" class="text-xl font-bold text-gray-900 dark:text-white">New Event</h3><p class="text-xs text-gray-500 mt-1">Only the useful details.</p></div><button id="calClose" class="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"><i class="fas fa-times"></i></button></div>
-          <form id="calForm" class="p-6 grid grid-cols-2 gap-4 max-h-[72vh] overflow-auto">
-            <input type="hidden" id="calEventId">
-            <div class="col-span-2"><label class="text-xs font-semibold text-gray-500">Title *</label><input id="calTitleInput" class="input-field mt-1" maxlength="180" required placeholder="e.g. Canal Bay brochure review"></div>
-            <div><label class="text-xs font-semibold text-gray-500">Type</label><select id="calTypeInput" class="input-field mt-1">${TYPES.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select></div>
-            <div><label class="text-xs font-semibold text-gray-500">Assigned to</label><select id="calAssignee" class="input-field mt-1"></select></div>
-            <div><label class="text-xs font-semibold text-gray-500">Start *</label><input id="calStartInput" type="datetime-local" class="input-field mt-1" required></div>
-            <div><label class="text-xs font-semibold text-gray-500">End</label><input id="calEndInput" type="datetime-local" class="input-field mt-1"></div>
-            <div><label class="text-xs font-semibold text-gray-500">Visibility</label><select id="calVisibility" class="input-field mt-1"><option value="department">Department</option><option value="personal">My Calendar only</option></select></div>
-            <div><label class="text-xs font-semibold text-gray-500">Reminder</label><select id="calReminder" class="input-field mt-1"><option value="">None</option><option value="15">15 min before</option><option value="30">30 min before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select></div>
-            <div><label class="text-xs font-semibold text-gray-500">Location / Link</label><input id="calLocation" class="input-field mt-1" placeholder="Optional"></div>
-            <div class="flex items-end"><label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 pb-3"><input id="calAllDay" type="checkbox" class="rounded"> All day</label></div>
-            <div class="col-span-2"><label class="text-xs font-semibold text-gray-500">Notes</label><textarea id="calNotes" class="input-field mt-1 min-h-[80px] resize-none" placeholder="Optional"></textarea></div>
-            <div class="col-span-2 flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-              <button type="button" id="calDelete" class="hidden text-red-500 px-4 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20"><i class="fas fa-trash mr-2"></i>Delete</button>
-              <div class="ml-auto flex gap-2"><button type="button" id="calCancel" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 font-semibold text-sm">Cancel</button><button type="submit" class="px-5 py-2 rounded-xl bg-accent text-white font-semibold text-sm">Save Event</button></div>
-            </div>
-          </form>
-        </div>
-      </div>`;
-    return view;
-  }
-
-  async function load() {
-    const [{data: p, error: pe},{data: e, error: ee}] = await Promise.all([
-      supabaseClient.from('profiles').select('id,full_name,username,job_title,role,status').eq('status','active').order('full_name'),
-      supabaseClient.from('calendar_events').select('*').order('starts_at',{ascending:true})
-    ]);
-    if (pe) console.warn('Calendar profiles', pe);
-    if (ee) throw ee;
-    profiles = p || [];
-    events = e || [];
-    fillPeople();
-    render();
-  }
-
-  function fillPeople() {
-    const filter = document.getElementById('calPersonFilter');
-    const assignee = document.getElementById('calAssignee');
-    if (filter) filter.innerHTML = `<option value="all">All team</option>${profiles.map(p=>`<option value="${p.id}">${esc(p.full_name||p.username)}</option>`).join('')}`;
-    if (assignee) assignee.innerHTML = `<option value="">Entire team / no specific person</option>${profiles.map(p=>`<option value="${p.id}">${esc(p.full_name||p.username)}</option>`).join('')}`;
-  }
-
-  function visibleEvents() {
-    let out = events.slice();
-    if (mode === 'my') out = out.filter(e => e.owner_id === currentId() || e.assigned_user_id === currentId());
-    else out = out.filter(e => e.visibility === 'department');
-    if (personFilter !== 'all') out = out.filter(e => e.owner_id===personFilter || e.assigned_user_id===personFilter);
-    if (typeFilter !== 'all') out = out.filter(e => e.event_type === typeFilter);
-    return out;
-  }
-
-  function eventCard(e, compact=false) {
-    const t = typeMap[e.event_type] || typeMap.other;
-    const owner = personName(e.assigned_user_id || e.owner_id);
-    const start = new Date(e.starts_at);
-    return `<button class="w-full text-left ${compact?'px-2 py-1.5':'p-3'} rounded-xl border border-gray-200 dark:border-gray-800 hover:border-[var(--accent)] hover:shadow-sm transition-all bg-white dark:bg-gray-900" onclick="CalendarApp.edit('${e.id}')">
-      <div class="flex items-start gap-2 min-w-0"><div class="w-7 h-7 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 flex-shrink-0"><i class="fas ${t[2]} text-xs"></i></div><div class="min-w-0 flex-1"><div class="font-semibold ${compact?'text-xs':'text-sm'} text-gray-900 dark:text-white truncate">${esc(e.title)}</div><div class="text-[11px] text-gray-400 mt-0.5 truncate">${e.all_day?'All day':start.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})} · ${esc(owner)}</div></div></div>
-    </button>`;
-  }
-
-  function render() {
-    document.querySelectorAll('.calMode').forEach(b=>{const on=b.dataset.calMode===mode;b.className=`calMode px-4 py-2 rounded-lg text-sm font-semibold ${on?'bg-gray-950 text-white dark:bg-white dark:text-gray-950':'text-gray-500'}`;});
-    document.querySelectorAll('.calView').forEach(b=>{const on=b.dataset.calView===viewMode;b.className=`calView px-3 py-1.5 rounded-lg text-xs font-semibold ${on?'bg-gray-950 text-white dark:bg-white dark:text-gray-950':'text-gray-500'}`;});
-    const pf=document.getElementById('calPersonFilter'); if(pf) pf.classList.toggle('hidden', mode!=='department');
-    const list = visibleEvents();
-    document.getElementById('calCount').textContent = `${list.length} ${list.length===1?'item':'items'}`;
-    if (viewMode==='month') renderMonth(list); else if (viewMode==='agenda') renderAgenda(list); else renderWeek(list);
-  }
-
-  function renderWeek(list) {
-    const start=mondayOf(anchor), end=addDays(start,6);
-    document.getElementById('calRangeTitle').textContent = `${start.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
-    const html=[];
-    for(let i=0;i<7;i++){
-      const d=addDays(start,i), dayEvents=list.filter(e=>sameDay(e.starts_at,d));
-      const today=sameDay(d,new Date());
-      html.push(`<div class="min-w-[150px] flex-1 border-r last:border-r-0 border-gray-100 dark:border-gray-800 p-3 ${today?'bg-gray-50 dark:bg-gray-950/40':''}"><div class="flex items-center justify-between mb-3"><div><div class="text-[10px] uppercase tracking-wider text-gray-400">${d.toLocaleDateString('en-US',{weekday:'short'})}</div><div class="text-xl font-bold ${today?'text-accent':'text-gray-900 dark:text-white'}">${d.getDate()}</div></div><button onclick="CalendarApp.newOn('${d.toISOString()}')" class="w-7 h-7 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"><i class="fas fa-plus text-xs"></i></button></div><div class="space-y-2">${dayEvents.length?dayEvents.map(e=>eventCard(e,true)).join(''):'<div class="text-[11px] text-gray-300 py-3 text-center">No plans</div>'}</div></div>`);
-    }
-    document.getElementById('calCanvas').innerHTML=`<div class="h-full min-w-[900px] flex">${html.join('')}</div>`;
-  }
-
-  function renderMonth(list) {
-    const y=anchor.getFullYear(), m=anchor.getMonth(), first=new Date(y,m,1), start=addDays(first,-first.getDay()), days=[];
-    document.getElementById('calRangeTitle').textContent=anchor.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-    for(let i=0;i<42;i++){
-      const d=addDays(start,i), inMonth=d.getMonth()===m, dayEvents=list.filter(e=>sameDay(e.starts_at,d));
-      days.push(`<div class="min-h-[110px] border-r border-b border-gray-100 dark:border-gray-800 p-2 ${inMonth?'':'bg-gray-50/60 dark:bg-gray-950/20'}"><div class="flex items-center justify-between"><span class="text-xs font-semibold ${sameDay(d,new Date())?'text-accent':'text-gray-500'}">${d.getDate()}</span><button onclick="CalendarApp.newOn('${d.toISOString()}')" class="text-gray-300 hover:text-accent"><i class="fas fa-plus text-[10px]"></i></button></div><div class="mt-2 space-y-1">${dayEvents.slice(0,3).map(e=>eventCard(e,true)).join('')}${dayEvents.length>3?`<div class="text-[10px] text-gray-400">+${dayEvents.length-3} more</div>`:''}</div></div>`);
-    }
-    document.getElementById('calCanvas').innerHTML=`<div class="min-w-[850px]"><div class="grid grid-cols-7 border-b border-gray-100 dark:border-gray-800">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="p-2 text-center text-[10px] uppercase tracking-wider text-gray-400 font-semibold">${x}</div>`).join('')}</div><div class="grid grid-cols-7">${days.join('')}</div></div>`;
-  }
-
-  function renderAgenda(list) {
-    const future=list.filter(e=>new Date(e.starts_at)>=startOfDay(new Date())).slice(0,100);
-    document.getElementById('calRangeTitle').textContent='Upcoming';
-    if(!future.length){document.getElementById('calCanvas').innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400">Nothing scheduled yet.</div>';return;}
-    let last='';
-    document.getElementById('calCanvas').innerHTML=`<div class="p-4 space-y-4">${future.map(e=>{const d=new Date(e.starts_at),key=d.toDateString();const heading=key!==last?(last=key,`<div class="text-xs uppercase tracking-wider text-gray-400 font-semibold pt-2">${d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>`):'';return heading+eventCard(e);}).join('')}</div>`;
-  }
-
-  function openModal(e=null,date=null){
-    const modal=document.getElementById('calModal'); if(!modal)return;
-    document.getElementById('calForm').reset(); document.getElementById('calEventId').value=e?.id||'';
-    document.getElementById('calModalTitle').textContent=e?'Edit Event':'New Event';
-    document.getElementById('calDelete').classList.toggle('hidden', !e || !(e.owner_id===currentId() || isAdmin()));
-    document.getElementById('calTitleInput').value=e?.title||'';
-    document.getElementById('calTypeInput').value=e?.event_type||'meeting';
-    document.getElementById('calAssignee').value=e?.assigned_user_id || currentId() || '';
-    document.getElementById('calVisibility').value=e?.visibility||'department';
-    document.getElementById('calReminder').value=e?.reminder_minutes??'';
-    document.getElementById('calLocation').value=e?.location||'';
-    document.getElementById('calNotes').value=e?.notes||'';
-    document.getElementById('calAllDay').checked=!!e?.all_day;
-    const localVal = d => { const x=new Date(d); const off=x.getTimezoneOffset(); return new Date(x.getTime()-off*60000).toISOString().slice(0,16); };
-    const s=e?.starts_at?new Date(e.starts_at):(date?new Date(date):new Date()); if(!e){s.setMinutes(Math.ceil(s.getMinutes()/30)*30,0,0);}
-    const en=e?.ends_at?new Date(e.ends_at):new Date(s.getTime()+60*60000);
-    document.getElementById('calStartInput').value=localVal(s); document.getElementById('calEndInput').value=localVal(en);
-    modal.classList.remove('hidden'); modal.classList.add('flex');
-  }
-
-  function closeModal(){const m=document.getElementById('calModal');if(m){m.classList.add('hidden');m.classList.remove('flex');}}
-
-  async function save(ev){
-    ev.preventDefault();
-    const id=document.getElementById('calEventId').value;
-    const payload={
-      title:document.getElementById('calTitleInput').value.trim(),
-      event_type:document.getElementById('calTypeInput').value,
-      assigned_user_id:document.getElementById('calAssignee').value||null,
-      starts_at:new Date(document.getElementById('calStartInput').value).toISOString(),
-      ends_at:document.getElementById('calEndInput').value?new Date(document.getElementById('calEndInput').value).toISOString():null,
-      all_day:document.getElementById('calAllDay').checked,
-      visibility:document.getElementById('calVisibility').value,
-      reminder_minutes:document.getElementById('calReminder').value?Number(document.getElementById('calReminder').value):null,
-      location:document.getElementById('calLocation').value.trim()||null,
-      notes:document.getElementById('calNotes').value.trim()||null
-    };
-    if(!payload.title)return;
-    let error;
-    if(id) ({error}=await supabaseClient.from('calendar_events').update(payload).eq('id',id));
-    else ({error}=await supabaseClient.from('calendar_events').insert({...payload,owner_id:currentId()}));
-    if(error)return alert(error.message||'Could not save event.');
-    closeModal(); await load();
-  }
-
-  async function remove(){
-    const id=document.getElementById('calEventId').value; if(!id||!confirm('Delete this calendar event?'))return;
-    const {error}=await supabaseClient.from('calendar_events').delete().eq('id',id); if(error)return alert(error.message||'Could not delete event.');
-    closeModal(); await load();
-  }
-
-  function bind(){
-    document.getElementById('calNewBtn').onclick=()=>openModal(); document.getElementById('calClose').onclick=closeModal; document.getElementById('calCancel').onclick=closeModal; document.getElementById('calForm').onsubmit=save; document.getElementById('calDelete').onclick=remove;
-    document.querySelectorAll('.calMode').forEach(b=>b.onclick=()=>{mode=b.dataset.calMode;personFilter='all';render();});
-    document.querySelectorAll('.calView').forEach(b=>b.onclick=()=>{viewMode=b.dataset.calView;render();});
-    document.getElementById('calTypeFilter').onchange=e=>{typeFilter=e.target.value;render();};
-    document.getElementById('calPersonFilter').onchange=e=>{personFilter=e.target.value;render();};
-    document.getElementById('calToday').onclick=()=>{anchor=new Date();render();};
-    document.getElementById('calPrev').onclick=()=>{anchor=viewMode==='month'?new Date(anchor.getFullYear(),anchor.getMonth()-1,1):addDays(anchor,viewMode==='week'?-7:-30);render();};
-    document.getElementById('calNext').onclick=()=>{anchor=viewMode==='month'?new Date(anchor.getFullYear(),anchor.getMonth()+1,1):addDays(anchor,viewMode==='week'?7:30);render();};
-    document.getElementById('calModal').addEventListener('click',e=>{if(e.target.id==='calModal')closeModal();});
-  }
-
-  async function open(){
-    const view=shell();
-    if(!view)return;
-    view.classList.remove('hidden');
-    bind();
-    try{await load();}catch(err){console.error(err);const canvas=document.getElementById('calCanvas');if(canvas)canvas.innerHTML='<div class="h-full flex items-center justify-center text-red-500 text-sm">Could not load calendar.</div>';}
-  }
-
-  function edit(id){const e=events.find(x=>x.id===id);if(e)openModal(e);}
-  function newOn(iso){openModal(null,iso);}
-
-  return {open,edit,newOn};
-})();
+// TAAMEER Team Calendar v2
+const CalendarApp=(()=>{
+const TYPES={meeting:['Meeting','fa-users','bg-blue-500','bg-blue-50 text-blue-700'],deadline:['Deadline','fa-flag-checkered','bg-red-500','bg-red-50 text-red-700'],event:['Event','fa-calendar-day','bg-violet-500','bg-violet-50 text-violet-700'],task:['Task','fa-check-square','bg-emerald-500','bg-emerald-50 text-emerald-700'],shoot:['Shoot','fa-video','bg-amber-500','bg-amber-50 text-amber-700'],content:['Content','fa-bullhorn','bg-fuchsia-500','bg-fuchsia-50 text-fuchsia-700'],review:['Review','fa-check-circle','bg-cyan-500','bg-cyan-50 text-cyan-700'],appointment:['Appointment','fa-clock','bg-sky-500','bg-sky-50 text-sky-700'],reminder:['Reminder','fa-bell','bg-yellow-500','bg-yellow-50 text-yellow-700'],other:['Other','fa-circle','bg-gray-500','bg-gray-100 text-gray-700']};
+let mode='my',viewMode='week',anchor=new Date(),events=[],profiles=[],personFilter='all',typeFilter='all';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cid=()=>state.currentUser.id,admin=()=>state.currentUser.role==='admin';
+const p=id=>profiles.find(x=>x.id===id),name=id=>p(id)?.full_name||p(id)?.username||'Team member';
+const same=(a,b)=>new Date(a).toDateString()===new Date(b).toDateString();
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x},monday=d=>{const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-(x.getDay()===0?6:x.getDay()-1));return x};
+const fd=d=>new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric'}),ft=d=>new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+const ldate=d=>{d=new Date(d);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`},ltime=d=>{d=new Date(d);return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+const collabs=e=>Array.isArray(e.collaborator_ids)?e.collaborator_ids:[];
+const avatar=id=>{const q=p(id);if(q?.avatar)return `<img src="${esc(q.avatar)}" class="w-7 h-7 rounded-full object-cover border-2 border-white">`;const i=(q?.full_name||q?.username||'?').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();return `<span class="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center text-[10px] font-bold border-2 border-white">${i}</span>`};
+function shell(){const v=document.getElementById('view-calendar');v.className='view-section fade-in h-full';v.innerHTML=`<div class="h-full flex flex-col gap-3 overflow-hidden">
+<section class="rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-[var(--accent)] text-white px-6 py-4 flex items-center justify-between gap-4"><div><div class="text-[10px] tracking-[.18em] text-white/45 font-semibold">TAAMEER TEAM CALENDAR</div><h2 class="text-2xl font-bold mt-1">Your schedule. Team schedule. One view.</h2></div><div class="flex items-center gap-2">${['meeting','deadline','event','task'].map(t=>`<button data-new="${t}" class="px-3 py-2 rounded-xl bg-white/10 border border-white/10 text-xs font-semibold"><i class="fas ${TYPES[t][1]} mr-1"></i>New ${TYPES[t][0]}</button>`).join('')}</div></section>
+<section class="flex items-center justify-between gap-3 flex-wrap"><div class="inline-flex p-1 bg-white border rounded-xl"><button data-mode="my" class="mBtn px-4 py-2 rounded-lg text-sm font-semibold">My Calendar</button><button data-mode="department" class="mBtn px-4 py-2 rounded-lg text-sm font-semibold">Department</button></div><div class="flex gap-2"><select id="personFilter" class="input-field !w-auto !py-2 hidden"></select><select id="typeFilter" class="input-field !w-auto !py-2"><option value="all">All types</option>${Object.entries(TYPES).map(([k,x])=>`<option value="${k}">${x[0]}</option>`).join('')}</select><div class="inline-flex p-1 bg-white border rounded-xl"><button data-view="month" class="vBtn px-3 py-1.5 rounded-lg text-xs font-semibold">Month</button><button data-view="week" class="vBtn px-3 py-1.5 rounded-lg text-xs font-semibold">Week</button><button data-view="agenda" class="vBtn px-3 py-1.5 rounded-lg text-xs font-semibold">Agenda</button></div></div></section>
+<section class="bg-white border rounded-2xl flex-1 min-h-0 overflow-hidden flex flex-col"><div class="px-4 py-2.5 border-b flex items-center justify-between"><div><button id="prev" class="w-8 h-8"><i class="fas fa-chevron-left"></i></button><button id="today" class="px-3 h-8 font-semibold">Today</button><button id="next" class="w-8 h-8"><i class="fas fa-chevron-right"></i></button></div><div id="range" class="font-bold text-sm"></div><div id="count" class="text-xs text-gray-400"></div></div><div id="canvas" class="flex-1 min-h-0 overflow-auto"></div></section></div>
+<div id="viewModal" class="fixed inset-0 bg-black/45 backdrop-blur-sm hidden items-center justify-center z-[85] p-4"><div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"><div id="viewBody"></div></div></div>
+<div id="editModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[90] p-4"><div class="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden"><div class="px-6 py-5 border-b flex items-center justify-between"><div class="flex gap-3 items-center"><div id="composerIcon" class="w-11 h-11 rounded-xl bg-gray-950 text-white flex items-center justify-center"></div><div><h3 id="composerTitle" class="text-xl font-bold">New Event</h3><p class="text-xs text-gray-500">Add it in seconds.</p></div></div><button id="closeEdit"><i class="fas fa-times"></i></button></div><form id="form" class="p-6 space-y-5 max-h-[74vh] overflow-auto"><input type="hidden" id="eid"><input type="hidden" id="etype"><div><label class="text-xs font-semibold text-gray-500">What is it?</label><input id="title" class="input-field mt-1.5 !text-base" required placeholder="e.g. Canal Bay brochure review"></div><div><div class="text-xs font-semibold text-gray-500 mb-2">When</div><div class="grid grid-cols-2 gap-3"><div class="rounded-2xl border p-3"><div class="text-[10px] text-gray-400 mb-1">START</div><div class="grid grid-cols-[1fr_105px] gap-2"><input id="sd" type="date" class="input-field !py-2"><input id="st" type="time" step="900" class="input-field !py-2"></div></div><div class="rounded-2xl border p-3"><div class="text-[10px] text-gray-400 mb-1">END</div><div class="grid grid-cols-[1fr_105px] gap-2"><input id="ed" type="date" class="input-field !py-2"><input id="et" type="time" step="900" class="input-field !py-2"></div></div></div><div class="flex gap-2 mt-2 flex-wrap">${[['30','30 min'],['60','1 hour'],['120','2 hours'],['240','Half day'],['1440','All day']].map(x=>`<button type="button" data-dur="${x[0]}" class="dur px-3 py-1.5 rounded-full bg-gray-100 text-xs font-semibold">${x[1]}</button>`).join('')}</div></div><div class="grid grid-cols-2 gap-3"><div><label class="text-xs font-semibold text-gray-500">Reminder</label><select id="rem" class="input-field mt-1"><option value="">None</option><option value="15">15 min before</option><option value="30">30 min before</option><option value="60">1 hour before</option><option value="1440">1 day before</option></select></div><div><label class="text-xs font-semibold text-gray-500">Visibility</label><select id="vis" class="input-field mt-1"><option value="department">Department</option><option value="personal">Only me</option></select></div></div><div id="assign"></div><div><label class="text-xs font-semibold text-gray-500">Collaborate with</label><div id="collab" class="flex flex-wrap gap-2 mt-2"></div></div><div><label class="text-xs font-semibold text-gray-500">Location / Link <span class="font-normal text-gray-400">optional</span></label><input id="loc" class="input-field mt-1" placeholder="Meeting room, website, Google Meet…"></div><div><label class="text-xs font-semibold text-gray-500">Notes <span class="font-normal text-gray-400">optional</span></label><textarea id="notes" class="input-field mt-1 min-h-[70px] resize-none"></textarea></div><div class="flex justify-between border-t pt-3"><button type="button" id="del" class="hidden text-red-500 px-4 py-2"><i class="fas fa-trash mr-2"></i>Delete</button><div class="ml-auto flex gap-2"><button type="button" id="cancel" class="px-4 py-2 rounded-xl bg-gray-100 font-semibold">Cancel</button><button class="px-5 py-2 rounded-xl bg-accent text-white font-semibold">Save</button></div></div></form></div></div>`}
+async function load(){const [{data:a},{data:b,error}]=await Promise.all([supabaseClient.from('profiles').select('id,full_name,username,role,status,avatar').eq('status','active'),supabaseClient.from('calendar_events').select('*').order('starts_at')]);if(error)throw error;profiles=a||[];events=b||[];document.getElementById('personFilter').innerHTML='<option value="all">All team</option>'+profiles.map(x=>`<option value="${x.id}">${esc(x.full_name||x.username)}</option>`).join('');render()}
+function list(){let a=events.slice();if(mode==='my')a=a.filter(e=>e.owner_id===cid()||e.assigned_user_id===cid()||collabs(e).includes(cid()));else a=a.filter(e=>e.visibility==='department');if(personFilter!=='all')a=a.filter(e=>e.owner_id===personFilter||e.assigned_user_id===personFilter||collabs(e).includes(personFilter));if(typeFilter!=='all')a=a.filter(e=>e.event_type===typeFilter);return a}
+function render(){document.querySelectorAll('.mBtn').forEach(b=>b.className=`mBtn px-4 py-2 rounded-lg text-sm font-semibold ${b.dataset.mode===mode?'bg-gray-950 text-white':'text-gray-500'}`);document.querySelectorAll('.vBtn').forEach(b=>b.className=`vBtn px-3 py-1.5 rounded-lg text-xs font-semibold ${b.dataset.view===viewMode?'bg-gray-950 text-white':'text-gray-500'}`);document.getElementById('personFilter').classList.toggle('hidden',mode!=='department');const a=list();document.getElementById('count').textContent=`${a.length} items`;viewMode==='month'?month(a):viewMode==='agenda'?agenda(a):week(a)}
+function week(a){const s=monday(anchor),e=add(s,6);document.getElementById('range').textContent=`${fd(s)} – ${fd(e)}, ${e.getFullYear()}`;const H0=8,total=12;let rows='';for(let i=0;i<7;i++){const d=add(s,i),items=a.filter(x=>same(x.starts_at,d));const bars=items.map(x=>{const st=new Date(x.starts_at),en=x.ends_at?new Date(x.ends_at):new Date(st.getTime()+3600000),sh=st.getHours()+st.getMinutes()/60,eh=en.getHours()+en.getMinutes()/60,left=Math.max(0,Math.min(100,(sh-H0)/total*100)),width=Math.max(6,Math.min(100-left,(Math.max(eh,sh+.5)-Math.max(sh,H0))/total*100)),t=TYPES[x.event_type]||TYPES.other;return `<button onclick="CalendarApp.view('${x.id}')" class="absolute top-2 h-10 rounded-xl ${t[2]} text-white text-left px-2 shadow-sm overflow-hidden" style="left:${left}%;width:${width}%"><div class="text-[10px] opacity-75">${ft(st)}</div><div class="text-xs font-semibold truncate">${esc(x.title)}</div></button>`}).join('');rows+=`<div class="grid grid-cols-[90px_1fr] min-h-[64px] border-b"><div class="p-2 border-r"><div class="text-[10px] text-gray-400">${d.toLocaleDateString('en-US',{weekday:'short'}).toUpperCase()}</div><div class="flex items-center gap-2"><b class="text-lg ${same(d,new Date())?'text-accent':''}">${d.getDate()}</b><button onclick="CalendarApp.newOn('${d.toISOString()}','task')" class="text-gray-400"><i class="fas fa-plus text-[10px]"></i></button></div></div><div class="relative bg-[linear-gradient(to_right,transparent_16.6%,#f3f4f6_16.7%,transparent_16.8%,transparent_33.2%,#f3f4f6_33.3%,transparent_33.4%,transparent_49.9%,#f3f4f6_50%,transparent_50.1%,transparent_66.5%,#f3f4f6_66.6%,transparent_66.7%,transparent_83.2%,#f3f4f6_83.3%,transparent_83.4%)]">${bars||'<span class="absolute inset-0 flex items-center px-4 text-xs text-gray-300">No plans</span>'}</div></div>`}document.getElementById('canvas').innerHTML=`<div class="min-w-[720px]"><div class="grid grid-cols-[90px_1fr] h-8"><div></div><div class="flex justify-between text-[9px] text-gray-400 px-1"><span>8:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span><span>18:00</span><span>20:00</span></div></div>${rows}</div>`}
+function month(a){const y=anchor.getFullYear(),m=anchor.getMonth(),f=new Date(y,m,1),s=add(f,-f.getDay());document.getElementById('range').textContent=anchor.toLocaleDateString('en-US',{month:'long',year:'numeric'});let h='<div class="grid grid-cols-7">'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="p-2 text-[10px] text-gray-400">${x}</div>`).join('')+'</div><div class="grid grid-cols-7">';for(let i=0;i<42;i++){const d=add(s,i),it=a.filter(x=>same(x.starts_at,d)).slice(0,3);h+=`<div class="min-h-[82px] p-2 border-r border-b"><div class="text-xs font-semibold">${d.getDate()}</div><div class="space-y-1 mt-1">${it.map(x=>{const t=TYPES[x.event_type]||TYPES.other;return `<button onclick="CalendarApp.view('${x.id}')" class="w-full text-left px-1.5 py-1 rounded-md text-[9px] ${t[3]} truncate"><i class="fas ${t[1]} mr-1"></i>${esc(x.title)}</button>`}).join('')}</div></div>`}document.getElementById('canvas').innerHTML=h+'</div>'}
+function agenda(a){document.getElementById('range').textContent='Next 30 days';const now=new Date(),up=a.filter(x=>new Date(x.starts_at)>=now&&new Date(x.starts_at)<add(now,30));document.getElementById('canvas').innerHTML=`<div class="p-3 grid md:grid-cols-2 xl:grid-cols-3 gap-2">${up.map(card).join('')||'<div class="text-gray-400 p-6">Nothing scheduled.</div>'}</div>`}
+function card(e){const t=TYPES[e.event_type]||TYPES.other,s=new Date(e.starts_at),ids=[e.assigned_user_id||e.owner_id,...collabs(e)].filter(Boolean);return `<button onclick="CalendarApp.view('${e.id}')" class="text-left border rounded-2xl p-3 bg-white hover:shadow-md"><div class="flex items-center"><span class="text-[10px] px-2 py-1 rounded-full ${t[3]}"><i class="fas ${t[1]} mr-1"></i>${t[0]}</span><div class="ml-auto flex -space-x-2">${[...new Set(ids)].slice(0,3).map(avatar).join('')}</div></div><div class="font-semibold mt-2">${esc(e.title)}</div><div class="text-[11px] text-gray-400 mt-1">${fd(s)} · ${ft(s)}${e.ends_at?' → '+ft(e.ends_at):''}</div></button>`}
+function view(id){const e=events.find(x=>x.id===id);if(!e)return;const t=TYPES[e.event_type]||TYPES.other,s=new Date(e.starts_at),en=e.ends_at?new Date(e.ends_at):null,ids=[e.assigned_user_id||e.owner_id,...collabs(e)].filter(Boolean),can=e.owner_id===cid()||admin();document.getElementById('viewBody').innerHTML=`<div class="p-6 border-b flex justify-between"><div><span class="text-xs px-2.5 py-1 rounded-full ${t[3]}"><i class="fas ${t[1]} mr-1"></i>${t[0]}</span><h3 class="text-2xl font-bold mt-3">${esc(e.title)}</h3></div><button onclick="CalendarApp.closeView()"><i class="fas fa-times"></i></button></div><div class="p-6 space-y-4"><div class="grid grid-cols-2 gap-3"><div class="rounded-2xl bg-gray-50 p-4"><div class="text-[10px] text-gray-400">START</div><b>${fd(s)} · ${ft(s)}</b></div><div class="rounded-2xl bg-gray-50 p-4"><div class="text-[10px] text-gray-400">END</div><b>${en?fd(en)+' · '+ft(en):'—'}</b></div></div>${e.location?`<div><div class="text-xs text-gray-400">Location / Link</div><div>${esc(e.location)}</div></div>`:''}${e.notes?`<div><div class="text-xs text-gray-400">Notes</div><div class="text-sm whitespace-pre-wrap">${esc(e.notes)}</div></div>`:''}<div><div class="text-xs text-gray-400 mb-2">People</div><div class="flex gap-2 flex-wrap">${[...new Set(ids)].map(i=>`<div class="flex items-center gap-2 px-2 py-1 rounded-full bg-gray-50">${avatar(i)}<span class="text-xs">${esc(name(i))}</span></div>`).join('')}</div></div><div class="pt-3 border-t flex justify-end gap-2">${can?`<button onclick="CalendarApp.edit('${e.id}')" class="px-4 py-2 rounded-xl bg-gray-100 font-semibold"><i class="fas fa-pen mr-2"></i>Edit</button>`:''}<button onclick="CalendarApp.closeView()" class="px-4 py-2 rounded-xl bg-gray-950 text-white font-semibold">Close</button></div></div>`;document.getElementById('viewModal').classList.remove('hidden');document.getElementById('viewModal').classList.add('flex')}
+function closeView(){document.getElementById('viewModal')?.classList.add('hidden');document.getElementById('viewModal')?.classList.remove('flex')}
+function composer(type='event',e=null,date=null){const t=TYPES[e?.event_type||type]||TYPES.event;document.getElementById('form').reset();document.getElementById('eid').value=e?.id||'';document.getElementById('etype').value=e?.event_type||type;document.getElementById('composerTitle').textContent=(e?'Edit ':'New ')+t[0];document.getElementById('composerIcon').innerHTML=`<i class="fas ${t[1]}"></i>`;document.getElementById('title').value=e?.title||'';document.getElementById('vis').value=e?.visibility||'department';document.getElementById('rem').value=e?.reminder_minutes??'';document.getElementById('loc').value=e?.location||'';document.getElementById('notes').value=e?.notes||'';document.getElementById('assign').innerHTML=admin()?`<label class="text-xs font-semibold text-gray-500">Assigned to</label><select id="assignee" class="input-field mt-1"><option value="${cid()}">Me</option><option value="">Entire team</option>${profiles.filter(x=>x.id!==cid()).map(x=>`<option value="${x.id}">${esc(x.full_name||x.username)}</option>`).join('')}</select>`:`<div class="rounded-2xl bg-gray-50 border p-3 flex items-center gap-3">${avatar(cid())}<div><div class="text-[10px] text-gray-400">OWNER</div><b>You</b></div></div>`;if(admin()&&document.getElementById('assignee'))document.getElementById('assignee').value=e?.assigned_user_id??cid();document.getElementById('collab').innerHTML=profiles.filter(x=>x.id!==cid()).map(x=>`<button type="button" data-c="${x.id}" class="cbtn flex items-center gap-2 px-2.5 py-1.5 rounded-full border ${collabs(e||{}).includes(x.id)?'ring-2 ring-[var(--accent)]':''}">${avatar(x.id)}<span class="text-xs">${esc((x.full_name||x.username).split(' ')[0])}</span></button>`).join('')||'<span class="text-xs text-gray-400">No other team members.</span>';document.querySelectorAll('.cbtn').forEach(b=>b.onclick=()=>b.classList.toggle('ring-2'));let s=e?.starts_at?new Date(e.starts_at):(date?new Date(date):new Date());if(!e)s.setMinutes(Math.ceil(s.getMinutes()/30)*30,0,0);let en=e?.ends_at?new Date(e.ends_at):new Date(s.getTime()+3600000);document.getElementById('sd').value=ldate(s);document.getElementById('st').value=ltime(s);document.getElementById('ed').value=ldate(en);document.getElementById('et').value=ltime(en);document.getElementById('del').classList.toggle('hidden',!e||!(e.owner_id===cid()||admin()));document.getElementById('editModal').classList.remove('hidden');document.getElementById('editModal').classList.add('flex')}
+function closeEditor(){document.getElementById('editModal').classList.add('hidden');document.getElementById('editModal').classList.remove('flex')}
+function edit(id){const e=events.find(x=>x.id===id);closeView();composer(e.event_type,e)}
+function newOn(iso,type='task'){composer(type,null,iso)}
+async function save(ev){ev.preventDefault();const s=new Date(`${document.getElementById('sd').value}T${document.getElementById('st').value}`),en=new Date(`${document.getElementById('ed').value}T${document.getElementById('et').value}`);if(en<s)return alert('End time must be after start time.');const payload={title:document.getElementById('title').value.trim(),event_type:document.getElementById('etype').value,assigned_user_id:admin()?(document.getElementById('assignee')?.value||null):cid(),starts_at:s.toISOString(),ends_at:en.toISOString(),visibility:document.getElementById('vis').value,reminder_minutes:document.getElementById('rem').value?Number(document.getElementById('rem').value):null,location:document.getElementById('loc').value.trim()||null,notes:document.getElementById('notes').value.trim()||null,collaborator_ids:[...document.querySelectorAll('.cbtn.ring-2')].map(x=>x.dataset.c),all_day:false};let error;const id=document.getElementById('eid').value;if(id)({error}=await supabaseClient.from('calendar_events').update(payload).eq('id',id));else({error}=await supabaseClient.from('calendar_events').insert({...payload,owner_id:cid()}));if(error)return alert(error.message);closeEditor();await load();renderHomeModules()}
+async function remove(){const id=document.getElementById('eid').value;if(!id||!confirm('Delete this item?'))return;const {error}=await supabaseClient.from('calendar_events').delete().eq('id',id);if(error)return alert(error.message);closeEditor();await load();renderHomeModules()}
+function bind(){document.querySelectorAll('[data-new]').forEach(b=>b.onclick=()=>composer(b.dataset.new));document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;render()});document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{viewMode=b.dataset.view;render()});document.getElementById('typeFilter').onchange=e=>{typeFilter=e.target.value;render()};document.getElementById('personFilter').onchange=e=>{personFilter=e.target.value;render()};document.getElementById('today').onclick=()=>{anchor=new Date();render()};document.getElementById('prev').onclick=()=>{anchor=viewMode==='month'?new Date(anchor.getFullYear(),anchor.getMonth()-1,1):add(anchor,-7);render()};document.getElementById('next').onclick=()=>{anchor=viewMode==='month'?new Date(anchor.getFullYear(),anchor.getMonth()+1,1):add(anchor,7);render()};document.getElementById('closeEdit').onclick=closeEditor;document.getElementById('cancel').onclick=closeEditor;document.getElementById('form').onsubmit=save;document.getElementById('del').onclick=remove;document.querySelectorAll('.dur').forEach(b=>b.onclick=()=>{const s=new Date(`${document.getElementById('sd').value}T${document.getElementById('st').value}`),en=new Date(s.getTime()+Number(b.dataset.dur)*60000);document.getElementById('ed').value=ldate(en);document.getElementById('et').value=ltime(en)})}
+async function open(){shell();bind();try{await load()}catch(e){console.error(e);document.getElementById('canvas').innerHTML='<div class="h-full flex items-center justify-center text-red-500">Could not load calendar.</div>'}}
+async function homeCard(grid){const {data=[]}=await supabaseClient.from('calendar_events').select('*').gte('ends_at',new Date().toISOString()).order('starts_at').limit(8);const a=data.filter(e=>e.owner_id===cid()||e.assigned_user_id===cid()||collabs(e).includes(cid())||e.visibility==='department').slice(0,3),todayCount=data.filter(e=>same(e.starts_at,new Date())).length;grid.innerHTML=`<button onclick="showView('calendar')" class="col-span-full text-left rounded-3xl overflow-hidden border bg-white hover:shadow-lg"><div class="grid lg:grid-cols-[260px_1fr]"><div class="p-5 bg-gradient-to-br from-gray-950 via-gray-900 to-[var(--accent)] text-white"><div class="flex justify-between"><div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center"><i class="fas fa-calendar-alt"></i></div><span class="text-[10px] text-white/50">CALENDAR</span></div><div class="text-3xl font-bold mt-6">${todayCount}</div><div class="text-sm text-white/70">items today</div><div class="text-xs text-white/50 mt-5">Your schedule. Team schedule. One view.</div></div><div class="p-5"><div class="flex justify-between mb-3"><div><b>What's next</b><div class="text-xs text-gray-400">Your upcoming activity</div></div><span class="text-xs text-accent font-semibold">Open calendar →</span></div><div class="grid md:grid-cols-3 gap-2">${a.length?a.map(card).join(''):'<div class="md:col-span-3 border border-dashed rounded-2xl p-5 text-center text-gray-400">Nothing scheduled yet.</div>'}</div></div></div></button>`}
+return{open,view,closeView,edit,newOn,homeCard}})();
 window.CalendarApp=CalendarApp;
+window.renderHomeModules=function(){const g=document.getElementById('homeModulesGrid');if(!g)return;g.innerHTML='<div class="col-span-full p-6 rounded-3xl border bg-white text-gray-400">Loading calendar…</div>';CalendarApp.homeCard(g).catch(()=>g.innerHTML='<button onclick="showView(\'calendar\')" class="col-span-full p-6 rounded-3xl border bg-white text-left"><b>Calendar</b><div class="text-sm text-gray-400">Open your team schedule</div></button>')};
