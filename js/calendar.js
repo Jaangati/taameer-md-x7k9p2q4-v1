@@ -20,15 +20,12 @@ const CalendarApp = (() => {
   let profiles = [];
   let personFilter = 'all';
   let typeFilter = 'all';
-  let initialized = false;
 
   const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const startOfDay = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
-  const endOfDay = d => { const x = new Date(d); x.setHours(23,59,59,999); return x; };
   const addDays = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
   const mondayOf = d => { const x = startOfDay(d); const day=x.getDay(); x.setDate(x.getDate() - (day===0?6:day-1)); return x; };
   const sameDay = (a,b) => new Date(a).toDateString() === new Date(b).toDateString();
-  const initials = p => (p?.full_name || p?.username || '?').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
   const personName = id => profiles.find(p=>p.id===id)?.full_name || profiles.find(p=>p.id===id)?.username || 'Team member';
   const currentId = () => state?.currentUser?.id;
   const isAdmin = () => state?.currentUser?.role === 'admin';
@@ -36,7 +33,7 @@ const CalendarApp = (() => {
   function shell() {
     const view = document.getElementById('view-calendar');
     if (!view) return null;
-    view.className = 'view-section hidden fade-in h-full';
+    view.className = 'view-section fade-in h-full';
     view.innerHTML = `
       <div class="h-full flex flex-col gap-4 overflow-hidden">
         <section class="rounded-3xl bg-gradient-to-r from-gray-950 via-gray-900 to-[var(--accent)] text-white p-5 lg:p-6 flex items-center justify-between gap-4 flex-shrink-0 shadow-sm">
@@ -162,20 +159,21 @@ const CalendarApp = (() => {
     const y=anchor.getFullYear(), m=anchor.getMonth(), first=new Date(y,m,1), start=addDays(first,-first.getDay()), days=[];
     document.getElementById('calRangeTitle').textContent=anchor.toLocaleDateString('en-US',{month:'long',year:'numeric'});
     for(let i=0;i<42;i++){
-      const d=addDays(start,i), dayEvents=list.filter(e=>sameDay(e.starts_at,d)), muted=d.getMonth()!==m, today=sameDay(d,new Date());
-      days.push(`<div class="min-h-[115px] border-r border-b border-gray-100 dark:border-gray-800 p-2 ${muted?'bg-gray-50/60 dark:bg-gray-950/30':''}"><div class="flex justify-between"><button onclick="CalendarApp.newOn('${d.toISOString()}')" class="text-xs font-semibold ${today?'bg-accent text-white w-7 h-7 rounded-full':'text-gray-500'}">${d.getDate()}</button></div><div class="mt-2 space-y-1">${dayEvents.slice(0,3).map(e=>`<button onclick="CalendarApp.edit('${e.id}')" class="w-full text-left px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-[10px] truncate text-gray-700 dark:text-gray-300">${esc(e.title)}</button>`).join('')}${dayEvents.length>3?`<div class="text-[10px] text-gray-400 px-1">+${dayEvents.length-3} more</div>`:''}</div></div>`);
+      const d=addDays(start,i), inMonth=d.getMonth()===m, dayEvents=list.filter(e=>sameDay(e.starts_at,d));
+      days.push(`<div class="min-h-[110px] border-r border-b border-gray-100 dark:border-gray-800 p-2 ${inMonth?'':'bg-gray-50/60 dark:bg-gray-950/20'}"><div class="flex items-center justify-between"><span class="text-xs font-semibold ${sameDay(d,new Date())?'text-accent':'text-gray-500'}">${d.getDate()}</span><button onclick="CalendarApp.newOn('${d.toISOString()}')" class="text-gray-300 hover:text-accent"><i class="fas fa-plus text-[10px]"></i></button></div><div class="mt-2 space-y-1">${dayEvents.slice(0,3).map(e=>eventCard(e,true)).join('')}${dayEvents.length>3?`<div class="text-[10px] text-gray-400">+${dayEvents.length-3} more</div>`:''}</div></div>`);
     }
-    document.getElementById('calCanvas').innerHTML=`<div class="grid grid-cols-7 min-w-[850px]"><div class="col-span-7 grid grid-cols-7 border-b border-gray-100 dark:border-gray-800">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="px-2 py-2 text-[10px] uppercase font-semibold tracking-wider text-gray-400 border-r last:border-r-0 border-gray-100 dark:border-gray-800">${x}</div>`).join('')}</div>${days.join('')}</div>`;
+    document.getElementById('calCanvas').innerHTML=`<div class="min-w-[850px]"><div class="grid grid-cols-7 border-b border-gray-100 dark:border-gray-800">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="p-2 text-center text-[10px] uppercase tracking-wider text-gray-400 font-semibold">${x}</div>`).join('')}</div><div class="grid grid-cols-7">${days.join('')}</div></div>`;
   }
 
   function renderAgenda(list) {
-    const from=startOfDay(anchor), to=addDays(from,30), upcoming=list.filter(e=>new Date(e.starts_at)>=from && new Date(e.starts_at)<to);
-    document.getElementById('calRangeTitle').textContent='Next 30 days';
-    const groups={}; upcoming.forEach(e=>{const k=new Date(e.starts_at).toDateString();(groups[k]??=[]).push(e);});
-    document.getElementById('calCanvas').innerHTML=Object.keys(groups).length?`<div class="p-4 space-y-5">${Object.entries(groups).map(([k,arr])=>`<div><div class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">${new Date(k).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div><div class="grid md:grid-cols-2 xl:grid-cols-3 gap-2">${arr.map(e=>eventCard(e)).join('')}</div></div>`).join('')}</div>`:'<div class="h-full flex items-center justify-center text-gray-400 text-sm">Nothing scheduled in the next 30 days.</div>';
+    const future=list.filter(e=>new Date(e.starts_at)>=startOfDay(new Date())).slice(0,100);
+    document.getElementById('calRangeTitle').textContent='Upcoming';
+    if(!future.length){document.getElementById('calCanvas').innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400">Nothing scheduled yet.</div>';return;}
+    let last='';
+    document.getElementById('calCanvas').innerHTML=`<div class="p-4 space-y-4">${future.map(e=>{const d=new Date(e.starts_at),key=d.toDateString();const heading=key!==last?(last=key,`<div class="text-xs uppercase tracking-wider text-gray-400 font-semibold pt-2">${d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>`):'';return heading+eventCard(e);}).join('')}</div>`;
   }
 
-  function openModal(e=null, date=null) {
+  function openModal(e=null,date=null){
     const modal=document.getElementById('calModal'); if(!modal)return;
     document.getElementById('calForm').reset(); document.getElementById('calEventId').value=e?.id||'';
     document.getElementById('calModalTitle').textContent=e?'Edit Event':'New Event';
@@ -239,8 +237,11 @@ const CalendarApp = (() => {
   }
 
   async function open(){
-    shell(); bind(); initialized=true;
-    try{await load();}catch(err){console.error(err);document.getElementById('calCanvas').innerHTML='<div class="h-full flex items-center justify-center text-red-500 text-sm">Could not load calendar.</div>';}
+    const view=shell();
+    if(!view)return;
+    view.classList.remove('hidden');
+    bind();
+    try{await load();}catch(err){console.error(err);const canvas=document.getElementById('calCanvas');if(canvas)canvas.innerHTML='<div class="h-full flex items-center justify-center text-red-500 text-sm">Could not load calendar.</div>';}
   }
 
   function edit(id){const e=events.find(x=>x.id===id);if(e)openModal(e);}
