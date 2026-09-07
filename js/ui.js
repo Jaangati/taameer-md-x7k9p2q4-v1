@@ -80,7 +80,7 @@ if (sidebarHeader) {
   });
 }
 
-const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','Coming soon'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
+const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','My schedule & department activity'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
 function showView(viewName) {
   if (!state.currentUser) return;
   if (['users','permissions','settings','modules-admin'].includes(viewName) && state.currentUser.role !== 'admin') return;
@@ -93,7 +93,7 @@ function showView(viewName) {
   target.classList.remove('hidden'); target.classList.add('fade-in');
   const titles = VIEW_TITLES[viewName] || (module ? [module.name, module.desc || 'Module'] : ['TAAMEER','']);
   document.getElementById('headerTitle').textContent = titles[0]; document.getElementById('headerSubtitle').textContent = titles[1];
-  if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
+  if (viewName === 'calendar' && window.CalendarApp) CalendarApp.open(); if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
 }
 
@@ -123,7 +123,7 @@ function renderHomeModules() {
   if(!myModules.length){grid.innerHTML='<div class="col-span-full p-7 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm text-gray-500">No modules yet.</div>';return;}
   myModules.forEach(m=>{
     const allowed=canAccessModule(m), card=document.createElement('button');
-    const soon=m.status==='soon';
+    const soon=false;
     card.className=`group text-left rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 transition-all ${allowed?'hover:-translate-y-0.5 hover:shadow-md cursor-pointer':'opacity-70 cursor-default'}`;
     card.innerHTML=`<div class="flex items-start justify-between gap-4"><div class="w-11 h-11 rounded-xl flex items-center justify-center bg-gray-600 text-white"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${soon?'bg-amber-50 text-amber-600 dark:bg-amber-900/20':allowed?'bg-green-50 text-green-600 dark:bg-green-900/20':'bg-gray-100 text-gray-500 dark:bg-gray-800'}">${soon?'COMING SOON':allowed?'ACTIVE':'LOCKED'}</span></div><div class="mt-4"><h4 class="font-bold text-gray-900 dark:text-white">${Utils.escapeHTML(m.name)}</h4><p class="text-xs text-gray-500 mt-1 line-clamp-2">${Utils.escapeHTML(m.desc||'')}</p></div><div class="mt-4 flex items-center justify-between text-xs"><span class="text-gray-400">${soon?'Coming soon':allowed?'Open module':'Unavailable'}</span><i class="fas fa-arrow-right ${allowed?'text-accent':'text-gray-300'} transition-transform group-hover:translate-x-1"></i></div>`;
     if(allowed)card.onclick=()=>showView(ModuleRegistry.ensureView(m)); grid.appendChild(card);
