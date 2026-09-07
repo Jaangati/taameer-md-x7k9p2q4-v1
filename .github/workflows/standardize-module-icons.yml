@@ -1,0 +1,71 @@
+name: Standardize module icons and login logo
+
+on:
+  push:
+    paths:
+      - '.github/workflows/standardize-module-icons.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Standardize module visuals and login branding
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          # LOGIN: keep the icon tile, replace typed TAAMEER text with the real white logo.
+          index = Path('index.html')
+          html = index.read_text()
+          old_brand = '<div><div class="font-arabic text-2xl font-bold leading-none">تعمير</div><div class="text-sm font-semibold tracking-wider opacity-80">TAAMEER</div></div>'
+          new_brand = '<img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="h-10 w-auto object-contain">'
+          assert old_brand in html, 'Login typed TAAMEER brand block not found'
+          html = html.replace(old_brand, new_brand, 1)
+
+          # MODULE ADMIN: remove module color control completely.
+          html, n = re.subn(r'<div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label><input type="color" id="mColor" class="w-full h-10 rounded-lg cursor-pointer border-0" value="#757575"></div>', '', html, count=1)
+          assert n == 1, 'Module color input not found'
+          index.write_text(html)
+
+          # HOME + SIDEBAR: all module icons use the same neutral system treatment.
+          ui = Path('js/ui.js')
+          js = ui.read_text()
+          js = re.sub(r'icon\.style\.color=Utils\.validColor\(m\.color\);', "icon.style.color='#9CA3AF';", js)
+          js = re.sub(r'style="background:\$\{Utils\.validColor\(m\.color\)\}"', '', js)
+          js = js.replace('w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-sm', 'w-11 h-11 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400')
+          ui.write_text(js)
+
+          # ADMIN + PERMISSIONS + USER ASSIGNMENT: same neutral icon treatment, no module colors.
+          admin = Path('js/admin.js')
+          js = admin.read_text()
+          js = re.sub(r'icon\.style\.color=Utils\.validColor\(m\.color\);', "icon.style.color='#9CA3AF';", js)
+          js = re.sub(r'<div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-accent" style="background:\$\{Utils\.validColor\(m\.color\)\}"><i class="fas \$\{Utils\.validIcon\(m\.icon\)\} text-white text-xl"></i></div>', '<div class="w-12 h-12 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800"><i class="fas ${Utils.validIcon(m.icon)} text-gray-500 dark:text-gray-400 text-xl"></i></div>', js)
+          js = re.sub(r'<div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:\$\{Utils\.validColor\(m\.color\)\}20"><i class="fas \$\{Utils\.validIcon\(m\.icon\)\}" style="color:\$\{Utils\.validColor\(m\.color\)\}"></i></div>', '<div class="w-11 h-11 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-800"><i class="fas ${Utils.validIcon(m.icon)} text-gray-500 dark:text-gray-400"></i></div>', js)
+          js = js.replace("document.getElementById('mColor').value='#757575';", '')
+          js = js.replace("document.getElementById('mColor').value=m.color;", '')
+          js = js.replace("color:Utils.validColor(document.getElementById('mColor').value),", "color:'#757575',")
+          admin.write_text(js)
+
+          # Normalize persisted module color during load so old pink/etc. values cannot leak into future UI.
+          core = Path('js/core.js')
+          js = core.read_text()
+          js = js.replace('color: Utils.validColor(m.color),', "color: '#757575',")
+          core.write_text(js)
+          PY
+      - name: Validate and commit
+        run: |
+          node --check js/core.js
+          node --check js/ui.js
+          node --check js/admin.js
+          grep -q 'assets/taameer-logo-white.svg' index.html
+          ! grep -q 'id="mColor"' index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html js/core.js js/ui.js js/admin.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Standardize module icons and use TAAMEER login logo"
+          git push
