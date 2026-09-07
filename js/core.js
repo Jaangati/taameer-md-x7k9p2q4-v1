@@ -105,7 +105,7 @@ const Store = {
       name: String(m.name || 'Module'),
       icon: Utils.validIcon(m.icon),
       desc: String(m.desc || ''),
-      color: Utils.validColor(m.color),
+      color: '#757575',
       roles: Array.isArray(m.roles) ? m.roles : ['admin','user'],
       status: ['active','soon','disabled'].includes(m.status) ? m.status : 'active'
     }));
