@@ -14,9 +14,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
-          # Let dynamic navigation open Thinkspace without touching the stable UI router.
           p=Path('js/thinkspace.js')
           s=p.read_text()
           marker='// THINKSPACE VIEW ROUTER'
@@ -24,18 +22,26 @@ jobs:
               s += '''\n\n// THINKSPACE VIEW ROUTER\nconst _thinkspaceShowView = window.showView;\nwindow.showView = function(viewName){\n  _thinkspaceShowView(viewName);\n  if(viewName === 'thinkspace' && window.ThinkspaceApp) ThinkspaceApp.open();\n};\n'''
               p.write_text(s)
 
-          # Load export libraries and Thinkspace after Calendar so its compact Home cards win.
           p=Path('index.html')
           s=p.read_text()
           if 'html2canvas@1.4.1' not in s:
               s=s.replace('</head>','<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>\n<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>\n</head>',1)
           if 'js/thinkspace.js' not in s:
-              s=re.sub(r'(<script src="js/calendar\.js[^\"]*"></script>)',r'\1\n<script src="js/thinkspace.js?v=20260907-v1"></script>',s,count=1)
+              needle='<script src="js/app.js?v=20260907-final"></script>'
+              if needle not in s:
+                  needle='<script src="js/app.js"></script>'
+              if needle not in s:
+                  raise SystemExit('app.js script tag not found')
+              s=s.replace(needle,'<script src="js/thinkspace.js?v=20260907-v1"></script>\n'+needle,1)
           p.write_text(s)
+
+          final=p.read_text()
+          assert 'js/thinkspace.js?v=20260907-v1' in final
+          assert 'html2canvas@1.4.1' in final
+          assert 'jspdf/2.5.1' in final
+          print('Thinkspace assets wired')
           PY
           node --check js/thinkspace.js
-          grep -q 'js/thinkspace.js?v=20260907-v1' index.html
-          grep -q 'html2canvas@1.4.1' index.html
       - name: Commit
         run: |
           git config user.name "github-actions[bot]"
