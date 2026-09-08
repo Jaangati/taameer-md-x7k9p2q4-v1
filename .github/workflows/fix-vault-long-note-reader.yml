@@ -1,0 +1,85 @@
+name: Fix Vault long note reader overflow
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-vault-long-note-reader.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix long note reader
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('js/vault.js')
+          s=p.read_text()
+
+          # Add safe viewport-constrained styling for Vault modal shells/readers.
+          marker='.vault-ask-modal{width:min(820px,94vw);'
+          css_add='''\n      .vault-modal-shell{max-height:calc(100vh - 48px);overflow:hidden;display:flex;flex-direction:column}.vault-modal-scroll{min-height:0;overflow:auto;overscroll-behavior:contain}.vault-note-reader{width:min(900px,94vw);max-height:calc(100vh - 48px);background:#fff;border-radius:24px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 36px 120px rgba(3,7,18,.30)}.vault-note-reader-body{padding:24px;overflow:auto;min-height:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.72;font-size:13px;color:#303846;background:#fff}.vault-note-reader-head{flex:none;padding:18px 20px;background:linear-gradient(90deg,var(--system-dark) 0%,var(--system-dark-2) 68%,var(--accent) 155%);color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.vault-note-reader-foot{flex:none;padding:12px 16px;border-top:1px solid #e6e9ee;background:#fff;display:flex;justify-content:flex-end;gap:8px}@media(max-width:760px){.vault-note-reader{width:96vw;max-height:92vh}.vault-note-reader-body{padding:18px}}\n'''
+          if '.vault-note-reader{' not in s:
+              idx=s.find(marker)
+              if idx < 0: raise SystemExit('CSS marker not found')
+              s=s[:idx]+css_add+s[idx:]
+
+          # Locate the card detail/open-note function by matching a modal call containing item body.
+          # Then wrap the existing reader content without changing its data/actions.
+          patterns=[
+              r'(const\s+d\s*=\s*modal\(`)(<div[^`]*?\$\{esc\([^)]*\.body[^)]*\)\}[^`]*?)(`\);)',
+              r'(modal\(`)(<div[^`]*?\$\{esc\([^)]*\.body[^)]*\)\}[^`]*?)(`\))'
+          ]
+          changed=False
+          for pat in patterns:
+              m=re.search(pat,s,re.S)
+              if not m: continue
+              html=m.group(2)
+              # Do not touch composer or ask modal.
+              if 'vault-compose' in html or 'vault-ask-modal' in html: continue
+              # Add a viewport-safe class to the outermost div.
+              html2=re.sub(r'^<div class="([^"]*)"', lambda x: '<div class="'+x.group(1)+' vault-modal-shell"', html, count=1)
+              if html2==html:
+                  html2=html.replace('<div','<div class="vault-modal-shell"',1)
+              s=s[:m.start(2)]+html2+s[m.end(2):]
+              changed=True
+              break
+
+          # Fallback: constrain all direct modal children created by the local modal helper.
+          # This prevents any oversized Vault modal from rendering outside the viewport.
+          if not changed:
+              # Inject class assignment immediately after modal content is inserted.
+              candidates=[
+                  "d.innerHTML=html;",
+                  "el.innerHTML=html;",
+                  "wrap.innerHTML=html;"
+              ]
+              for c in candidates:
+                  if c in s:
+                      s=s.replace(c,c+"\n    const vaultModalChild=("+c.split('.')[0]+".firstElementChild); if(vaultModalChild) vaultModalChild.classList.add('vault-modal-shell');",1)
+                      changed=True
+                      break
+
+          if not changed:
+              raise SystemExit('Could not locate Vault modal reader/helper')
+
+          # Add a final defensive rule for any Vault modal direct child with inline max-content height.
+          s=s.replace('@media(max-width:900px){', '.vault-overlay>div{max-height:calc(100vh - 48px);overflow:auto} @media(max-width:900px){',1) if '.vault-overlay>div{' not in s else s
+
+          p.write_text(s)
+
+          idx=Path('index.html')
+          h=idx.read_text()
+          h=re.sub(r'js/vault\.js\?v=[^\"\']+', 'js/vault.js?v=20260908-v6', h)
+          idx.write_text(h)
+          PY
+          node --check js/vault.js
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add js/vault.js index.html
+          git diff --cached --quiet || git commit -m "Fix Vault long note reader viewport overflow"
+          git push
