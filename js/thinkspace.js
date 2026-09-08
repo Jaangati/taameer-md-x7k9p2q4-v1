@@ -1,5 +1,5 @@
 // TAAMEER Thinkspace Pro — Fabric.js powered collaborative whiteboard
-const ThinkspaceV3 = (() => {
+const ThinkspaceApp = (() => {
   const PRESETS={free:['Infinite',2200,1400],a4:['A4',794,1123],a3:['A3',1123,1587],letter:['Letter',816,1056],screen16x9:['16:9',1920,1080],screen4x3:['4:3',1600,1200],square:['Square',1080,1080]};
   const COLORS=['#111827','#ffffff','#e5e7eb','#fde68a','#fca5a5','#a7f3d0','#93c5fd','#c4b5fd','#f9a8d4','#fdba74'];
   let boards=[],profiles=[],board=null,fc=null,filter='all',page={preset:'free',width:2200,height:1400,orientation:'landscape',grid:true,gridSize:20,background:'#ffffff'},saveTimer=null,connectorMode=null,drawMode=null,clip=null;
