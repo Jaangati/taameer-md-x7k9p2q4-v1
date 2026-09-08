@@ -46,3 +46,4 @@ jobs:
           git add js/projects.js index.html
           git diff --cached --quiet || git commit -m "Wire Projects marketing library"
           git push
+# trigger
