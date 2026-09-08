@@ -1,0 +1,29 @@
+name: Refresh Vault v3 cache
+on:
+  push:
+    paths:
+      - '.github/workflows/vault-v3-cache.yml'
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refresh Vault asset version
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('js/vault.js?v=20260908-v2','js/vault.js?v=20260908-v3')
+          p.write_text(s)
+          PY
+          node --check js/vault.js
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Activate Vault v3 redesign'
+          git push
