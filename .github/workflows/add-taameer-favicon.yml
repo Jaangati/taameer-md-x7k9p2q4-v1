@@ -1,0 +1,41 @@
+name: Add TAAMEER favicon
+on:
+  push:
+    paths:
+      - '.github/workflows/add-taameer-favicon.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  favicon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build favicon and wire it
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+          m=re.search(r'<symbol id="taameer-icon" viewBox="([^"]+)">(.*?)</symbol>', s, re.S)
+          if not m:
+              raise SystemExit('TAAMEER icon symbol not found')
+          viewbox, body = m.group(1), m.group(2)
+          favicon=f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900">
+  <rect width="900" height="900" rx="190" fill="#030712"/>
+  <g transform="translate(55 45) scale(.98)" fill="#ffffff">
+{body}
+  </g>
+</svg>'''
+          Path('assets/favicon.svg').write_text(favicon)
+          link='<link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=2">'
+          s=re.sub(r'\n?<link rel="icon"[^>]*>', '', s)
+          s=s.replace('<title>TAAMEER Group — Marketing Dashboard</title>', '<title>TAAMEER Group — Marketing Dashboard</title>\n'+link, 1)
+          p.write_text(s)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/favicon.svg
+          git diff --cached --quiet || git commit -m "Use TAAMEER icon as browser favicon"
+          git push
