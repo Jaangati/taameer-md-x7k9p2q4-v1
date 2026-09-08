@@ -1,0 +1,33 @@
+name: Harmonize system dark surfaces
+on:
+  push:
+    paths:
+      - '.github/workflows/system-dark-harmonize.yml'
+permissions:
+  contents: write
+jobs:
+  harmonize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harmonize shared dark surfaces
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('bg-gradient-to-br from-gray-900 via-[#1a1c1f] to-black','bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950')
+          s=s.replace('background:linear-gradient(135deg,#111318 0%,#1d2026 58%,var(--accent) 175%);','background:linear-gradient(135deg,var(--system-dark) 0%,var(--system-dark-2) 58%,var(--accent) 175%);')
+          p.write_text(s)
+          c=Path('css/styles.css')
+          x=c.read_text()
+          x=x.replace('linear-gradient(135deg, #0a0a0a 0%, #111827 100%)','linear-gradient(135deg, var(--system-dark) 0%, var(--system-dark-2) 100%)')
+          c.write_text(x)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html css/styles.css
+          git diff --cached --quiet || git commit -m 'Harmonize shared dark surfaces'
+          git push
