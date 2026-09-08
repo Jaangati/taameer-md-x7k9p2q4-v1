@@ -1,4 +1,4 @@
-:root { --accent: #757575; --accent-soft: rgba(117,117,117,0.12); --accent-hover: rgba(117,117,117,0.22); }
+:root { --accent: #757575; --accent-soft: rgba(117,117,117,0.12); --accent-hover: rgba(117,117,117,0.22); --system-dark: #030712; --system-dark-2: #111827; }
   body { font-family: 'Inter', sans-serif; }
   .font-arabic { font-family: 'Tajawal', sans-serif; }
   .bg-accent { background-color: var(--accent) !important; }
