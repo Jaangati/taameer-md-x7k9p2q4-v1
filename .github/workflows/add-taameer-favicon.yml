@@ -39,3 +39,4 @@ jobs:
           git add index.html assets/favicon.svg
           git diff --cached --quiet || git commit -m "Use TAAMEER icon as browser favicon"
           git push
+# trigger-v2
