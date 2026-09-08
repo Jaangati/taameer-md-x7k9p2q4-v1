@@ -32,27 +32,263 @@ tailwind.config = {
   </symbol>
 </svg>
 
+<!-- LOGIN -->
 <div id="loginView" class="login-bg min-h-screen flex items-center justify-center p-4">
   <div class="w-full max-w-5xl grid md:grid-cols-2 bg-white dark:bg-gray-900 rounded-3xl overflow-hidden shadow-2xl fade-in border border-gray-200 dark:border-gray-800">
     <div class="bg-gradient-to-br from-gray-900 via-[#1a1c1f] to-black p-10 flex flex-col justify-between text-white relative overflow-hidden min-h-[420px]">
       <div class="absolute inset-0 opacity-10"><div class="absolute top-10 right-10 w-48 h-48 rounded-full blur-3xl" style="background:var(--login-accent,#757575)"></div></div>
-      <div class="relative z-10"><div class="flex items-center space-x-3 mb-16"><div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20"><svg width="28" height="28" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="var(--login-accent,#757575)"/></svg></div><img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="h-14 w-44 object-contain object-left"></div><div><h1 class="text-4xl font-bold leading-tight mb-4">Building<br>Success,<br>Together.</h1><p class="text-gray-400 text-sm leading-relaxed max-w-xs">The people behind TAAMEER's growth — united in one workspace to shape what comes next.</p></div></div>
+      <div class="relative z-10">
+        <div class="flex items-center space-x-3 mb-16">
+          <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20"><svg width="28" height="28" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="var(--login-accent,#757575)"/></svg></div>
+          <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="h-14 w-44 object-contain object-left">
+        </div>
+        <div><h1 class="text-4xl font-bold leading-tight mb-4">Building<br>Success,<br>Together.</h1><p class="text-gray-400 text-sm leading-relaxed max-w-xs">The people behind TAAMEER's growth — united in one workspace to shape what comes next.</p></div>
+      </div>
       <div class="relative z-10 text-xs text-gray-500">© 2026 TAAMEER Group Marketing Department. All rights reserved.</div>
     </div>
-    <div class="p-10 flex flex-col justify-center"><div class="mb-8"><h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back</h2><p class="text-gray-500 text-sm">Sign in to your Marketing Digital Workspace</p></div><form id="loginForm" class="space-y-5"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email / Username</label><div class="relative"><i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="text" id="username" class="input-field pl-11" placeholder="Enter your work email" required></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label><div class="relative"><i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="password" id="password" class="input-field pl-11" placeholder="Enter your password" required></div></div><label class="flex items-center text-gray-600 dark:text-gray-400 text-sm"><input type="checkbox" id="rememberMe" class="mr-2 rounded border-gray-300">Remember me</label><button type="submit" class="btn-primary w-full">Sign In</button></form><div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"><p class="text-xs text-gray-500 text-center leading-relaxed"><i class="fas fa-info-circle mr-1"></i>Need an account or forgot your password?<br>Please contact <span class="font-semibold text-gray-700 dark:text-gray-300">Department Management</span>.</p></div></div>
+    <div class="p-10 flex flex-col justify-center">
+      <div class="mb-8"><h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back</h2><p class="text-gray-500 text-sm">Sign in to your Marketing Digital Workspace</p></div>
+      <form id="loginForm" class="space-y-5">
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email / Username</label><div class="relative"><i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="text" id="username" class="input-field pl-11" placeholder="Enter your work email" required></div></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label><div class="relative"><i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="password" id="password" class="input-field pl-11" placeholder="Enter your password" required></div></div>
+        <label class="flex items-center text-gray-600 dark:text-gray-400 text-sm"><input type="checkbox" id="rememberMe" class="mr-2 rounded border-gray-300">Remember me</label>
+        <button type="submit" class="btn-primary w-full">Sign In</button>
+      </form>
+      <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700"><p class="text-xs text-gray-500 text-center leading-relaxed"><i class="fas fa-info-circle mr-1"></i>Need an account or forgot your password?<br>Please contact <span class="font-semibold text-gray-700 dark:text-gray-300">Department Management</span>.</p></div>
+    </div>
   </div>
 </div>
 
-<div id="setPasswordView" class="login-bg min-h-screen flex items-center justify-center p-4 hidden"><div class="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-2xl fade-in border border-gray-200 dark:border-gray-800 p-8"><div class="text-center mb-6"><div class="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-accent"><svg width="32" height="32" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg></div><h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome, <span id="spName">User</span>!</h2><p class="text-gray-500 text-sm">This is your first login. Please set your password to continue.</p></div><form id="setPasswordForm" class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label><input type="password" id="spPassword" class="input-field" placeholder="Choose a password" required minlength="6"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label><input type="password" id="spConfirm" class="input-field" placeholder="Confirm your password" required></div><button type="submit" class="btn-primary w-full">Set Password & Continue</button></form><div class="mt-4 text-center"><p class="text-xs text-gray-400">© 2026 TAAMEER Group Marketing Department. All rights reserved.</p></div></div></div>
-
-<div id="dashboardView" class="hidden h-screen flex">
-  <aside id="sidebar" class="sidebar-collapsed bg-gray-950 flex flex-col flex-shrink-0 border-r border-gray-900 transition-all duration-300 overflow-hidden"><div class="sidebar-header flex items-center justify-between px-3 py-4 border-b border-gray-900 relative"><div class="flex items-center space-x-3 overflow-hidden flex-1"><div class="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center flex-shrink-0"><svg width="22" height="22" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg></div><img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="sidebar-label h-9 w-28 object-contain object-left flex-shrink-0"></div><button onclick="toggleSidebar()" class="sidebar-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all flex-shrink-0" title="Toggle sidebar"><i class="fas fa-chevron-left text-xs" id="toggleIcon"></i></button></div><nav class="flex-1 overflow-y-auto py-3 px-3" id="sidebarNav"></nav><div class="p-3 border-t border-gray-900 space-y-1"><button onclick="toggleTheme()" class="nav-item w-full" title="Toggle theme"><span class="nav-icon"><i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block"></i></span><span class="nav-label sidebar-label">Theme</span></button><button onclick="logout()" class="nav-item w-full" title="Logout"><span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span><span class="nav-label sidebar-label">Logout</span></button></div></aside>
-  <div class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950"><header class="flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0"><div><h1 class="text-lg font-bold text-gray-900 dark:text-white" id="headerTitle">Home</h1><p class="text-xs text-gray-500" id="headerSubtitle">TAAMEER Marketing Dashboard</p></div><div class="flex items-center space-x-3"><button class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500" id="notificationBell"><i class="fas fa-bell"></i><span id="notificationBadge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold items-center justify-center"></span></button><div id="headerProfile"></div></div></header><main class="flex-1 overflow-hidden p-4" id="mainContent"><section id="view-home" class="view-section h-full"></section><section id="view-calendar" class="view-section hidden h-full"></section><section id="view-thinkspace" class="view-section hidden h-full"></section><section id="view-vault" class="view-section hidden h-full"></section><section id="view-notifications" class="view-section hidden h-full"></section><section id="view-profile" class="view-section hidden h-full"></section><section id="view-account" class="view-section hidden h-full"></section><section id="view-admin-users" class="view-section hidden h-full"></section><section id="view-admin-modules" class="view-section hidden h-full"></section><section id="view-admin-permissions" class="view-section hidden h-full"></section><section id="view-admin-settings" class="view-section hidden h-full"></section><section id="view-activity-log" class="view-section hidden h-full"></section><section id="view-backups" class="view-section hidden h-full"></section><section id="view-module" class="view-section hidden h-full"></section></main></div>
+<!-- SET PASSWORD -->
+<div id="setPasswordView" class="login-bg min-h-screen flex items-center justify-center p-4 hidden">
+  <div class="w-full max-w-md bg-white dark:bg-gray-900 rounded-3xl shadow-2xl fade-in border border-gray-200 dark:border-gray-800 p-8">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-accent"><svg width="32" height="32" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg></div>
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome, <span id="spName">User</span>!</h2>
+      <p class="text-gray-500 text-sm">This is your first login. Please set your password to continue.</p>
+    </div>
+    <form id="setPasswordForm" class="space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label><input type="password" id="spPassword" class="input-field" placeholder="Choose a password" required minlength="6"></div>
+      <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label><input type="password" id="spConfirm" class="input-field" placeholder="Confirm your password" required></div>
+      <button type="submit" class="btn-primary w-full">Set Password & Continue</button>
+    </form>
+    <div class="mt-4 text-center"><p class="text-xs text-gray-400">© 2026 TAAMEER Group Marketing Department. All rights reserved.</p></div>
+  </div>
 </div>
 
-<div class="modal-overlay" id="userModal"><div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800 fade-in"><div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"><h3 class="text-xl font-bold text-gray-900 dark:text-white" id="userModalTitle">Add New User</h3><button onclick="closeUserModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button></div><form id="userForm" class="p-6 space-y-4"><input type="hidden" id="editUserId"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username *</label><input type="text" id="uUsername" class="input-field" required></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password <span class="text-xs text-gray-400" id="passHint">(leave blank — user sets on first login)</span></label><div class="relative"><input type="text" id="uPassword" class="input-field pr-10 font-mono" placeholder="Leave blank for new users"><button type="button" onclick="toggleModalPasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i class="fas fa-eye" id="modalPwEye"></i></button></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label><input type="text" id="uFullName" class="input-field" required></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title *</label><input type="text" id="uJobTitle" class="input-field" placeholder="e.g. Marketing Manager" required></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email</label><input type="email" id="uEmail" class="input-field" placeholder="name@taameer.com"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label><input type="tel" id="uPhone" class="input-field" placeholder="+974..."></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label><select id="uRole" class="input-field"><option value="user">User</option><option value="admin">Admin</option></select></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label><select id="uStatus" class="input-field"><option value="active">Active</option><option value="inactive">Inactive</option><option value="suspended">Suspended</option></select></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Modules</label><div id="userModuleCheckboxes" class="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"></div></div><div class="flex space-x-3 pt-3 border-t border-gray-200 dark:border-gray-800"><button type="button" onclick="closeUserModal()" class="btn-secondary flex-1">Cancel</button><button type="submit" class="btn-primary flex-1">Save User</button></div></form></div></div>
+<!-- DASHBOARD -->
+<div id="dashboardView" class="hidden h-screen flex">
+  <aside id="sidebar" class="sidebar-collapsed bg-gray-950 flex flex-col flex-shrink-0 border-r border-gray-900 transition-all duration-300 overflow-hidden">
+    <div class="sidebar-header flex items-center justify-between px-3 py-4 border-b border-gray-900 relative">
+      <div class="flex items-center space-x-3 overflow-hidden flex-1">
+        <div class="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center flex-shrink-0"><svg width="22" height="22" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg></div>
+        <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="sidebar-label h-9 w-28 object-contain object-left flex-shrink-0">
+      </div>
+      <button onclick="toggleSidebar()" class="sidebar-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all flex-shrink-0" title="Toggle sidebar"><i class="fas fa-chevron-left text-xs" id="toggleIcon"></i></button>
+    </div>
+    <nav class="flex-1 overflow-y-auto py-3 px-3" id="sidebarNav"></nav>
+    <div class="p-3 border-t border-gray-900 space-y-1">
+      <button onclick="toggleTheme()" class="nav-item w-full" title="Toggle theme"><span class="nav-icon"><i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block"></i></span><span class="nav-label sidebar-label">Theme</span></button>
+      <button onclick="logout()" class="nav-item w-full" title="Logout"><span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span><span class="nav-label sidebar-label">Logout</span></button>
+    </div>
+  </aside>
 
-<div class="modal-overlay" id="moduleModal"><div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-800 fade-in"><div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"><h3 class="text-xl font-bold text-gray-900 dark:text-white" id="moduleModalTitle">New Module</h3><button onclick="closeModuleModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button></div><form id="moduleForm" class="p-6 space-y-4"><input type="hidden" id="editModuleId"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Module Name *</label><input type="text" id="mName" class="input-field" required placeholder="e.g. Campaigns"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label><textarea id="mDesc" class="input-field" rows="2" placeholder="Brief description"></textarea></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icon (FontAwesome)</label><input type="text" id="mIcon" class="input-field" placeholder="fa-flask" value="fa-cube"></div></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label><select id="mStatus" class="input-field"><option value="active">Active</option><option value="soon">Coming Soon</option><option value="disabled">Disabled</option></select></div><div class="flex space-x-3 pt-3 border-t border-gray-200 dark:border-gray-800"><button type="button" onclick="closeModuleModal()" class="btn-secondary flex-1">Cancel</button><button type="submit" class="btn-primary flex-1">Save Module</button></div></form></div></div>
+  <div class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <header class="flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
+      <div><h1 class="text-lg font-bold text-gray-900 dark:text-white" id="headerTitle">Home</h1><p class="text-xs text-gray-500" id="headerSubtitle">TAAMEER Marketing Dashboard</p></div>
+      <div class="flex items-center space-x-3">
+        <button class="relative w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-accent transition-colors border border-gray-200 dark:border-gray-700"><i class="fas fa-bell"></i></button>
+        <div class="dropdown">
+          <button onclick="toggleUserDropdown()" class="flex items-center space-x-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+            <div class="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white font-semibold text-sm overflow-hidden" id="userAvatar"><img id="userAvatarImg" class="w-full h-full object-cover hidden"><span id="userAvatarText">A</span></div>
+            <div class="hidden md:block text-left"><p class="text-sm font-semibold text-gray-900 dark:text-white" id="userName">Admin</p><p class="text-xs text-gray-500" id="userRole">Administrator</p></div>
+            <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+          </button>
+          <div class="dropdown-menu" id="userDropdown">
+            <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-700 mb-1"><p class="text-sm font-semibold text-gray-900 dark:text-white" id="ddName">Admin</p><p class="text-xs text-gray-500" id="ddEmail">admin@taameer.com</p><p class="text-xs text-accent capitalize" id="ddRole">admin</p></div>
+            <div class="dropdown-item" onclick="showView('profile'); closeUserDropdown();"><i class="fas fa-user text-gray-400 w-4"></i><span>My Profile</span></div>
+            <div class="dropdown-item" onclick="showView('account'); closeUserDropdown();"><i class="fas fa-cog text-gray-400 w-4"></i><span>Account Settings</span></div>
+            <div class="dropdown-item" onclick="logout()" style="color: #EF4444;"><i class="fas fa-sign-out-alt w-4"></i><span>Logout</span></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-auto p-6" id="mainContent">
+      <!-- HOME -->
+      <div id="view-home" class="view-section fade-in h-full overflow-hidden">
+        <div class="h-full flex flex-col gap-5 min-h-0">
+          <section class="relative overflow-hidden rounded-3xl border border-gray-800 shadow-sm text-white flex-shrink-0" style="background:linear-gradient(135deg,#111318 0%,#1d2026 58%,var(--accent) 175%);">
+            <div class="absolute -top-24 -right-12 w-80 h-80 rounded-full opacity-30 blur-3xl" style="background:var(--accent)"></div>
+            <div class="absolute -bottom-28 left-1/3 w-64 h-64 rounded-full bg-white opacity-[0.04] blur-3xl"></div>
+            <div class="relative px-7 py-7 md:px-9 md:py-8 flex items-center justify-between gap-8">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 mb-3"><span class="w-2 h-2 rounded-full" style="background:var(--accent)"></span><p id="greetingText" class="text-sm text-gray-300">Good morning</p></div>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Welcome back, <span id="welcomeName">Admin</span> 👋</h2>
+                <p id="todayFullDate" class="text-sm text-gray-400 mt-3"></p>
+                <p class="text-sm text-gray-400 mt-4 max-w-xl">Your TAAMEER Marketing control panel — quick access to your workspace and tools.</p>
+              </div>
+              <div class="hidden md:flex items-center justify-center flex-shrink-0 w-64 h-28 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-sm px-7">
+                <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="w-full h-full object-contain opacity-95">
+              </div>
+            </div>
+          </section>
+
+          <section class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
+              <div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">Workspace</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1">Ready</p><p class="text-xs text-gray-500 mt-1">TAAMEER Marketing OS</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-gauge-high"></i></div>
+            </div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
+              <div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Access</p><p class="text-2xl font-bold text-gray-900 dark:text-white mt-1" id="myModulesCount">0</p><p class="text-xs text-gray-500 mt-1">Modules available</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-cubes"></i></div>
+            </div>
+            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 flex items-center justify-between">
+              <div><p class="text-xs font-medium text-gray-400 uppercase tracking-wide">My Role</p><p class="text-lg font-bold text-gray-900 dark:text-white mt-1" id="homeRoleLabel">Team Member</p><p class="text-xs text-gray-500 mt-1">Current access level</p></div><div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-user-shield"></i></div>
+            </div>
+          </section>
+
+          <section class="min-h-0 flex-1 flex flex-col">
+            <div class="flex items-end justify-between mb-3 flex-shrink-0"><div><h3 class="font-bold text-gray-900 dark:text-white text-lg">Your Modules</h3><p class="text-xs text-gray-500 mt-0.5">Everything you need, one click away.</p></div><span class="text-xs text-gray-400">Control panel</span></div>
+            <div class="min-h-0 flex-1"><div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 h-full content-start" id="homeModulesGrid"></div></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div id="view-calendar" class="view-section hidden fade-in">
+        <div class="stat-card bg-white dark:bg-gray-900 p-6">
+          <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div><h2 class="text-2xl font-bold text-gray-900 dark:text-white" id="calTitle">August 2026</h2><p class="text-sm text-gray-500 mt-1">Click any day to view details</p></div>
+            <div class="flex items-center space-x-2"><button onclick="changeMonth(-1)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-accent-soft flex items-center justify-center transition-colors border border-gray-200 dark:border-gray-700"><i class="fas fa-chevron-left"></i></button><button onclick="goToday()" class="btn-primary">Today</button><button onclick="changeMonth(1)" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-accent-soft flex items-center justify-center transition-colors border border-gray-200 dark:border-gray-700"><i class="fas fa-chevron-right"></i></button></div>
+          </div>
+          <div class="flex items-center space-x-1 mb-5 overflow-x-auto pb-1" id="monthTabs"></div>
+          <div class="flex space-x-2 overflow-x-auto pb-3 mb-5" id="dayStrip"></div>
+          <div class="grid grid-cols-7 gap-2 mb-2"><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Sun</div><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Mon</div><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Tue</div><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Wed</div><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Thu</div><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Fri</div><div class="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2">Sat</div></div>
+          <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- MODULE TEST -->
+      <div id="view-module-test" class="view-section hidden fade-in">
+        <div class="stat-card bg-white dark:bg-gray-900 p-6">
+          <div class="flex items-center space-x-4 mb-6"><div class="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center shadow-accent"><i class="fas fa-flask text-white text-2xl"></i></div><div><h2 class="text-2xl font-bold text-gray-900 dark:text-white">Module Test</h2><p class="text-sm text-gray-500">This is a placeholder module for testing the system architecture</p></div></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-sm text-gray-500 mb-1">Status</div><div class="text-xl font-bold text-green-600">Active</div></div><div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-sm text-gray-500 mb-1">Version</div><div class="text-xl font-bold text-gray-900 dark:text-white">0.1.0</div></div><div class="p-5 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-sm text-gray-500 mb-1">Last Updated</div><div class="text-xl font-bold text-gray-900 dark:text-white" id="moduleTestDate">—</div></div></div>
+          <div class="p-6 bg-accent-soft border border-accent/20 rounded-xl"><h4 class="font-semibold text-gray-900 dark:text-white mb-2">🚧 Under Development</h4><p class="text-sm text-gray-600 dark:text-gray-400">This module is a test placeholder. Future modules will follow the same pattern and appear directly in the sidebar once assigned to your role by the administrator.</p></div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div id="view-profile" class="view-section hidden fade-in">
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="mb-2"><h2 class="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h2><p class="text-sm text-gray-500 mt-1">Your public profile information</p></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <div class="flex items-center space-x-4 mb-5">
+              <div class="avatar-upload" onclick="document.getElementById('avatarUpload').click()">
+                <div class="w-20 h-20 rounded-2xl bg-accent flex items-center justify-center text-white font-bold text-3xl overflow-hidden" id="profileAvatarBig"><img id="profileAvatarImg" class="w-full h-full object-cover hidden"><span id="profileAvatarText">A</span></div>
+                <div class="avatar-overlay"><i class="fas fa-camera"></i></div>
+                <input type="file" id="avatarUpload" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+              </div>
+              <div><h3 class="font-bold text-gray-900 dark:text-white text-lg" id="profileFullName">Admin User</h3><p class="text-sm text-gray-500"><span id="profileJobTitle" class="text-accent font-medium">—</span></p><p class="text-xs text-gray-400 mt-1">@<span id="profileUsername">admin</span></p></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-envelope mr-1"></i>Work Email</div><div class="font-medium text-gray-900 dark:text-white" id="profileEmailDisplay">—</div></div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-phone mr-1"></i>Phone Number</div><div class="font-medium text-gray-900 dark:text-white" id="profilePhoneDisplay">—</div></div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-clock mr-1"></i>Last Login</div><div class="font-medium text-gray-900 dark:text-white" id="profileLastLogin">—</div></div>
+              <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-globe mr-1"></i>Timezone</div><div class="font-medium text-gray-900 dark:text-white" id="profileTz">UTC</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT SETTINGS -->
+      <div id="view-account" class="view-section hidden fade-in">
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="mb-2"><h2 class="text-2xl font-bold text-gray-900 dark:text-white">Account Settings</h2><p class="text-sm text-gray-500 mt-1">Manage your personal preferences</p></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Identity</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-xs text-gray-500 mb-1">Full Name</div><div class="font-medium text-gray-900 dark:text-white" id="accNameDisplay">—</div><div class="text-xs text-gray-400 mt-2"><i class="fas fa-lock mr-1"></i>Managed by admin</div></div><div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"><div class="text-xs text-gray-500 mb-1">Job Title</div><div class="font-medium text-gray-900 dark:text-white" id="accJobDisplay">—</div><div class="text-xs text-gray-400 mt-2"><i class="fas fa-lock mr-1"></i>Managed by admin</div></div></div></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Contact Information</h3><form class="space-y-4" onsubmit="event.preventDefault(); saveMyProfile();"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email</label><input type="email" id="myEmail" class="input-field" placeholder="name@taameer.com"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label><input type="tel" id="myPhone" class="input-field" placeholder="+974..."></div></div><button type="submit" class="btn-primary">Save Changes</button></form></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Change Password</h3><form class="space-y-4" onsubmit="event.preventDefault(); changePassword();"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label><input type="password" id="curPass" class="input-field" required></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label><input type="password" id="newPass" class="input-field" required minlength="6"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label><input type="password" id="confPass" class="input-field" required></div></div><button type="submit" class="btn-primary">Update Password</button></form></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-2">Personal Accent Color</h3><p class="text-sm text-gray-500 mb-4">Choose your preferred interface color. This only affects your view.</p><div class="grid grid-cols-6 md:grid-cols-8 gap-3" id="personalColorPicker"><div class="color-swatch" style="background: #757575" data-color="#757575" data-name="Gray" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #3a3d42" data-color="#3a3d42" data-name="Charcoal" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #F97316" data-color="#F97316" data-name="Orange" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #3B82F6" data-color="#3B82F6" data-name="Blue" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #10B981" data-color="#10B981" data-name="Green" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #EF4444" data-color="#EF4444" data-name="Red" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #8B5CF6" data-color="#8B5CF6" data-name="Purple" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #EC4899" data-color="#EC4899" data-name="Pink" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #14B8A6" data-color="#14B8A6" data-name="Teal" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #F59E0B" data-color="#F59E0B" data-name="Amber" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #06B6D4" data-color="#06B6D4" data-name="Cyan" onclick="setPersonalAccent(this)"></div><div class="color-swatch" style="background: #6366F1" data-color="#6366F1" data-name="Indigo" onclick="setPersonalAccent(this)"></div></div><div class="mt-4 flex items-center space-x-3"><label class="text-sm text-gray-600 dark:text-gray-400">Custom:</label><input type="color" id="personalCustomColor" class="w-10 h-10 rounded-lg cursor-pointer border-0" value="#757575" onchange="setPersonalCustomAccent(this.value)"><span class="text-xs text-gray-500 font-mono" id="personalCustomColorHex">#757575</span><button onclick="resetPersonalAccent()" class="btn-secondary text-xs ml-auto">Reset to system default</button></div></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Appearance</h3><div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><div><p class="font-medium text-gray-900 dark:text-white">Dark Mode</p><p class="text-xs text-gray-500">Switch between light and dark theme</p></div><div class="toggle" id="darkToggle" onclick="toggleTheme()"></div></div></div>
+        </div>
+      </div>
+
+      <!-- ADMIN: USERS -->
+      <div id="view-users" class="view-section hidden fade-in">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3"><div><h2 class="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2><p class="text-sm text-gray-500 mt-1">Manage team members, roles, and access</p></div><button onclick="openUserModal()" class="btn-primary flex items-center space-x-2"><i class="fas fa-plus"></i><span>Add User</span></button></div>
+        <div class="stat-card bg-white dark:bg-gray-900 overflow-hidden"><div class="overflow-x-auto"><table class="w-full"><thead class="bg-gray-50 dark:bg-gray-800"><tr><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Job Title</th><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Password</th><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th><th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Login</th><th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th></tr></thead><tbody id="usersTableBody" class="divide-y divide-gray-100 dark:divide-gray-800"></tbody></table></div></div>
+      </div>
+
+      <!-- ADMIN: MODULES -->
+      <div id="view-modules-admin" class="view-section hidden fade-in">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3"><div><h2 class="text-2xl font-bold text-gray-900 dark:text-white">Module Management</h2><p class="text-sm text-gray-500 mt-1">Create, edit, and assign modules to roles</p></div><button onclick="openModuleModal()" class="btn-primary flex items-center space-x-2"><i class="fas fa-plus"></i><span>New Module</span></button></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="adminModulesGrid"></div>
+      </div>
+
+      <!-- ADMIN: PERMISSIONS -->
+      <div id="view-permissions" class="view-section hidden fade-in">
+        <div class="mb-6"><h2 class="text-2xl font-bold text-gray-900 dark:text-white">Permissions Matrix</h2><p class="text-sm text-gray-500 mt-1">Control what each role can do in each module</p></div>
+        <div class="stat-card bg-white dark:bg-gray-900 p-6"><div class="flex items-center space-x-3 mb-4"><label class="text-sm font-medium text-gray-700 dark:text-gray-300">Role:</label><select id="permRoleSelect" onchange="renderPermissions()" class="input-field w-auto"><option value="user">User</option><option value="admin">Admin</option></select></div><div id="permissionsList" class="space-y-3"></div></div>
+      </div>
+
+      <!-- ADMIN: SETTINGS -->
+      <div id="view-settings" class="view-section hidden fade-in">
+        <div class="max-w-3xl mx-auto space-y-5">
+          <div class="mb-2"><h2 class="text-2xl font-bold text-gray-900 dark:text-white">System Settings</h2><p class="text-sm text-gray-500 mt-1">Full administrative control over the TAAMEER dashboard</p></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Branding</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Organization Name</label><input type="text" id="sysOrgName" class="input-field" value="TAAMEER Group"></div><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">System Tagline</label><input type="text" id="sysTagline" class="input-field" value="Marketing Dashboard"></div><button onclick="saveBranding()" class="btn-primary">Save Branding</button></div></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Default Accent Color</h3><p class="text-sm text-gray-500 mb-4">This is the default color for new users. Each user can override it in their Account Settings.</p><div class="grid grid-cols-6 md:grid-cols-8 gap-3" id="colorPicker"><div class="color-swatch active" style="background: #757575" data-color="#757575" data-name="Gray" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #3a3d42" data-color="#3a3d42" data-name="Charcoal" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #F97316" data-color="#F97316" data-name="Orange" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #3B82F6" data-color="#3B82F6" data-name="Blue" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #10B981" data-color="#10B981" data-name="Green" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #EF4444" data-color="#EF4444" data-name="Red" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #8B5CF6" data-color="#8B5CF6" data-name="Purple" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #EC4899" data-color="#EC4899" data-name="Pink" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #14B8A6" data-color="#14B8A6" data-name="Teal" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #F59E0B" data-color="#F59E0B" data-name="Amber" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #06B6D4" data-color="#06B6D4" data-name="Cyan" onclick="setAccent(this)"></div><div class="color-swatch" style="background: #6366F1" data-color="#6366F1" data-name="Indigo" onclick="setAccent(this)"></div></div><div class="mt-4 flex items-center space-x-3"><label class="text-sm text-gray-600 dark:text-gray-400">Custom:</label><input type="color" id="customColor" class="w-10 h-10 rounded-lg cursor-pointer border-0" value="#757575" onchange="setCustomAccent(this.value)"><span class="text-xs text-gray-500 font-mono" id="customColorHex">#757575</span></div></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Notifications</h3><div class="space-y-3"><div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><div><p class="font-medium text-gray-900 dark:text-white">Email Notifications</p><p class="text-xs text-gray-500">Send updates via work email</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div><div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><div><p class="font-medium text-gray-900 dark:text-white">WhatsApp Integration</p><p class="text-xs text-gray-500">Send notifications to user phone numbers (coming soon)</p></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div><div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><div><p class="font-medium text-gray-900 dark:text-white">In-App Notifications</p><p class="text-xs text-gray-500">Show bell icon alerts</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div></div></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6"><h3 class="font-bold text-gray-900 dark:text-white mb-4">Security</h3><div class="space-y-3"><div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><div><p class="font-medium text-gray-900 dark:text-white">Require Strong Passwords</p><p class="text-xs text-gray-500">Minimum 8 characters with mixed case</p></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div><div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><div><p class="font-medium text-gray-900 dark:text-white">Session Timeout</p><p class="text-xs text-gray-500">Auto-logout after inactivity</p></div><select class="input-field w-auto"><option>30 minutes</option><option>1 hour</option><option>4 hours</option><option>Never</option></select></div></div></div>
+          <div class="stat-card bg-white dark:bg-gray-900 p-6">
+            <h3 class="font-bold text-gray-900 dark:text-white mb-4">System Information</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Version</span><span class="font-medium text-gray-900 dark:text-white">1.0.0</span></div>
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Build</span><span class="font-medium text-gray-900 dark:text-white">2026.08.18</span></div>
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Organization</span><span class="font-medium text-gray-900 dark:text-white" id="sysOrgDisplay">TAAMEER Group</span></div>
+              <div class="flex justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"><span class="text-gray-500">Total Users</span><span class="font-medium text-gray-900 dark:text-white" id="sysTotalUsers">0</span></div>
+            </div>
+          </div>
+          <div class="text-center text-xs text-gray-400 pt-2">© 2026 TAAMEER Group Marketing Department. All rights reserved.</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800 fade-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"><h3 class="text-xl font-bold text-gray-900 dark:text-white" id="userModalTitle">Add New User</h3><button onclick="closeUserModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button></div>
+    <form id="userForm" class="p-6 space-y-4">
+      <input type="hidden" id="editUserId">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username *</label><input type="text" id="uUsername" class="input-field" required></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password <span class="text-xs text-gray-400" id="passHint">(leave blank — user sets on first login)</span></label><div class="relative"><input type="text" id="uPassword" class="input-field pr-10 font-mono" placeholder="Leave blank for new users"><button type="button" onclick="toggleModalPasswordVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i class="fas fa-eye" id="modalPwEye"></i></button></div></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label><input type="text" id="uFullName" class="input-field" required></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title *</label><input type="text" id="uJobTitle" class="input-field" placeholder="e.g. Marketing Manager" required></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Work Email</label><input type="email" id="uEmail" class="input-field" placeholder="name@taameer.com"></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label><input type="tel" id="uPhone" class="input-field" placeholder="+974..."></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label><select id="uRole" class="input-field"><option value="user">User</option><option value="admin">Admin</option></select></div>
+        <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label><select id="uStatus" class="input-field"><option value="active">Active</option><option value="inactive">Inactive</option><option value="suspended">Suspended</option></select></div>
+      </div>
+      <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assigned Modules</label><div id="userModuleCheckboxes" class="grid grid-cols-2 md:grid-cols-3 gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl"></div></div>
+      <div class="flex space-x-3 pt-3 border-t border-gray-200 dark:border-gray-800"><button type="button" onclick="closeUserModal()" class="btn-secondary flex-1">Cancel</button><button type="submit" class="btn-primary flex-1">Save User</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- MODULE MODAL -->
+<div class="modal-overlay" id="moduleModal">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200 dark:border-gray-800 fade-in">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800"><h3 class="text-xl font-bold text-gray-900 dark:text-white" id="moduleModalTitle">New Module</h3><button onclick="closeModuleModal()" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fas fa-times"></i></button></div>
+    <form id="moduleForm" class="p-6 space-y-4">
+      <input type="hidden" id="editModuleId">
+      <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Module Name *</label><input type="text" id="mName" class="input-field" required placeholder="e.g. Campaigns"></div>
+      <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label><textarea id="mDesc" class="input-field" rows="2" placeholder="Brief description"></textarea></div>
+      <div class="grid grid-cols-2 gap-4"><div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Icon (FontAwesome)</label><input type="text" id="mIcon" class="input-field" placeholder="fa-flask" value="fa-cube"></div></div>
+      <div><label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label><select id="mStatus" class="input-field"><option value="active">Active</option><option value="soon">Coming Soon</option><option value="disabled">Disabled</option></select></div>
+      <div class="flex space-x-3 pt-3 border-t border-gray-200 dark:border-gray-800"><button type="button" onclick="closeModuleModal()" class="btn-secondary flex-1">Cancel</button><button type="submit" class="btn-primary flex-1">Save Module</button></div>
+    </form>
+  </div>
+</div>
 
 <script src="js/core.js"></script>
 <script src="js/modules.js"></script>
