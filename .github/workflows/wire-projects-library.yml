@@ -1,0 +1,48 @@
+name: Wire Projects Library
+on:
+  push:
+    paths:
+      - '.github/workflows/wire-projects-library.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wire Projects module
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('js/projects.js')
+          s=p.read_text()
+          old="function render(view){ if(!view.dataset.projectsReady){renderShell(view);view.dataset.projectsReady='1';} }"
+          new="""function render(view){
+    if(!view.dataset.projectsReady){renderShell(view);view.dataset.projectsReady='1';}
+    if(!view.dataset.projectsLoaded){
+      view.dataset.projectsLoaded='1';
+      load().then(()=>renderLibrary()).catch(e=>{console.error('Projects load failed',e);const main=document.getElementById('projectsMain');if(main)main.innerHTML=`<div class=\"projects-empty\"><div><i class=\"fas fa-triangle-exclamation\"></i><div style=\"font-weight:800\">Could not load projects</div><div style=\"font-size:11px;margin-top:5px\">${esc(e.message||'Please refresh and try again.')}</div></div></div>`;});
+    }
+  }"""
+          if old not in s:
+              raise SystemExit('Projects render hook not found')
+          p.write_text(s.replace(old,new,1))
+
+          i=Path('index.html')
+          h=i.read_text()
+          line='<script src="js/projects.js?v=20260908-v1"></script>'
+          if line not in h:
+              anchor='<script src="js/vault.js?v=20260908-v6"></script>'
+              if anchor not in h:
+                  raise SystemExit('Vault script anchor not found')
+              h=h.replace(anchor,anchor+'\n'+line,1)
+              i.write_text(h)
+          PY
+          node --check js/projects.js
+          grep -q 'js/projects.js?v=20260908-v1' index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/projects.js index.html
+          git diff --cached --quiet || git commit -m "Wire Projects marketing library"
+          git push
