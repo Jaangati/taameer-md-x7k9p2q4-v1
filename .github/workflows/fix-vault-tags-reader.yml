@@ -1,0 +1,29 @@
+name: Fix Vault tags and reader
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-vault-tags-reader.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch Vault
+        run: python .github/scripts/fix_vault_tags_scroll.py
+      - name: Validate JavaScript
+        run: node --check js/vault.js
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/vault.js
+          git diff --cached --quiet || git commit -m "Fix Vault tag editing and long note scrolling"
+          git push
