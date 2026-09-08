@@ -120,7 +120,17 @@ const ProjectsApp = (() => {
   function selectField(label,id,opts,value){ return `<div class="project-field"><label>${label}</label><select id="${id}">${opts.map(x=>`<option ${x===value?'selected':''}>${x}</option>`).join('')}</select></div>`; }
   function val(id){ return document.getElementById(id)?.value.trim()||''; } function csv(v){ return v.split(',').map(x=>x.trim()).filter(Boolean); }
   async function open(){ const view=document.getElementById('view-projects'); if(!view)return; if(!view.dataset.projectsReady){ renderShell(view); view.dataset.projectsReady='1'; } try{ await load(); renderLibrary(); }catch(e){ console.error('Projects load failed',e); const main=document.getElementById('projectsMain'); if(main)main.innerHTML=`<div class="projects-empty"><div><i class="fas fa-triangle-exclamation"></i><div style="font-weight:800">Could not load projects</div><div style="font-size:11px;margin-top:5px">${esc(e.message||'Please refresh and try again.')}</div></div></div>`; } }
-  function render(view){ if(!view.dataset.projectsReady){renderShell(view);view.dataset.projectsReady='1';} }
+  function render(view){
+    if(!view.dataset.projectsReady){renderShell(view);view.dataset.projectsReady='1';}
+    if(!view.dataset.projectsLoaded){
+      view.dataset.projectsLoaded='1';
+      load().then(()=>renderLibrary()).catch(e=>{
+        console.error('Projects load failed',e);
+        const main=document.getElementById('projectsMain');
+        if(main) main.innerHTML='<div class="projects-empty"><div><i class="fas fa-triangle-exclamation"></i><div style="font-weight:800">Could not load projects</div><div style="font-size:11px;margin-top:5px">Please refresh and try again.</div></div></div>';
+      });
+    }
+  }
   return {open,render};
 })();
 
