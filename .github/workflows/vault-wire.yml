@@ -14,20 +14,22 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
           p=Path('index.html')
           s=p.read_text()
-          marker='<script src="js/thinkspace.js?v=20260908-pro1"></script>'
           if 'js/vault.js' not in s:
-              assert marker in s, 'Thinkspace script marker not found'
-              s=s.replace(marker, marker+'\n<script src="js/vault.js?v=20260908-v1"></script>',1)
+              marker='<script src="js/app.js?v=20260907-final"></script>'
+              assert marker in s, 'App script marker not found'
+              s=s.replace(marker, '<script src="js/vault.js?v=20260908-v1"></script>\n'+marker, 1)
           p.write_text(s)
 
           p=Path('js/ui.js')
           s=p.read_text()
-          marker="if (viewName === 'thinkspace' && typeof ThinkspaceApp !== 'undefined' && ThinkspaceApp?.open) ThinkspaceApp.open();"
           if "viewName === 'vault'" not in s:
+              marker="if (viewName === 'thinkspace' && typeof ThinkspaceApp !== 'undefined' && ThinkspaceApp?.open) ThinkspaceApp.open();"
               assert marker in s, 'Thinkspace routing marker not found'
-              s=s.replace(marker, marker+"\n  if (viewName === 'vault' && typeof VaultApp !== 'undefined' && VaultApp?.open) VaultApp.open();",1)
+              s=s.replace(marker, marker+"\n  if (viewName === 'vault' && typeof VaultApp !== 'undefined' && VaultApp?.open) VaultApp.open();", 1)
           p.write_text(s)
           PY
       - name: Syntax check
