@@ -1,0 +1,36 @@
+name: Vault UI recovery
+on:
+  push:
+    paths:
+      - '.github/workflows/vault-ui-fix.yml'
+permissions:
+  contents: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore full dashboard and keep Vault v2
+        run: |
+          git checkout 2e6875c715e2bd3dfe88c5af1a5bd2d11f0b491b -- index.html
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('js/vault.js?v=20260908-v1','js/vault.js?v=20260908-v2')
+          p.write_text(s)
+          PY
+      - name: Validate JavaScript
+        run: |
+          node --check js/vault.js
+          node --check js/ui.js
+          node --check js/app.js
+      - name: Commit recovery
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Restore dashboard shell and activate Vault v2'
+          git push
