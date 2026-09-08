@@ -1,5 +1,17 @@
 // ---------- Startup ----------
+function ensureTaameerFavicon(){
+  let link=document.querySelector('link[rel="icon"]');
+  if(!link){
+    link=document.createElement('link');
+    link.rel='icon';
+    link.type='image/svg+xml';
+    document.head.appendChild(link);
+  }
+  link.href='assets/favicon.svg?v=3';
+}
+
 async function boot(){
+  ensureTaameerFavicon();
   updateClock();
   setInterval(updateClock,1000);
   loadTheme();
