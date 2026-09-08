@@ -1,0 +1,43 @@
+name: Wire Vault module
+on:
+  push:
+    paths:
+      - '.github/workflows/vault-wire.yml'
+permissions:
+  contents: write
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wire Vault frontend
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          marker='<script src="js/thinkspace.js?v=20260908-pro1"></script>'
+          if 'js/vault.js' not in s:
+              assert marker in s, 'Thinkspace script marker not found'
+              s=s.replace(marker, marker+'\n<script src="js/vault.js?v=20260908-v1"></script>',1)
+          p.write_text(s)
+
+          p=Path('js/ui.js')
+          s=p.read_text()
+          marker="if (viewName === 'thinkspace' && typeof ThinkspaceApp !== 'undefined' && ThinkspaceApp?.open) ThinkspaceApp.open();"
+          if "viewName === 'vault'" not in s:
+              assert marker in s, 'Thinkspace routing marker not found'
+              s=s.replace(marker, marker+"\n  if (viewName === 'vault' && typeof VaultApp !== 'undefined' && VaultApp?.open) VaultApp.open();",1)
+          p.write_text(s)
+          PY
+      - name: Syntax check
+        run: |
+          node --check js/vault.js
+          node --check js/ui.js
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html js/ui.js
+          git diff --cached --quiet || git commit -m 'Activate Vault module'
+          git push
