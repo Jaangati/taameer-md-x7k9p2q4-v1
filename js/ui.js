@@ -93,8 +93,8 @@ function showView(viewName) {
   target.classList.remove('hidden'); target.classList.add('fade-in');
   const titles = VIEW_TITLES[viewName] || (module ? [module.name, module.desc || 'Module'] : ['TAAMEER','']);
   document.getElementById('headerTitle').textContent = titles[0]; document.getElementById('headerSubtitle').textContent = titles[1];
-  if (viewName === 'calendar' && window.CalendarApp) CalendarApp.open();
-  if (viewName === 'thinkspace' && window.ThinkspaceApp) ThinkspaceApp.open();
+  if (viewName === 'calendar' && typeof CalendarApp !== 'undefined' && CalendarApp?.open) CalendarApp.open();
+  if (viewName === 'thinkspace' && typeof ThinkspaceApp !== 'undefined' && ThinkspaceApp?.open) ThinkspaceApp.open();
   if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
 }
