@@ -80,7 +80,7 @@ if (sidebarHeader) {
   });
 }
 
-const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','My schedule & department activity'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
+const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','My schedule & department activity'], thinkspace: ['Thinkspace','Visual brainstorming, diagrams and collaborative boards'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
 function showView(viewName) {
   if (!state.currentUser) return;
   if (['users','permissions','settings','modules-admin'].includes(viewName) && state.currentUser.role !== 'admin') return;
@@ -93,7 +93,9 @@ function showView(viewName) {
   target.classList.remove('hidden'); target.classList.add('fade-in');
   const titles = VIEW_TITLES[viewName] || (module ? [module.name, module.desc || 'Module'] : ['TAAMEER','']);
   document.getElementById('headerTitle').textContent = titles[0]; document.getElementById('headerSubtitle').textContent = titles[1];
-  if (viewName === 'calendar' && window.CalendarApp) CalendarApp.open(); if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
+  if (viewName === 'calendar' && window.CalendarApp) CalendarApp.open();
+  if (viewName === 'thinkspace' && window.ThinkspaceApp) ThinkspaceApp.open();
+  if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
 }
 
