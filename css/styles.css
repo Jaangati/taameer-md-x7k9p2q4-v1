@@ -35,7 +35,7 @@
   .fade-in { animation: fadeIn 0.3s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .login-bg { background: radial-gradient(circle at 20% 30%, rgba(117,117,117,0.12) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(58,61,66,0.1) 0%, transparent 50%), linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%); }
-  .dark .login-bg { background: radial-gradient(circle at 20% 30%, rgba(117,117,117,0.08) 0%, transparent 50%), linear-gradient(135deg, #0a0a0a 0%, #111827 100%); }
+  .dark .login-bg { background: radial-gradient(circle at 20% 30%, rgba(117,117,117,0.08) 0%, transparent 50%), linear-gradient(135deg, var(--system-dark) 0%, var(--system-dark-2) 100%); }
   .color-swatch { width: 36px; height: 36px; border-radius: 10px; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
   .color-swatch:hover { transform: scale(1.1); }
   .color-swatch.active { border-color: #111827; transform: scale(1.1); }
