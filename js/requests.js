@@ -14,6 +14,7 @@ window.RequestsApp = (() => {
   let selectedUser = 'all';
   let selectedStatus = 'active';
   let searchTerm = '';
+  let completedRange = 'month';
   let selectedRequestId = null;
   let realtime = null;
   let backgroundStarted = false;
@@ -39,8 +40,8 @@ window.RequestsApp = (() => {
     return `Due in ${d}d`;
   };
   const priorityLabel = p => ({normal:'Normal',high:'High',urgent:'Urgent'})[p] || 'Normal';
-  const statusLabel = s => ({new:'New',in_progress:'In progress',submitted:'Submitted',blocked:'Blocked',closed:'Closed',cancelled:'Cancelled'})[s] || s;
-  const activeStatuses = ['new','in_progress','submitted','blocked'];
+  const statusLabel = s => ({new:'Open',in_progress:'Open',submitted:'Completed',blocked:'Open',closed:'Completed',cancelled:'Cancelled'})[s] || s;
+  const activeStatuses = ['new','in_progress'];
   const readFor = id => reads.find(x=>String(x.request_id)===String(id)&&String(x.user_id)===currentId());
   const latestActivityAt = r => {
     const times=[r.updated_at||r.created_at];
@@ -66,6 +67,7 @@ window.RequestsApp = (() => {
       .rq-list{overflow:auto;padding:10px 12px 18px}.rq-row{display:grid;grid-template-columns:minmax(260px,1.7fr) 150px 130px 125px 96px;gap:12px;align-items:center;padding:13px 12px;border:1px solid #e8ebef;border-radius:16px;margin-bottom:8px;background:#fff;cursor:pointer;transition:.15s;position:relative}.rq-row:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(15,23,42,.06)}.dark .rq-row{background:#0d131d;border-color:#202938}.rq-row:before{content:'';position:absolute;left:0;top:13px;bottom:13px;width:3px;border-radius:0 4px 4px 0;background:#94a3b8}.rq-row[data-priority=high]:before{background:#f59e0b}.rq-row[data-priority=urgent]:before{background:#ef4444}.rq-row-title{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rq-row-meta{font-size:10px;color:#8a95a5;margin-top:4px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}.rq-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:750;white-space:nowrap}.dark .rq-chip{background:#182131;color:#cbd5e1}.rq-chip.status-submitted{background:#ede9fe;color:#6d28d9}.rq-chip.status-blocked{background:#fff1f2;color:#be123c}.rq-chip.status-closed{background:#ecfdf5;color:#047857}.rq-chip.status-cancelled{background:#f1f5f9;color:#64748b}.rq-due{font-size:11px;font-weight:700}.rq-due.overdue{color:#dc2626}.rq-due.soon{color:#d97706}.rq-person-cell{display:flex;align-items:center;gap:7px;min-width:0}.rq-person-cell .rq-avatar{width:28px;height:28px}.rq-person-cell span{font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rq-priority{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.rq-empty{height:100%;min-height:220px;display:flex;align-items:center;justify-content:center;text-align:center;color:#94a3b8}.rq-empty i{font-size:28px;margin-bottom:12px;color:#cbd5e1}.rq-empty h4{font-size:15px;color:#334155}.dark .rq-empty h4{color:#e2e8f0}
       .rq-modal{position:fixed;inset:0;background:rgba(3,7,18,.62);backdrop-filter:blur(5px);z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px}.rq-modal-card{width:min(920px,96vw);max-height:92vh;overflow:hidden;background:#fff;border-radius:26px;box-shadow:0 30px 90px rgba(0,0,0,.25);display:grid;grid-template-rows:auto 1fr auto}.dark .rq-modal-card{background:#0b1018;color:#fff}.rq-modal-head{padding:20px 22px;background:linear-gradient(105deg,#030712 0%,#111827 64%,color-mix(in srgb,var(--accent) 62%,#111827));color:#fff;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.rq-modal-body{overflow:auto;padding:20px 22px}.rq-modal-foot{padding:13px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}.dark .rq-modal-foot{border-color:#202938}.rq-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.rq-field label{display:block;font-size:10px;font-weight:800;color:#7c8798;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px}.rq-input,.rq-textarea,.rq-select{width:100%;border:1px solid #dfe3e8;background:#fff;border-radius:12px;padding:10px 11px;font-size:12px;outline:none}.rq-input:focus,.rq-textarea:focus,.rq-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)}.dark .rq-input,.dark .rq-textarea,.dark .rq-select{background:#101722;border-color:#263043;color:#fff}.rq-textarea{min-height:110px;resize:vertical}.rq-detail-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(260px,.7fr);gap:20px}.rq-detail-section{border:1px solid #e5e7eb;border-radius:18px;padding:16px;margin-bottom:12px}.dark .rq-detail-section{border-color:#202938}.rq-detail-section h4{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#7c8798;margin-bottom:10px}.rq-detail-text{font-size:13px;line-height:1.7;white-space:pre-wrap}.rq-history{position:relative;padding-left:16px}.rq-history:before{content:'';position:absolute;left:4px;top:5px;bottom:5px;width:1px;background:#e5e7eb}.dark .rq-history:before{background:#273142}.rq-hitem{position:relative;padding:0 0 13px 10px;font-size:11px}.rq-hitem:before{content:'';position:absolute;left:-15px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--accent)}.rq-hitem small{display:block;color:#94a3b8;margin-top:2px}.rq-comment{padding:10px 0;border-bottom:1px solid #eef0f3}.dark .rq-comment{border-color:#1e2633}.rq-comment:last-child{border:0}.rq-comment .who{font-size:11px;font-weight:800}.rq-comment .when{font-size:9px;color:#94a3b8;margin-left:6px}.rq-comment .body{font-size:12px;margin-top:4px;white-space:pre-wrap}.rq-request-card{border:1px solid #e5e7eb;border-radius:14px;padding:11px;margin-bottom:8px;background:#f8fafc}.dark .rq-request-card{background:#101722;border-color:#263043}
       .rq-bin-tag{background:#fee2e2;color:#b91c1c}.rq-notice{font-size:11px;padding:10px 12px;border-radius:12px;background:#eff6ff;color:#1d4ed8}.dark .rq-notice{background:#0f1b35;color:#93c5fd}
+      .rq-tab.open.active{background:#f97316;color:#fff}.rq-tab.attention.active{background:#dc2626;color:#fff}.rq-tab.completed.active{background:#16a34a;color:#fff}.rq-tab.cancelled.active{background:#6b7280;color:#fff}.rq-row.rq-unread{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 9%,#fff),#fff 38%);border-color:color-mix(in srgb,var(--accent) 45%,#dbe1e8)}.dark .rq-row.rq-unread{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 13%,#0d131d),#0d131d 45%)}.rq-new-chip{display:inline-flex;align-items:center;gap:5px;margin-left:8px;background:var(--accent);color:#fff;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:900;vertical-align:middle}.rq-age{font-size:9px;color:#94a3b8;margin-top:4px;font-variant-numeric:tabular-nums}.rq-completed-filter{display:flex;gap:4px;padding:4px;border-radius:11px;background:#f1f5f9;margin-left:6px}.dark .rq-completed-filter{background:#141b27}.rq-completed-filter button{border:0;background:transparent;padding:6px 8px;border-radius:8px;font-size:9px;font-weight:800;color:#64748b}.rq-completed-filter button.active{background:#fff;color:#166534;box-shadow:0 1px 4px rgba(15,23,42,.08)}.dark .rq-completed-filter button.active{background:#202938;color:#86efac}.rq-stat.notify{cursor:pointer}.rq-stat.notify:hover{outline:2px solid color-mix(in srgb,var(--accent) 20%,transparent)}.rq-sidebar-badge{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#ef4444;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900}.rq-action-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;margin-left:6px}.rq-stat.completed .v{color:#16a34a}.rq-stat.cancelled .v{color:#6b7280}
       .rq-row.rq-unread{border-color:color-mix(in srgb,var(--accent) 45%,#e5e7eb);box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 8%,transparent)}.rq-action-badge{margin-left:7px;display:inline-flex;min-width:20px;height:20px;padding:0 6px;border-radius:999px;align-items:center;justify-content:center;background:var(--accent);color:white;font-size:9px;font-weight:900;vertical-align:middle}.rq-live{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums;padding:5px 8px;border-radius:9px;background:#f8fafc}.dark .rq-live{background:#111827}.rq-stat.notify{background:color-mix(in srgb,var(--accent) 8%,#f8fafc)}.rq-stat.notify .v{color:var(--accent)}
       .rq-assignee-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.rq-assignee-card{border:1px solid #e5e7eb;border-radius:14px;padding:10px;background:#fff;display:flex;align-items:center;gap:9px;text-align:left;transition:.15s}.rq-assignee-card:hover{border-color:#cbd5e1;transform:translateY(-1px)}.rq-assignee-card.active{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent);background:color-mix(in srgb,var(--accent) 4%,#fff)}.dark .rq-assignee-card{background:#101722;border-color:#263043}.rq-assignee-card .rq-avatar{width:36px;height:36px}.rq-assignee-card strong{font-size:11px;display:block}.rq-assignee-card small{font-size:9px;color:#94a3b8;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:125px}
       .rq-deadline-box{border:1px solid #e5e7eb;border-radius:16px;padding:12px;background:#fafbfc}.dark .rq-deadline-box{background:#0f1621;border-color:#263043}.rq-quick-times{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.rq-time-chip{border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:800}.rq-time-chip:hover{border-color:var(--accent);color:var(--accent)}.dark .rq-time-chip{background:#111827;border-color:#263043}.rq-duration-line{display:grid;grid-template-columns:84px 110px 1fr;gap:8px;align-items:center}.rq-ref-list{display:grid;gap:7px}.rq-ref-row{display:flex;gap:7px}.rq-ref-row input{flex:1}.rq-ref-row button{width:38px;justify-content:center;padding:0}.rq-self-badge{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--accent) 35%,#e5e7eb);border-radius:14px;background:color-mix(in srgb,var(--accent) 5%,#fff)}.dark .rq-self-badge{background:#101722}
@@ -104,16 +106,23 @@ window.RequestsApp = (() => {
   function requestCollabs(id){return collaborators.filter(c=>c.request_id===id).map(c=>c.user_id);}
   function userRequestCount(uid){return requests.filter(r=>!r.deleted_at && activeStatuses.includes(r.status) && (r.assignee_id===uid || requestCollabs(r.id).includes(uid))).length;}
   function scopeRequests(){
-    let arr=requests.filter(r=> selectedStatus==='bin' ? !!r.deleted_at : !r.deleted_at);
-    if(!isAdmin()) arr=arr.filter(r=>r.assignee_id===currentId()||r.creator_id===currentId()||requestCollabs(r.id).includes(currentId()));
-    if(selectedUser!=='all') arr=arr.filter(r=>r.assignee_id===selectedUser||requestCollabs(r.id).includes(selectedUser));
-    if(selectedStatus==='active') arr=arr.filter(r=>activeStatuses.includes(r.status));
-    else if(selectedStatus==='attention') arr=arr.filter(r=>isOverdue(r)||r.status==='blocked'||r.status==='submitted');
-    else if(selectedStatus==='submitted') arr=arr.filter(r=>r.status==='submitted');
-    else if(selectedStatus==='closed') arr=arr.filter(r=>r.status==='closed');
-    else if(selectedStatus==='cancelled') arr=arr.filter(r=>r.status==='cancelled');
-    if(searchTerm){const q=searchTerm.toLowerCase();arr=arr.filter(r=>`${r.title} ${r.details} ${nameOf(r.assignee_id)}`.toLowerCase().includes(q));}
-    return arr;
+    let arr=requests.filter(r=>isAdmin()||String(r.assignee_id)===currentId()||String(r.creator_id)===currentId()||requestCollabs(r.id).includes(currentId()));
+    if(selectedStatus==='bin') arr=arr.filter(r=>!!r.deleted_at);
+    else arr=arr.filter(r=>!r.deleted_at);
+    if(selectedUser!=='all') arr=arr.filter(r=>String(r.assignee_id)===String(selectedUser)||requestCollabs(r.id).includes(String(selectedUser)));
+    if(selectedStatus==='active') arr=arr.filter(r=>['new','in_progress'].includes(r.status));
+    if(selectedStatus==='attention') arr=arr.filter(r=>isOverdue(r)||pendingActionCount(r)>0);
+    if(selectedStatus==='unread') arr=arr.filter(hasUnread);
+    if(selectedStatus==='closed'){
+      arr=arr.filter(r=>r.status==='closed');
+      if(completedRange!=='all'){
+        const now=Date.now(),days=completedRange==='week'?7:completedRange==='month'?30:365,cut=now-days*86400000;
+        arr=arr.filter(r=>new Date(r.closed_at||r.updated_at||r.created_at).getTime()>=cut);
+      }
+    }
+    if(selectedStatus==='cancelled') arr=arr.filter(r=>r.status==='cancelled');
+    if(searchTerm){const q=searchTerm.toLowerCase();arr=arr.filter(r=>[r.title,r.details,nameOf(r.assignee_id),nameOf(r.creator_id)].some(v=>String(v||'').toLowerCase().includes(q)));}
+    return arr.sort((a,b)=>new Date(b.updated_at||b.created_at)-new Date(a.updated_at||a.created_at));
   }
 
   function counts(arrBase=null){
@@ -131,46 +140,29 @@ window.RequestsApp = (() => {
 
   function render(){
     ensureView();
-    const c=counts(), arr=scopeRequests();
-    const scoped=requests.filter(r=>!r.deleted_at&&(isAdmin()||r.assignee_id===currentId()||r.creator_id===currentId()||requestCollabs(r.id).includes(currentId())));
+    const c=counts(),arr=scopeRequests(),scoped=visibleRequestScope();
     const unreadCount=scoped.filter(hasUnread).length;
     const actionCount=scoped.reduce((n,r)=>n+pendingActionCount(r),0);
-    const attentionCount=scoped.filter(r=>isOverdue(r)||r.status==='blocked'||r.status==='submitted'||pendingActionCount(r)>0).length;
-    const people=isAdmin()?directory.filter(p=>p.role!=='admin'||String(p.id)===currentId()):directory.filter(p=>String(p.id)===currentId());
+    const attentionCount=scoped.filter(r=>isOverdue(r)||pendingActionCount(r)>0).length;
+    const completedCount=scoped.filter(r=>r.status==='closed').length;
+    const cancelledCount=scoped.filter(r=>r.status==='cancelled').length;
+    const people=isAdmin()?directory:directory.filter(p=>String(p.id)===currentId());
     root.innerHTML=`<div class="rq-shell">
-      <section class="rq-command">
-        <div><div class="rq-eyebrow">TAAMEER WORK REQUESTS</div><div class="rq-title">Keep requests moving.</div><div class="rq-sub">Requests, personal tasks, deadlines and actions — without mixing them into Team Updates.</div></div>
-        <div class="rq-command-actions">${isAdmin()?`<button class="rq-btn rq-btn-ghost text-white border-white/15" onclick="RequestsApp.openBin()"><i class="fas fa-trash-can"></i> Bin</button><button class="rq-btn rq-btn-dark" onclick="RequestsApp.openCreate()"><i class="fas fa-plus"></i> New Request</button>`:`<button class="rq-btn rq-btn-dark" onclick="RequestsApp.openCreate()"><i class="fas fa-plus"></i> New Personal Task</button>`}</div>
-      </section>
-      <div class="rq-people-wrap"><div class="rq-people">
-        ${isAdmin()?`<button class="rq-person ${selectedUser==='all'?'active':''}" onclick="RequestsApp.selectUser('all')"><div class="rq-avatar rq-avatar-fallback"><i class="fas fa-users"></i></div><div><div class="rq-person-name">Whole team</div><div class="rq-person-role">Department view</div></div><div class="count">${requests.filter(r=>!r.deleted_at&&activeStatuses.includes(r.status)).length}</div></button>`:''}
-        ${people.map(p=>`<button class="rq-person ${selectedUser===String(p.id)?'active':''}" onclick="RequestsApp.selectUser('${esc(p.id)}')">${avatar(p.id)}<div><div class="rq-person-name">${esc(p.full_name)}</div><div class="rq-person-role">${esc(p.job_title||'Team member')}</div></div><div class="count">${userRequestCount(p.id)}</div></button>`).join('')}
-      </div></div>
+      <section class="rq-command"><div><div class="rq-eyebrow">TAAMEER WORK REQUESTS</div><div class="rq-title">Keep requests moving.</div><div class="rq-sub">Clear requests, deadlines and accountability — without mixing them into Team Updates.</div></div><div class="rq-command-actions">${isAdmin()?`<button class="rq-btn rq-btn-ghost text-white border-white/15" onclick="RequestsApp.openBin()"><i class="fas fa-trash-can"></i> Bin</button><button class="rq-btn rq-btn-dark" onclick="RequestsApp.openCreate()"><i class="fas fa-plus"></i> New Request</button>`:`<button class="rq-btn rq-btn-dark" onclick="RequestsApp.openCreate()"><i class="fas fa-plus"></i> New Personal Task</button>`}</div></section>
+      <div class="rq-people-wrap"><div class="rq-people">${isAdmin()?`<button class="rq-person ${selectedUser==='all'?'active':''}" onclick="RequestsApp.selectUser('all')"><div class="rq-avatar rq-avatar-fallback"><i class="fas fa-users"></i></div><div><div class="rq-person-name">Whole team</div><div class="rq-person-role">Department view</div></div><div class="count">${scoped.filter(r=>activeStatuses.includes(r.status)).length}</div></button>`:''}${people.map(p=>`<button class="rq-person ${selectedUser===String(p.id)?'active':''}" onclick="RequestsApp.selectUser('${esc(p.id)}')">${avatar(p.id)}<div><div class="rq-person-name">${esc(p.full_name)}</div><div class="rq-person-role">${esc(p.job_title||'Team member')}</div></div><div class="count">${userRequestCount(p.id)}</div></button>`).join('')}</div></div>
       <div class="rq-workspace"><section class="rq-panel">
-        <div class="rq-summary">
-          <div class="rq-stat"><div class="v">${c.open}</div><div class="l">Open</div></div>
-          <div class="rq-stat"><div class="v">${c.due}</div><div class="l">Due soon</div></div>
-          <div class="rq-stat alert"><div class="v">${c.overdue}</div><div class="l">Overdue</div></div>
-          <div class="rq-stat ${attentionCount||actionCount?'review':''}"><div class="v">${attentionCount}</div><div class="l">Needs attention${actionCount?` · ${actionCount} action${actionCount>1?'s':''}`:''}</div></div>
-          <div class="rq-stat ${unreadCount?'notify':''}"><div class="v"><i class="fas fa-bell text-sm mr-1"></i>${unreadCount}</div><div class="l">New updates</div></div>
-        </div>
-        <div class="rq-toolbar"><div class="rq-tabs">${[['active','Open'],['attention','Needs attention'],['closed','Closed'],['cancelled','Cancelled']].map(x=>`<button class="rq-tab ${selectedStatus===x[0]?'active':''}" onclick="RequestsApp.setStatus('${x[0]}')">${x[1]}</button>`).join('')}${isAdmin()&&selectedStatus==='bin'?'<button class="rq-tab active rq-bin-tag">Recycle Bin</button>':''}</div><div class="rq-search"><i class="fas fa-search"></i><input value="${esc(searchTerm)}" oninput="RequestsApp.search(this.value)" placeholder="Search requests..."></div></div>
+        <div class="rq-summary"><div class="rq-stat"><div class="v" style="color:#f97316">${c.open}</div><div class="l">Open</div></div><div class="rq-stat"><div class="v">${c.due}</div><div class="l">Due soon</div></div><div class="rq-stat alert"><div class="v">${c.overdue}</div><div class="l">Overdue</div></div><div class="rq-stat ${attentionCount||actionCount?'review':''}"><div class="v">${attentionCount}</div><div class="l">Needs attention${actionCount?` · ${actionCount} action${actionCount>1?'s':''}`:''}</div></div><div class="rq-stat ${unreadCount?'notify':''}" onclick="RequestsApp.setStatus('unread')"><div class="v"><i class="fas fa-bell text-sm mr-1"></i>${unreadCount}</div><div class="l">Unread activity</div></div></div>
+        <div class="rq-toolbar"><div class="rq-tabs">${[['active','Open','open'],['attention','Needs attention','attention'],['closed','Completed','completed'],['cancelled','Cancelled','cancelled']].map(x=>`<button class="rq-tab ${x[2]} ${selectedStatus===x[0]?'active':''}" onclick="RequestsApp.setStatus('${x[0]}')">${x[1]}</button>`).join('')}${selectedStatus==='unread'?'<button class="rq-tab active">Unread</button>':''}${selectedStatus==='closed'?`<div class="rq-completed-filter">${[['week','Week'],['month','Month'],['year','Year'],['all','All']].map(x=>`<button class="${completedRange===x[0]?'active':''}" onclick="RequestsApp.setCompletedRange('${x[0]}')">${x[1]}</button>`).join('')}</div>`:''}${isAdmin()&&selectedStatus==='bin'?'<button class="rq-tab active rq-bin-tag">Recycle Bin</button>':''}</div><div class="rq-search"><i class="fas fa-search"></i><input value="${esc(searchTerm)}" oninput="RequestsApp.search(this.value)" placeholder="Search requests..."></div></div>
         <div class="rq-list">${arr.length?arr.map(requestRow).join(''):emptyState()}</div>
       </section></div>
     </div>`;
-    requestAnimationFrame(updateTimers);
+    updateSidebarBadge(); requestAnimationFrame(updateTimers);
   }
 
   function requestRow(r){
     const dueClass=isOverdue(r)?'overdue':isDueSoon(r)?'soon':'';
-    const coll=requestCollabs(r.id), unread=hasUnread(r), actions=pendingActionCount(r);
-    return `<article class="rq-row ${unread?'rq-unread':''}" data-priority="${esc(r.priority)}" onclick="RequestsApp.openDetail('${esc(r.id)}')">
-      <div><div class="rq-row-title">${esc(r.title)}${unread?`<span class="rq-action-badge" title="New activity"><i class="fas fa-bell"></i>${actions?` ${actions}`:''}</span>`:actions?`<span class="rq-action-badge" title="Action required">${actions}</span>`:''}</div><div class="rq-row-meta"><span>${r.creator_id===r.assignee_id?'Personal task':'Manager request'}</span>${coll.length?`<span>+ ${coll.length} collaborator${coll.length>1?'s':''}</span>`:''}${((r.reference_links||[]).length||r.link_url)?'<span><i class="fas fa-link"></i> Reference</span>':''}</div></div>
-      <div class="rq-person-cell rq-person-col">${avatar(r.assignee_id)}<span>${esc(nameOf(r.assignee_id))}</span></div>
-      <div class="rq-status-col"><span class="rq-chip status-${esc(r.status)}">${esc(r.status==='submitted'?'Needs action':statusLabel(r.status))}</span></div>
-      <div class="rq-due ${dueClass}">${r.due_at?`<span class="rq-live" data-rq-due="${esc(r.due_at)}"><i class="fas fa-clock"></i><span>${esc(rel(r.due_at))}</span></span>`:'No deadline'}<div class="text-[9px] text-gray-400 mt-1">${esc(r.due_at?fmtDate(r.due_at):'')}</div></div>
-      <div class="rq-priority rq-priority-col">${esc(priorityLabel(r.priority))}</div>
-    </article>`;
+    const coll=requestCollabs(r.id),unread=hasUnread(r),actions=pendingActionCount(r),done=r.status==='closed';
+    return `<article class="rq-row ${unread?'rq-unread':''}" data-priority="${esc(r.priority)}" onclick="RequestsApp.openDetail('${esc(r.id)}')"><div><div class="rq-row-title">${esc(r.title)}${unread?`<span class="rq-new-chip"><i class="fas fa-bell"></i>NEW</span>`:''}${actions?`<span class="rq-action-dot" title="Action required">${actions}</span>`:''}</div><div class="rq-row-meta"><span>${String(r.creator_id)===String(r.assignee_id)?'Personal task':'Requested by '+esc(nameOf(r.creator_id))}</span>${coll.length?`<span>+ ${coll.length} collaborator${coll.length>1?'s':''}</span>`:''}${((r.reference_links||[]).length||r.link_url)?'<span><i class="fas fa-link"></i> Reference</span>':''}<span class="rq-age" data-rq-age="${esc(r.created_at)}">${esc(elapsedText(r.created_at))}</span></div></div><div class="rq-person-cell rq-person-col">${avatar(r.assignee_id)}<span>${esc(nameOf(r.assignee_id))}</span></div><div class="rq-status-col"><span class="rq-chip status-${esc(r.status)}" style="${done?'background:#dcfce7;color:#15803d':r.status==='cancelled'?'background:#f3f4f6;color:#6b7280':'background:#fff7ed;color:#c2410c'}">${esc(statusLabel(r.status))}</span></div><div class="rq-due ${dueClass}">${r.due_at?`<span class="rq-live" data-rq-due="${esc(r.due_at)}"><i class="fas fa-clock"></i><span>${esc(rel(r.due_at))}</span></span>`:'No deadline'}<div class="text-[9px] text-gray-400 mt-1">${esc(r.due_at?fmtDate(r.due_at):'')}</div></div><div class="rq-priority rq-priority-col">${esc(priorityLabel(r.priority))}</div></article>`;
   }
 
   function emptyState(){
@@ -223,12 +215,15 @@ window.RequestsApp = (() => {
     const payload={title,details,assignee_id,priority,due_at:dueRaw?new Date(dueRaw).toISOString():null,reference_links,link_url:reference_links[0]||null};
     let error,data;if(id){({error}=await supabaseClient.from('work_requests').update(payload).eq('id',id));}else{({data,error}=await supabaseClient.from('work_requests').insert({...payload,creator_id:state.currentUser.id,status:'new'}).select().single());}
     if(error)return alert(error.message||'Could not save request.');
+    if(!id&&data?.id){try{await supabaseClient.from('work_request_reads').upsert({request_id:data.id,user_id:state.currentUser.id,last_seen_at:new Date().toISOString()},{onConflict:'request_id,user_id'});}catch(_){ }}
     if(typeof recordActivity==='function')recordActivity(id?'request_updated':'request_created','work_request',id||data?.id,{title,assignee_id});closeModal();await reload();
   }
 
   async function openDetail(id){
     selectedRequestId=id;
     await markRead(id);
+    render();
+    updateSidebarBadge();
     const r=requests.find(x=>x.id===id);if(!r)return;
     const [{data:h},{data:co},{data:ch}]=await Promise.all([
       supabaseClient.from('work_request_history').select('*').eq('request_id',id).order('created_at',{ascending:false}).limit(100),
@@ -240,7 +235,7 @@ window.RequestsApp = (() => {
 
   function renderDetail(r){
     const coll=requestCollabs(r.id); const pending=changeRequests.filter(x=>x.request_id===r.id&&x.status==='pending');
-    modal(`<div class="rq-modal-card"><div class="rq-modal-head"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><span class="rq-chip status-${esc(r.status)}">${esc(statusLabel(r.status))}</span><span class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">${esc(priorityLabel(r.priority))}</span></div><h3 class="text-2xl font-bold mt-2 truncate">${esc(r.title)}</h3><p class="text-xs text-gray-400 mt-1">Created by ${esc(nameOf(r.creator_id))} · ${esc(fmtDateTime(r.created_at))}</p></div><button class="rq-btn rq-btn-ghost text-white border-white/10" onclick="RequestsApp.closeModal()"><i class="fas fa-times"></i></button></div>
+    modal(`<div class="rq-modal-card"><div class="rq-modal-head"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><span class="rq-chip status-${esc(r.status)}">${esc(statusLabel(r.status))}</span><span class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">${esc(priorityLabel(r.priority))}</span></div><h3 class="text-2xl font-bold mt-2 truncate">${esc(r.title)}</h3><p class="text-xs text-gray-400 mt-1">Requested by ${esc(nameOf(r.creator_id))} · ${esc(fmtDateTime(r.created_at))}</p></div><button class="rq-btn rq-btn-ghost text-white border-white/10" onclick="RequestsApp.closeModal()"><i class="fas fa-times"></i></button></div>
       <div class="rq-modal-body"><div class="rq-detail-grid"><div>
         <section class="rq-detail-section"><h4>Request</h4><div class="rq-detail-text">${esc(r.details||'No additional details.')}</div>${r.link_url?`<a href="${esc(r.link_url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-3 text-xs font-bold text-[var(--accent)]"><i class="fas fa-arrow-up-right-from-square"></i> Open reference link</a>`:''}</section>
         <section class="rq-detail-section"><h4>Conversation</h4><div>${comments.length?comments.map(x=>`<div class="rq-comment"><span class="who">${esc(nameOf(x.author_id))}</span><span class="when">${esc(fmtDateTime(x.created_at))}</span><div class="body">${esc(x.body)}</div></div>`).join(''):'<div class="text-xs text-gray-400 py-2">No comments yet.</div>'}</div><div class="flex gap-2 mt-3"><input id="rqComment" class="rq-input" placeholder="Add a quick comment..."><button class="rq-btn rq-btn-accent" onclick="RequestsApp.addComment('${esc(r.id)}')"><i class="fas fa-paper-plane"></i></button></div></section>
@@ -264,11 +259,12 @@ window.RequestsApp = (() => {
 
   function detailActions(r){
     if(r.deleted_at&&isAdmin())return `<button class="rq-btn" onclick="RequestsApp.restore('${esc(r.id)}')"><i class="fas fa-rotate-left"></i>Restore</button><button class="rq-btn rq-btn-danger" onclick="RequestsApp.permanentDelete('${esc(r.id)}')"><i class="fas fa-trash"></i>Delete permanently</button>`;
-    const mine=r.assignee_id===currentId()||requestCollabs(r.id).includes(currentId());
-    if(isAdmin()) return `<button class="rq-btn" onclick="RequestsApp.edit('${esc(r.id)}')"><i class="fas fa-pen"></i>Edit</button>${['closed','cancelled'].includes(r.status)?`<button class="rq-btn rq-btn-accent" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','in_progress')"><i class="fas fa-rotate-left"></i>Reopen</button>`:`<button class="rq-btn rq-btn-accent" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','closed')"><i class="fas fa-check"></i>Close</button><button class="rq-btn" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','cancelled')">Cancel</button>`}<button class="rq-btn rq-btn-danger" onclick="RequestsApp.moveToBin('${esc(r.id)}')"><i class="fas fa-trash-can"></i></button>`;
+    const mine=String(r.assignee_id)===currentId()||requestCollabs(r.id).includes(currentId());
+    if(isAdmin()) return `<button class="rq-btn" onclick="RequestsApp.edit('${esc(r.id)}')"><i class="fas fa-pen"></i>Edit</button>${['closed','cancelled'].includes(r.status)?`<button class="rq-btn rq-btn-accent" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','in_progress')"><i class="fas fa-rotate-left"></i>Reopen</button>`:`<button class="rq-btn rq-btn-accent" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','closed')"><i class="fas fa-check"></i>Mark Complete</button><button class="rq-btn" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','cancelled')">Cancel</button>`}<button class="rq-btn rq-btn-danger" onclick="RequestsApp.moveToBin('${esc(r.id)}')"><i class="fas fa-trash-can"></i></button>`;
     if(!mine)return '';
-    if(r.status==='closed') return `<span class="text-xs text-emerald-600 font-bold mr-auto"><i class="fas fa-circle-check mr-1"></i>Closed by you</span>`;
-    return `${r.status==='new'?`<button class="rq-btn" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','in_progress')"><i class="fas fa-play"></i>Start</button>`:''}${['new','in_progress','blocked','submitted'].includes(r.status)?`<button class="rq-btn" onclick="RequestsApp.requestExtension('${esc(r.id)}')"><i class="fas fa-clock"></i>Extension</button><button class="rq-btn" onclick="RequestsApp.requestAssistance('${esc(r.id)}')"><i class="fas fa-user-plus"></i>Request Help</button><button class="rq-btn" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','blocked')">Blocked</button><button class="rq-btn rq-btn-accent" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','closed')"><i class="fas fa-check"></i>Mark Done</button>`:''}${r.creator_id===currentId()&&r.assignee_id===currentId()?`<button class="rq-btn" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','cancelled')">Cancel task</button>`:''}`;
+    if(r.status==='closed') return `<span class="text-xs text-emerald-600 font-bold mr-auto"><i class="fas fa-circle-check mr-1"></i>Completed by you</span>`;
+    if(r.status==='cancelled') return `<span class="text-xs text-gray-500 font-bold mr-auto">Cancelled</span>`;
+    return `<button class="rq-btn" onclick="RequestsApp.requestExtension('${esc(r.id)}')"><i class="fas fa-clock"></i>Extension</button><button class="rq-btn" onclick="RequestsApp.requestAssistance('${esc(r.id)}')"><i class="fas fa-user-plus"></i>Request Help</button><button class="rq-btn rq-btn-accent" onclick="RequestsApp.setRequestStatus('${esc(r.id)}','closed')"><i class="fas fa-check"></i>Mark Done</button>${String(r.creator_id)===currentId()&&String(r.assignee_id)===currentId()?`<button class="rq-btn" onclick="RequestsApp.edit('${esc(r.id)}')"><i class="fas fa-pen"></i>Edit</button>`:''}`;
   }
 
   async function setRequestStatus(id,status){
@@ -337,6 +333,26 @@ window.RequestsApp = (() => {
   }
   function updateTimers(){
     document.querySelectorAll('[data-rq-due]').forEach(el=>{const span=el.querySelector('span');if(span)span.textContent=timerText(el.dataset.rqDue);});if(timerTick)clearInterval(timerTick);timerTick=setInterval(()=>{if(root&&!root.classList.contains('hidden'))document.querySelectorAll('[data-rq-due]').forEach(el=>{const span=el.querySelector('span');if(span)span.textContent=timerText(el.dataset.rqDue);});},1000);
+  }
+
+  function elapsedText(iso){
+    const ms=Math.max(0,Date.now()-new Date(iso).getTime());
+    const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000);
+    if(d)return `Open for ${d}d ${h}h`;
+    if(h)return `Open for ${h}h ${m}m`;
+    return `Open for ${m}m`;
+  }
+  function setCompletedRange(v){completedRange=v;render();}
+  function visibleRequestScope(){
+    return requests.filter(r=>!r.deleted_at&&(isAdmin()||String(r.assignee_id)===currentId()||String(r.creator_id)===currentId()||requestCollabs(r.id).includes(currentId())));
+  }
+  function unreadScope(){return visibleRequestScope().filter(r=>hasUnread(r));}
+  function updateSidebarBadge(){
+    const nav=document.getElementById('sidebarNav'); if(!nav)return;
+    const item=[...nav.querySelectorAll('[onclick*="requests"]')].find(x=>/Requests/i.test(x.textContent||'')); if(!item)return;
+    let badge=item.querySelector('.rq-sidebar-badge'); const count=unreadScope().length;
+    if(!count){badge?.remove();return;}
+    if(!badge){badge=document.createElement('span');badge.className='rq-sidebar-badge sidebar-label';item.appendChild(badge);} badge.textContent=String(count);
   }
 
   function selectUser(id){selectedUser=id;render();}
@@ -410,7 +426,7 @@ window.RequestsApp = (() => {
 
   ModuleRegistry.register('requests',(view)=>{root=view;view.className='view-section hidden h-full';view.dataset.generated='true';ensureStyle();});
 
-  return {open,render,selectUser,setStatus,search,openCreate:()=>createForm(),saveRequest,openDetail,closeModal,edit,setRequestStatus,addComment,requestExtension,submitExtension,requestAssistance,submitAssistance,reviewChange,moveToBin,restore,permanentDelete,openBin,setAssignee,setDuePreset,setDueFlexible,addReferenceRow};
+  return {open,render,selectUser,setStatus,search,openCreate:()=>createForm(),saveRequest,openDetail,closeModal,edit,setRequestStatus,addComment,requestExtension,submitExtension,requestAssistance,submitAssistance,reviewChange,moveToBin,restore,permanentDelete,openBin,setAssignee,setDuePreset,setDueFlexible,addReferenceRow,setCompletedRange,updateSidebarBadge};
 })();
 
 // Start request reminders/realtime shortly after authentication, even if the module is never opened.
