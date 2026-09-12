@@ -10,6 +10,11 @@ s=s.replace('Personal task','Personal request')
 s=s.replace('personal task','personal request')
 s=s.replace('Personal tasks','Requests')
 s=s.replace('personal tasks','requests')
+# Remove any remaining standalone Task/Tasks wording in this module.
+s=re.sub(r'\bTasks\b','Requests',s)
+s=re.sub(r'\bTask\b','Request',s)
+s=re.sub(r'\btasks\b','requests',s)
+s=re.sub(r'\btask\b','request',s)
 
 # Clean the command subtitle if the older wording is still present.
 s=s.replace('Requests, requests, deadlines and actions — without mixing them into Team Updates.','Clear requests, deadlines and accountability in one place.')
@@ -30,7 +35,6 @@ if completed not in s:
     if unread not in s: raise SystemExit('Unread summary card marker not found')
     s=s.replace(unread,completed+unread,1)
 
-# No user-facing standalone task/tasks wording should remain in Requests.
 if re.search(r'\bTasks?\b',s,re.I):
     raise SystemExit('Standalone task wording still remains in js/requests.js')
 
