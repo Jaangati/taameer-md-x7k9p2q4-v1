@@ -1,0 +1,82 @@
+name: Fix Requests runtime binding
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-requests-runtime.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Fix Requests runtime binding
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('js/requests.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('const RequestsApp = (() => {','window.RequestsApp = (() => {',1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('js/ui.js')
+          s=p.read_text(encoding='utf-8')
+          start=s.find("  if (viewName === 'requests') {")
+          if start<0:
+              old="  if (viewName === 'requests' && typeof RequestsApp !== 'undefined' && RequestsApp?.open) RequestsApp.open();"
+              if old not in s: raise SystemExit('Requests showView hook not found')
+              s=s.replace(old,"  if (viewName === 'requests' && window.RequestsApp?.open) window.RequestsApp.open().catch(err=>console.error('Requests open failed',err));",1)
+          else:
+              end=s.find("  if (viewName === 'home')",start)
+              if end<0: raise SystemExit('Requests block end not found')
+              repl="""  if (viewName === 'requests') {
+    const launchRequests = () => {
+      const target=document.getElementById('view-requests');
+      if (!window.RequestsApp?.open) {
+        if(target) target.innerHTML='<div class=\"h-full flex items-center justify-center text-sm text-red-500\">Requests module did not initialize. Please refresh.</div>';
+        return;
+      }
+      window.RequestsApp.open().catch(err => {
+        console.error('Requests open failed',err);
+        if(target) target.innerHTML=`<div class=\"h-full flex items-center justify-center p-8\"><div class=\"max-w-lg rounded-2xl bg-white border border-red-200 shadow-sm p-6 text-center\"><div class=\"text-red-600 font-bold\">Requests could not load</div><div class=\"text-xs text-gray-500 mt-2\">${Utils.escapeHTML(err?.message||'Unknown error')}</div></div></div>`;
+      });
+    };
+    launchRequests();
+  }
+"""
+              s=s[:start]+repl+s[end:]
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('js/app.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("if(typeof RequestsApp !== 'undefined') return;","if(window.RequestsApp?.open) return;",1)
+          s=s.replace("if (restored && typeof RequestsApp !== 'undefined') RequestsApp.open().catch(err=>console.warn('Requests background init failed',err));","if (restored && window.RequestsApp?.open) window.RequestsApp.open().catch(err=>console.warn('Requests background init failed',err));",1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          import re
+          s=re.sub(r'<script src="js/requests\.js(?:\?[^\"]*)?"></script>','<script src="js/requests.js?v=20260912-v3"></script>',s,count=1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          node --check js/requests.js
+          node --check js/ui.js
+          node --check js/app.js
+          grep -q 'window.RequestsApp = ' js/requests.js
+          grep -q 'js/requests.js?v=20260912-v3' index.html
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/requests.js js/ui.js js/app.js index.html
+          git diff --cached --quiet || git commit -m 'Fix Requests runtime initialization'
+          git push
