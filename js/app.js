@@ -1,22 +1,16 @@
-// ---------- Startup ----------
-// Compatibility initializer used by RequestsApp.open(). The Requests module called
-// ensureView() as a global helper, but no such function existed in the dashboard.
-// Keep this small adapter here so the module always gets a real root container.
-window.ensureView = window.ensureView || function(){
-  const module = state.modules?.find(m => m.id === 'requests') || {
-    id: 'requests',
-    name: 'Requests',
-    desc: 'Team requests, deadlines and accountability',
-    icon: 'fa-list-check',
-    status: 'active',
-    roles: ['admin','user']
+// ---------- Requests view compatibility ----------
+// RequestsApp calls ensureView() internally. Keep this small global helper so
+// the module always binds to its real dashboard container before rendering.
+function ensureView(){
+  const module = state.modules.find(m => m.id === 'requests') || {
+    id:'requests', name:'Requests', desc:'Team requests, deadlines and accountability',
+    icon:'fa-list-check', status:'active', roles:['admin','user']
   };
-  const viewId = ModuleRegistry.ensureView(module);
-  const view = document.getElementById(`view-${viewId}`);
-  if (!view) throw new Error('Requests view container could not be created');
-  return viewId;
-};
+  ModuleRegistry.ensureView(module);
+  return document.getElementById('view-requests');
+}
 
+// ---------- Startup ----------
 async function loadRequestsModuleScript(){
   try {
     if (window.RequestsApp?.open) return;
@@ -34,7 +28,7 @@ async function loadRequestsModuleScript(){
       return;
     }
     const script=document.createElement('script');
-    script.src='js/requests.js?v=20260912-v6';
+    script.src='js/requests.js?v=20260912-v7';
     script.dataset.requestsModule='true';
     script.onload=()=>{script.dataset.loaded='true';resolve();};
     script.onerror=reject;
