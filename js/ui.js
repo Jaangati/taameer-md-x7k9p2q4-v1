@@ -96,7 +96,17 @@ function showView(viewName) {
   if (viewName === 'calendar' && typeof CalendarApp !== 'undefined' && CalendarApp?.open) CalendarApp.open();
   if (viewName === 'thinkspace' && typeof ThinkspaceApp !== 'undefined' && ThinkspaceApp?.open) ThinkspaceApp.open();
   if (viewName === 'vault' && typeof VaultApp !== 'undefined' && VaultApp?.open) VaultApp.open();
-  if (viewName === 'requests' && typeof RequestsApp !== 'undefined' && RequestsApp?.open) RequestsApp.open();
+  if (viewName === 'requests') {
+    if (typeof RequestsApp !== 'undefined' && RequestsApp?.open) {
+      RequestsApp.open().catch(err => console.error('Requests open failed', err));
+    } else if (typeof loadRequestsModuleScript === 'function') {
+      loadRequestsModuleScript().then(() => RequestsApp.open()).catch(err => {
+        console.error('Requests module failed to load', err);
+        const el = document.getElementById('view-requests');
+        if (el) el.innerHTML = '<div class="h-full flex items-center justify-center text-sm text-red-500">Requests failed to load. Please refresh the page.</div>';
+      });
+    }
+  }
   if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
 }
