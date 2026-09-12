@@ -1,0 +1,42 @@
+name: Requests v3 UX
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/requests_v3_patch.py'
+      - '.github/workflows/requests-v3-ux.yml'
+permissions:
+  contents: write
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch Requests UX
+        run: python .github/scripts/requests_v3_patch.py
+      - name: Validate JavaScript
+        run: |
+          node --check js/requests.js
+          grep -q 'Unread activity' js/requests.js
+          grep -q 'Completed' js/requests.js
+          grep -q 'rq-sidebar-badge' js/requests.js
+          grep -q 'setCompletedRange' js/requests.js
+      - name: Bust Requests cache
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html');s=p.read_text(encoding='utf-8')
+          s=re.sub(r'<script src="js/requests\.js(?:\?[^\"]*)?"></script>','<script src="js/requests.js?v=20260912-v12"></script>',s,count=1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit upgrade
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/requests.js index.html
+          git diff --cached --quiet || git commit -m 'Upgrade Requests notifications and completion UX'
+          git push
