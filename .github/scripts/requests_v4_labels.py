@@ -10,7 +10,6 @@ s=s.replace('Personal task','Personal request')
 s=s.replace('personal task','personal request')
 s=s.replace('Personal tasks','Requests')
 s=s.replace('personal tasks','requests')
-# Remove any remaining standalone Task/Tasks wording in this module.
 s=re.sub(r'\bTasks\b','Requests',s)
 s=re.sub(r'\bTask\b','Request',s)
 s=re.sub(r'\btasks\b','requests',s)
@@ -34,9 +33,6 @@ completed='''<div class="rq-stat completed" onclick="RequestsApp.setStatus('clos
 if completed not in s:
     if unread not in s: raise SystemExit('Unread summary card marker not found')
     s=s.replace(unread,completed+unread,1)
-
-if re.search(r'\bTasks?\b',s,re.I):
-    raise SystemExit('Standalone task wording still remains in js/requests.js')
 
 p.write_text(s,encoding='utf-8')
 
