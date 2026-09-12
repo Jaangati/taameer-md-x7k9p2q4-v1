@@ -1,6 +1,6 @@
 name: Definitive Requests repair
 
-# trigger v2
+# trigger v3
 on:
   push:
     paths:
@@ -26,17 +26,23 @@ jobs:
           p=Path('js/requests.js')
           s=p.read_text(encoding='utf-8')
           s=s.replace('const RequestsApp = (() => {','window.RequestsApp = (() => {',1)
-          old='''  async function open(){\n    ensureView();\n    root.innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading requests...</div>';\n'''
-          new='''  async function open(){\n    const module = state.modules.find(m=>m.id==='requests') || {id:'requests',name:'Requests',desc:'Team requests, deadlines and accountability',icon:'fa-list-check',status:'active',roles:['admin','user']};\n    ModuleRegistry.ensureView(module);\n    root = document.getElementById('view-requests');\n    if(!root) throw new Error('Requests view container missing');\n    root.className='view-section h-full';\n    ensureStyle();\n    root.innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading requests...</div>';\n'''
-          if old not in s:
-              raise SystemExit('Requests open() block not found')
-          s=s.replace(old,new,1)
+          pattern=r"  async function open\(\)\{\s*ensureView\(\);"
+          replacement="""  async function open(){
+    const module = state.modules.find(m=>m.id==='requests') || {id:'requests',name:'Requests',desc:'Team requests, deadlines and accountability',icon:'fa-list-check',status:'active',roles:['admin','user']};
+    ModuleRegistry.ensureView(module);
+    root = document.getElementById('view-requests');
+    if(!root) throw new Error('Requests view container missing');
+    root.className='view-section h-full';
+    ensureStyle();"""
+          s,n=re.subn(pattern,replacement,s,count=1)
+          if n!=1:
+              raise SystemExit(f'Requests open() replacement count={n}')
           p.write_text(s,encoding='utf-8')
 
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          s=re.sub(r'<script src="js/requests\.js(?:\?[^\"]*)?"></script>','<script src="js/requests.js?v=20260912-v8"></script>',s,count=1)
-          s=re.sub(r'<script src="js/app\.js(?:\?[^\"]*)?"></script>','<script src="js/app.js?v=20260912-v8"></script>',s,count=1)
+          s=re.sub(r'<script src="js/requests\.js(?:\?[^\"]*)?"></script>','<script src="js/requests.js?v=20260912-v9"></script>',s,count=1)
+          s=re.sub(r'<script src="js/app\.js(?:\?[^\"]*)?"></script>','<script src="js/app.js?v=20260912-v9"></script>',s,count=1)
           p.write_text(s,encoding='utf-8')
           PY
       - name: Validate JavaScript and integration
@@ -46,8 +52,8 @@ jobs:
           node --check js/ui.js
           grep -q "window.RequestsApp = " js/requests.js
           grep -q "Requests view container missing" js/requests.js
-          grep -q "js/requests.js?v=20260912-v8" index.html
-          grep -q "js/app.js?v=20260912-v8" index.html
+          grep -q "js/requests.js?v=20260912-v9" index.html
+          grep -q "js/app.js?v=20260912-v9" index.html
       - name: Commit repair
         run: |
           git config user.name 'github-actions[bot]'
