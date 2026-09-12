@@ -1,13 +1,44 @@
 // ---------- Startup ----------
 async function loadRequestsModuleScript(){
-  if(typeof RequestsApp !== 'undefined') return;
+  try {
+    if (window.RequestsApp?.open) return;
+    if (typeof RequestsApp !== 'undefined' && RequestsApp?.open) {
+      window.RequestsApp = RequestsApp;
+      return;
+    }
+  } catch (_) {}
   await new Promise((resolve,reject)=>{
     const existing=document.querySelector('script[data-requests-module]');
-    if(existing){ existing.addEventListener('load',resolve,{once:true}); existing.addEventListener('error',reject,{once:true}); return; }
+    if(existing){
+      if(existing.dataset.loaded==='true') return resolve();
+      existing.addEventListener('load',resolve,{once:true});
+      existing.addEventListener('error',reject,{once:true});
+      return;
+    }
     const script=document.createElement('script');
-    script.src='js/requests.js?v=20260912-v1';
+    script.src='js/requests.js?v=20260912-v4';
     script.dataset.requestsModule='true';
-    script.onload=resolve; script.onerror=reject;
+    script.onload=()=>{script.dataset.loaded='true';resolve();};
+    script.onerror=reject;
+    document.head.appendChild(script);
+  });
+  try { if(typeof RequestsApp !== 'undefined') window.RequestsApp=RequestsApp; } catch (_) {}
+}
+
+async function loadRequestsBridge(){
+  if(window.openRequestsSafely) return;
+  await new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-requests-bridge]');
+    if(existing){
+      existing.addEventListener('load',resolve,{once:true});
+      existing.addEventListener('error',reject,{once:true});
+      return;
+    }
+    const script=document.createElement('script');
+    script.src='js/requests-bridge.js?v=20260912-v1';
+    script.dataset.requestsBridge='true';
+    script.onload=resolve;
+    script.onerror=reject;
     document.head.appendChild(script);
   });
 }
@@ -29,9 +60,14 @@ async function boot(){
   setInterval(updateClock,1000);
   loadTheme();
   Store.normalize();
-  try { await loadRequestsModuleScript(); } catch (err) { console.error('Requests module failed to load', err); }
+  try {
+    await loadRequestsModuleScript();
+    await loadRequestsBridge();
+  } catch (err) {
+    console.error('Requests runtime failed to load', err);
+  }
   const restored = await checkAuth();
-  if (restored && typeof RequestsApp !== 'undefined') RequestsApp.open().catch(err=>console.warn('Requests background init failed',err));
+  if (restored && window.openRequestsSafely) window.openRequestsSafely().catch(err=>console.warn('Requests background init failed',err));
   if (!restored) {
     loadSystemAccent();
     document.getElementById('loginView').classList.remove('hidden');
