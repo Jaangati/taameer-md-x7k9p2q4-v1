@@ -1,0 +1,38 @@
+name: Requests v1 integration
+on:
+  push:
+    branches: [ requests-v1 ]
+    paths:
+      - '.github/workflows/requests-v1.yml'
+      - '.github/scripts/wire_requests.py'
+      - 'js/requests.js'
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Wire Requests module
+        run: python .github/scripts/wire_requests.py
+      - name: Validate JavaScript and integration
+        run: |
+          node --check js/requests.js
+          node --check js/app.js
+          node --check js/ui.js
+          grep -q 'loadRequestsModuleScript' js/app.js
+          grep -q "viewName === 'requests'" js/ui.js
+          grep -q "ModuleRegistry.register('requests'" js/requests.js
+      - name: Commit integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/requests.js js/app.js js/ui.js
+          git diff --cached --quiet || git commit -m 'Integrate Requests module v1'
+          git push
