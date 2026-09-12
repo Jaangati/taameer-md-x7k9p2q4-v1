@@ -1,0 +1,85 @@
+name: Fix Requests root binding
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-requests-root.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Fix Requests root initialization
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('js/requests.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('const RequestsApp = (() => {','window.RequestsApp = (() => {',1)
+          old="""  async function open(){
+    ensureView();
+    root.innerHTML='<div class=\"h-full flex items-center justify-center text-sm text-gray-400\"><i class=\"fas fa-spinner fa-spin mr-2\"></i>Loading requests...</div>';
+"""
+          new="""  async function open(){
+    const module = state.modules.find(m=>m.id==='requests') || {id:'requests',name:'Requests',desc:'Team requests, deadlines and accountability',icon:'fa-list-check',status:'active',roles:['admin','user']};
+    ModuleRegistry.ensureView(module);
+    root = document.getElementById('view-requests');
+    if(!root) throw new Error('Requests view container was not created');
+    root.className='view-section h-full';
+    ensureStyle();
+    root.innerHTML='<div class=\"h-full flex items-center justify-center text-sm text-gray-400\"><i class=\"fas fa-spinner fa-spin mr-2\"></i>Loading requests...</div>';
+"""
+          if old not in s:
+              raise SystemExit('Requests open() marker not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('js/ui.js')
+          s=p.read_text(encoding='utf-8')
+          start=s.find("  if (viewName === 'requests') {")
+          if start>=0:
+              end=s.find("  if (viewName === 'home')",start)
+              if end<0: raise SystemExit('Requests UI block end not found')
+              repl="""  if (viewName === 'requests') {
+    const target=document.getElementById('view-requests');
+    if(window.RequestsApp?.open){
+      window.RequestsApp.open().catch(err=>{
+        console.error('Requests open failed',err);
+        if(target) target.innerHTML=`<div class=\"h-full flex items-center justify-center p-8\"><div class=\"max-w-lg rounded-2xl bg-white border border-red-200 shadow-sm p-6 text-center\"><div class=\"text-red-600 font-bold\">Requests could not load</div><div class=\"text-xs text-gray-500 mt-2\">${Utils.escapeHTML(err?.message||'Unknown error')}</div></div></div>`;
+      });
+    } else if(target){
+      target.innerHTML='<div class=\"h-full flex items-center justify-center text-sm text-red-500\">Requests module did not initialize.</div>';
+    }
+  }
+"""
+              s=s[:start]+repl+s[end:]
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          import re
+          s=re.sub(r'<script src="js/requests\.js(?:\?[^\"]*)?"></script>','<script src="js/requests.js?v=20260912-v5"></script>',s,count=1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          node --check js/requests.js
+          node --check js/ui.js
+          grep -q "window.RequestsApp = " js/requests.js
+          grep -q "ModuleRegistry.ensureView(module)" js/requests.js
+          grep -q "Requests view container was not created" js/requests.js
+          grep -q "js/requests.js?v=20260912-v5" index.html
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/requests.js js/ui.js index.html
+          git diff --cached --quiet || git commit -m 'Fix Requests root initialization'
+          git push
