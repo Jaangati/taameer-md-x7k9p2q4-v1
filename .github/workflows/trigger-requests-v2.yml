@@ -1,0 +1,23 @@
+name: Trigger Requests v2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/trigger-requests-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trigger Requests v2 workflow
+        run: |
+          printf '\n# triggered %s\n' "$(date -u +%Y%m%dT%H%M%SZ)" >> .github/workflows/requests-v2-ux.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/workflows/requests-v2-ux.yml
+          git commit -m 'Run Requests v2 UX upgrade'
+          git push
