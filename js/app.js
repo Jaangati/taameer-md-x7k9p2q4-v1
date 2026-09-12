@@ -1,4 +1,22 @@
 // ---------- Startup ----------
+// Compatibility initializer used by RequestsApp.open(). The Requests module called
+// ensureView() as a global helper, but no such function existed in the dashboard.
+// Keep this small adapter here so the module always gets a real root container.
+window.ensureView = window.ensureView || function(){
+  const module = state.modules?.find(m => m.id === 'requests') || {
+    id: 'requests',
+    name: 'Requests',
+    desc: 'Team requests, deadlines and accountability',
+    icon: 'fa-list-check',
+    status: 'active',
+    roles: ['admin','user']
+  };
+  const viewId = ModuleRegistry.ensureView(module);
+  const view = document.getElementById(`view-${viewId}`);
+  if (!view) throw new Error('Requests view container could not be created');
+  return viewId;
+};
+
 async function loadRequestsModuleScript(){
   try {
     if (window.RequestsApp?.open) return;
@@ -16,7 +34,7 @@ async function loadRequestsModuleScript(){
       return;
     }
     const script=document.createElement('script');
-    script.src='js/requests.js?v=20260912-v4';
+    script.src='js/requests.js?v=20260912-v6';
     script.dataset.requestsModule='true';
     script.onload=()=>{script.dataset.loaded='true';resolve();};
     script.onerror=reject;
@@ -35,7 +53,7 @@ async function loadRequestsBridge(){
       return;
     }
     const script=document.createElement('script');
-    script.src='js/requests-bridge.js?v=20260912-v1';
+    script.src='js/requests-bridge.js?v=20260912-v2';
     script.dataset.requestsBridge='true';
     script.onload=resolve;
     script.onerror=reject;
