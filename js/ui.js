@@ -50,7 +50,8 @@ function renderSidebar() {
   const nav = document.getElementById('sidebarNav'); const u = state.currentUser; if (!u) return;
   const isAdmin = u.role === 'admin';
   let html = `<div class="section-title sidebar-label">Main</div><div class="nav-item ${isActive('home') ? 'active' : ''}" onclick="showView('home')"><span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label sidebar-label">Home</span></div>`;
-  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.status !== 'disabled');
+  const moduleOrder = { calendar: 1, thinkspace: 2, vault: 3, requests: 4, projects: 5 };
+  const userModules = state.modules.filter(m => u.modules?.includes(m.id) && m.status !== 'disabled').sort((a,b) => (moduleOrder[a.id] || moduleOrder[a.viewId] || 99) - (moduleOrder[b.id] || moduleOrder[b.viewId] || 99));
   if (userModules.length) {
     html += `<div class="section-title sidebar-label mt-2">Modules</div>`;
     for (const m of userModules) {
@@ -133,7 +134,7 @@ function goToday() {}
 // ---------- Home modules ----------
 function renderHomeModules() {
   const grid=document.getElementById('homeModulesGrid'); if(!grid)return; grid.innerHTML='';
-  const u=state.currentUser; const myModules=state.modules.filter(m=>u.modules?.includes(m.id));
+  const u=state.currentUser; const moduleOrder={calendar:1,thinkspace:2,vault:3,requests:4,projects:5}; const myModules=state.modules.filter(m=>u.modules?.includes(m.id)).sort((a,b)=>(moduleOrder[a.id]||moduleOrder[a.viewId]||99)-(moduleOrder[b.id]||moduleOrder[b.viewId]||99));
   if(!myModules.length){grid.innerHTML='<div class="col-span-full p-7 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 text-center text-sm text-gray-500">No modules yet.</div>';return;}
   myModules.forEach(m=>{
     const allowed=canAccessModule(m), card=document.createElement('button');
