@@ -1,0 +1,33 @@
+name: Run Requests v2 patch
+
+on:
+  push:
+    paths:
+      - '.github/workflows/run-requests-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply patch
+        run: python .github/scripts/requests_v2_patch.py
+      - name: Validate
+        run: |
+          node --check js/requests.js
+          grep -q 'New Personal Task' js/requests.js
+          grep -q 'work_request_reads' js/requests.js
+          grep -q 'Mark Done' js/requests.js
+          grep -q 'setDueFlexible' js/requests.js
+          grep -q 'reference_links' js/requests.js
+          grep -q 'js/requests.js?v=20260912-v11' index.html
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add js/requests.js index.html
+          git diff --cached --quiet || git commit -m 'Upgrade Requests workflow and UX'
+          git push
