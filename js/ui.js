@@ -80,7 +80,7 @@ if (sidebarHeader) {
   });
 }
 
-const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','My schedule & department activity'], thinkspace: ['Thinkspace','Visual brainstorming, diagrams and collaborative boards'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
+const VIEW_TITLES = { home: ['Home','TAAMEER Marketing Dashboard'], calendar: ['Calendar','My schedule & department activity'], thinkspace: ['Thinkspace','Visual brainstorming, diagrams and collaborative boards'], requests: ['Requests','Team requests, deadlines and accountability'], profile: ['My Profile','Your public profile'], account: ['Account Settings','Personal settings'], users: ['User Management','Admin controls'], 'modules-admin': ['Module Management','Create & assign modules'], permissions: ['Permissions','Role access matrix'], settings: ['System Settings','Full admin configuration'] };
 function showView(viewName) {
   if (!state.currentUser) return;
   if (['users','permissions','settings','modules-admin'].includes(viewName) && state.currentUser.role !== 'admin') return;
@@ -96,6 +96,7 @@ function showView(viewName) {
   if (viewName === 'calendar' && typeof CalendarApp !== 'undefined' && CalendarApp?.open) CalendarApp.open();
   if (viewName === 'thinkspace' && typeof ThinkspaceApp !== 'undefined' && ThinkspaceApp?.open) ThinkspaceApp.open();
   if (viewName === 'vault' && typeof VaultApp !== 'undefined' && VaultApp?.open) VaultApp.open();
+  if (viewName === 'requests' && typeof RequestsApp !== 'undefined' && RequestsApp?.open) RequestsApp.open();
   if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
 }

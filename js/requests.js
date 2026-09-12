@@ -326,7 +326,10 @@ const RequestsApp = (() => {
   }
 
   function announce(title,body,id){
-    if(typeof announceNotification==='function')return announceNotification(title,body,id);
+    if(typeof playTeamNotificationSound==='function') playTeamNotificationSound();
+    if(typeof desktopNotificationsEnabled==='function' && desktopNotificationsEnabled() && 'Notification' in window && Notification.permission==='granted'){
+      try{const n=new Notification(title,{body,tag:`request-${id||Date.now()}`,renotify:true});n.onclick=()=>{window.focus();showView('requests');if(id)setTimeout(()=>openDetail(id),200);n.close();};setTimeout(()=>n.close(),9000);}catch(_){ }
+    }
     let host=document.getElementById('rqToastHost');if(!host){host=document.createElement('div');host.id='rqToastHost';host.className='fixed top-5 right-5 z-[20000] space-y-2 w-[340px] max-w-[calc(100vw-2rem)]';document.body.appendChild(host);}const t=document.createElement('button');t.className='w-full text-left bg-white border border-gray-200 rounded-2xl shadow-xl p-4';t.innerHTML=`<div class="font-bold text-sm">${esc(title)}</div><div class="text-xs text-gray-500 mt-1">${esc(body)}</div>`;t.onclick=()=>{t.remove();showView('requests');setTimeout(()=>openDetail(id),250);};host.prepend(t);setTimeout(()=>t.remove(),7000);
   }
 
