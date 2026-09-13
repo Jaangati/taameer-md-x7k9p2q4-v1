@@ -229,8 +229,9 @@ const VaultApp = (() => {
     const dashboard=document.getElementById('dashboardView');
     const dashboardVisible=dashboard&&!dashboard.classList.contains('hidden');
     const vaultView=document.getElementById('view-vault');
-    const vaultActive=viewName==='vault'||(!viewName&&vaultView&&!vaultView.classList.contains('hidden'));
-    const shouldShow=!!state.currentUser&&dashboardVisible&&!vaultActive;
+    const homeView=document.getElementById('view-home');
+    const captureSuppressed=viewName==='vault'||viewName==='home'||(!viewName&&((vaultView&&!vaultView.classList.contains('hidden'))||(homeView&&!homeView.classList.contains('hidden'))));
+    const shouldShow=!!state.currentUser&&dashboardVisible&&!captureSuppressed;
     if(!shouldShow){document.getElementById('vaultQuick')?.remove();return}
     ensureQuickCapture();
   }

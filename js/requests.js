@@ -364,7 +364,7 @@ window.RequestsApp = (() => {
     ModuleRegistry.ensureView(module);
     root = document.getElementById('view-requests');
     if(!root) throw new Error('Requests view container missing');
-    root.className='view-section h-full';
+    root.classList.add('view-section','h-full');
     ensureStyle();
     root.innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading requests...</div>';
     try{await Promise.all([loadDirectory(),loadData()]);if(!isAdmin()){selectedUser=currentId();}render();startBackground();}
