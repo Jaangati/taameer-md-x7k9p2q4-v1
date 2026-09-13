@@ -90,6 +90,10 @@ const Store = {
     if (!Array.isArray(state.users)) state.users = Utils.clone(DEFAULT_USERS);
     if (!Array.isArray(state.modules)) state.modules = Utils.clone(DEFAULT_MODULES);
     state.modules = state.modules.map(m => ({
+      // Keep module-control metadata such as controlStatus, newSince and
+      // maintenanceMessage. NEW cannot be reconstructed from legacy status
+      // because both NEW and Live intentionally use status: active.
+      ...m,
       id: String(m.id || 'module-' + Date.now()),
       name: String(m.name || 'Module'),
       icon: Utils.validIcon(m.icon),
