@@ -359,16 +359,25 @@ window.RequestsApp = (() => {
   function setStatus(s){selectedStatus=s;render();}
   function search(v){searchTerm=v;render();requestAnimationFrame(()=>{const i=root.querySelector('.rq-search input');if(i){i.focus();i.selectionStart=i.selectionEnd=v.length;}});}
 
-  async function open(){
+  async function open(options={}){
+    const background=options?.background===true;
     const module = state.modules.find(m=>m.id==='requests') || {id:'requests',name:'Requests',desc:'Team requests, deadlines and accountability',icon:'fa-list-check',status:'active',roles:['admin','user']};
     ModuleRegistry.ensureView(module);
     root = document.getElementById('view-requests');
     if(!root) throw new Error('Requests view container missing');
-    root.classList.add('view-section','h-full');
+    if(background) root.classList.add('view-section','h-full','hidden');
+    else root.className='view-section h-full';
     ensureStyle();
-    root.innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading requests...</div>';
-    try{await Promise.all([loadDirectory(),loadData()]);if(!isAdmin()){selectedUser=currentId();}render();startBackground();}
-    catch(err){console.error(err);root.innerHTML=`<div class="h-full flex items-center justify-center text-sm text-red-500">Could not load Requests.</div>`;}
+    if(!background) root.innerHTML='<div class="h-full flex items-center justify-center text-sm text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading requests...</div>';
+    try{
+      await Promise.all([loadDirectory(),loadData()]);
+      if(!isAdmin()) selectedUser=currentId();
+      if(!background) render();
+      startBackground();
+    }catch(err){
+      console.error(err);
+      if(!background) root.innerHTML=`<div class="h-full flex items-center justify-center text-sm text-red-500">Could not load Requests.</div>`;
+    }
   }
 
   function startBackground(){

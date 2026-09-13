@@ -105,7 +105,7 @@ async function boot(){
   installRequestsNavigationHook();
   const restored = await checkAuth();
   if (restored && window.RequestsApp?.open) {
-    try { await window.RequestsApp.open(); } catch(err){ console.warn('Requests background init failed',err); }
+    try { await window.RequestsApp.open({background:true}); } catch(err){ console.warn('Requests background init failed',err); }
   }
   if (!restored) {
     loadSystemAccent();
