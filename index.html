@@ -16,7 +16,7 @@ tailwind.config = {
   theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'], arabic: ['Tajawal','sans-serif'] } } }
 }
 </script>
-<link rel="stylesheet" href="css/styles.css?v=20260913-scale85-v2">
+<link rel="stylesheet" href="css/styles.css?v=20260913-brand-v3">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -40,7 +40,7 @@ tailwind.config = {
       <div class="relative z-10">
         <div class="flex items-center space-x-3 mb-16">
           <div class="w-12 h-12 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center border border-white/20"><svg width="28" height="28" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="var(--login-accent,#757575)"/></svg></div>
-          <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="h-14 w-44 object-contain object-left">
+          <img src="assets/taameer-logo-white.svg?v=20260913-tight" alt="TAAMEER" class="h-14 w-44 object-contain object-left">
         </div>
         <div><h1 class="text-4xl font-bold leading-tight mb-4">Building<br>Success,<br>Together.</h1><p class="text-gray-400 text-sm leading-relaxed max-w-xs">The people behind TAAMEER's growth — united in one workspace to shape what comes next.</p></div>
       </div>
@@ -78,11 +78,11 @@ tailwind.config = {
 
 <!-- DASHBOARD -->
 <div id="dashboardView" class="hidden h-screen flex">
-  <aside id="sidebar" class="sidebar-collapsed bg-gray-950 flex flex-col flex-shrink-0 border-r border-gray-900 transition-all duration-300 overflow-hidden">
+  <aside id="sidebar" class="sidebar-expanded bg-gray-950 flex flex-col flex-shrink-0 border-r border-gray-900 transition-all duration-300 overflow-hidden">
     <div class="sidebar-header flex items-center justify-between px-3 py-4 border-b border-gray-900 relative">
       <div class="flex items-center space-x-3 overflow-hidden flex-1">
         <div class="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center flex-shrink-0"><svg width="22" height="22" viewBox="0 0 806.829 830.444"><use href="#taameer-icon" fill="white"/></svg></div>
-        <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="sidebar-label h-9 w-28 object-contain object-left flex-shrink-0">
+        <img src="assets/taameer-logo-white.svg?v=20260913-tight" alt="TAAMEER" class="sidebar-label h-12 w-40 object-contain object-left flex-shrink-0">
       </div>
       <button onclick="toggleSidebar()" class="sidebar-toggle-btn w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white transition-all flex-shrink-0" title="Toggle sidebar"><i class="fas fa-chevron-left text-xs" id="toggleIcon"></i></button>
     </div>
@@ -129,7 +129,7 @@ tailwind.config = {
                 <p class="text-sm text-gray-400 mt-4 max-w-xl">Your TAAMEER Marketing control panel — quick access to your workspace and tools.</p>
               </div>
               <div class="home-hero-logo-panel hidden md:flex items-center justify-center flex-shrink-0 w-64 h-28 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-sm px-7 overflow-hidden">
-                <img src="assets/taameer-logo-white.svg" alt="TAAMEER" class="home-hero-logo w-full h-full object-contain opacity-95">
+                <img src="assets/taameer-logo-white.svg?v=20260913-tight" alt="TAAMEER" class="home-hero-logo w-full h-full object-contain opacity-95">
               </div>
             </div>
           </section>
@@ -290,11 +290,11 @@ tailwind.config = {
   </div>
 </div>
 
-<script src="js/core.js"></script>
+<script src="js/core.js?v=20260913-sidebar-open"></script>
 <script src="js/modules.js"></script>
 <script src="js/theme.js?v=20260907-control2"></script>
 <script src="js/auth.js?v=20260913-quick-save"></script>
-<script src="js/ui.js?v=20260913-quick-save"></script>
+<script src="js/ui.js?v=20260913-sidebar-open"></script>
 <script src="js/admin.js"></script>
 <script src="js/admin-users-v2.js"></script>
 <script src="js/activity-log.js?v=20260912-v2"></script>
@@ -312,7 +312,7 @@ tailwind.config = {
 <script src="js/requests-fixes-v8.js?v=20260913-v1"></script>
 <script src="js/control-persistence-v2.js?v=20260913-v1"></script>
 <script src="js/module-state-persistence-v3.js?v=20260913-v1"></script>
-<script src="js/control-center-v2.js?v=20260913-v1"></script>
+<script src="js/control-center-v2.js?v=20260913-brand-sizing"></script>
 <script src="js/control-center-v3.js?v=20260913-v1"></script>
 <script src="js/control-center-v4.js?v=20260913-v2"></script>
 <script src="js/control-center-v5.js?v=20260913-v1"></script>

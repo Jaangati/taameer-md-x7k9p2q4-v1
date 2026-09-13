@@ -62,7 +62,7 @@ let state = {
 
 let currentMonth = new Date();
 let selectedDay = new Date().getDate();
-let sidebarExpanded = false;
+let sidebarExpanded = true;
 let cloudReady = false;
 let syncTimer = null;
 let realtimeChannel = null;

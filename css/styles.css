@@ -104,6 +104,9 @@
 
 /* Welcome banner logo: compensate for whitespace in the source SVG. */
 .home-hero-logo {
-  transform: scale(1.65);
-  transform-origin: center;
+  transform: none;
+}
+
+.cc-hero-logo {
+  flex: none;
 }

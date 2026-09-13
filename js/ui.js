@@ -3,6 +3,12 @@ function showDashboard() {
   document.getElementById('loginView').classList.add('hidden');
   document.getElementById('setPasswordView').classList.add('hidden');
   document.getElementById('dashboardView').classList.remove('hidden');
+  sidebarExpanded = true;
+  const sidebar = document.getElementById('sidebar');
+  sidebar?.classList.add('sidebar-expanded');
+  sidebar?.classList.remove('sidebar-collapsed');
+  const sidebarToggleIcon = document.getElementById('toggleIcon');
+  if (sidebarToggleIcon) sidebarToggleIcon.style.transform = 'rotate(0deg)';
   ModuleRegistry.ensureAll();
   applyActiveAccent();
   refreshUI();
@@ -33,7 +39,7 @@ function refreshUI() {
 }
 
 function resizeLoginBrandLogo() {
-  const logo = document.querySelector('#loginView img[src="assets/taameer-logo-white.svg"]');
+  const logo = document.querySelector('#loginView img[src^="assets/taameer-logo-white.svg"]');
   if (!logo) return;
   logo.className = 'h-12 w-36 object-contain object-left flex-shrink-0';
 }
