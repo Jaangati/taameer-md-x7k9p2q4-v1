@@ -86,6 +86,20 @@
   body {
     zoom: 0.85;
   }
+
+  /* Compensate fixed viewport heights after scaling so no area is cropped. */
+  #dashboardView {
+    height: 117.6470588vh !important;
+  }
+
+  #loginView,
+  #setPasswordView {
+    min-height: 117.6470588vh !important;
+  }
+
+  .modal-overlay {
+    min-height: 117.6470588vh;
+  }
 }
 
 /* Welcome banner logo: compensate for whitespace in the source SVG. */
