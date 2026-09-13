@@ -1,0 +1,51 @@
+name: Deploy bulk control center upgrade
+on:
+  push:
+    paths:
+      - '.github/workflows/bulk-control-center.yml'
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch dashboard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='<script src="js/requests.js?v=20260912-v13"></script>\n<script src="js/app.js?v=20260912-v8"></script>'
+          new='<script src="js/requests.js?v=20260913-v14"></script>\n<script src="js/requests-enhancements-v4.js?v=20260913-v1"></script>\n<script src="js/control-center-v2.js?v=20260913-v1"></script>\n<script src="js/app.js?v=20260912-v8"></script>'
+          if old in s:
+              s=s.replace(old,new,1)
+          elif 'js/control-center-v2.js' not in s:
+              raise SystemExit('index anchor not found')
+          p.write_text(s,encoding='utf-8')
+
+          p=Path('js/requests.js')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace("if(selectedStatus==='attention') arr=arr.filter(r=>isOverdue(r)||pendingActionCount(r)>0);","if(selectedStatus==='attention') arr=arr.filter(r=>isOverdue(r)||pendingActionCount(r)>0||!!r.reopened_at);",1)
+          s=s.replace("const attentionCount=scoped.filter(r=>isOverdue(r)||pendingActionCount(r)>0).length;","const attentionCount=scoped.filter(r=>isOverdue(r)||pendingActionCount(r)>0||!!r.reopened_at).length;",1)
+          s=s.replace("if(status==='closed')payload.closed_at=new Date().toISOString();","if(status==='closed'){payload.closed_at=new Date().toISOString();payload.reopened_at=null;}",1)
+          s=s.replace("if(status==='cancelled')payload.cancelled_at=new Date().toISOString();","if(status==='cancelled'){payload.cancelled_at=new Date().toISOString();payload.reopened_at=null;}",1)
+          s=s.replace("if(status==='in_progress'){payload.closed_at=null;payload.cancelled_at=null;payload.submitted_at=null;}","if(status==='in_progress'){payload.closed_at=null;payload.cancelled_at=null;payload.submitted_at=null;payload.reopened_at=new Date().toISOString();}",1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate JavaScript
+        run: |
+          node --check js/requests.js
+          node --check js/requests-enhancements-v4.js
+          node --check js/control-center-v2.js
+          grep -q 'control-center-v2.js' index.html
+          grep -q 'requests-enhancements-v4.js' index.html
+          grep -q 'reopened_at' js/requests.js
+      - name: Commit deployment
+        run: |
+          git config user.name "TAAMEER Dashboard Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html js/requests.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Deploy modules users home and requests upgrades"
+          git push
