@@ -37,7 +37,20 @@
   const dur=sec=>{sec=Math.max(0,Number(sec)||0);const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);return h?`${h}h ${m}m`:`${m}m`;};
 
   async function persistModuleState(m){
-    try{Store.saveLocal?.();await Cloud.syncNow?.();}catch(e){console.error('Module state sync failed',e);}
+    try{
+      Store.saveLocal?.();
+      const {data,error}=await supabaseClient.from('app_data').upsert({id:'modules',data:state.modules},{onConflict:'id'}).select('id').single();
+      if(error)throw error;
+      if(data?.id!=='modules')throw new Error('Module state was not confirmed by Supabase.');
+    }catch(e){console.error('Module state sync failed',e);throw e;}
+  }
+
+  async function refreshModuleUsers(){
+    if(!isAdmin()||typeof refreshAdminUsers!=='function')return state.users||[];
+    const users=await refreshAdminUsers();
+    const me=users.find(u=>String(u.id)===String(state.currentUser?.id));
+    if(me&&state.currentUser)state.currentUser.modules=[...(me.modules||[])];
+    return users;
   }
 
   window.setModuleControlStatus=async function(id,st){
@@ -82,7 +95,9 @@
   };
 
   window.renderAdminModules=async function(){
-    ensureStyles();const view=document.getElementById('view-modules-admin');if(!view)return;const rows=await sessionRows(30);
+    ensureStyles();const view=document.getElementById('view-modules-admin');if(!view)return;
+    try{await refreshModuleUsers();}catch(e){console.error('Could not refresh module access',e);}
+    const rows=await sessionRows(30);
     const counts={live:0,new:0,maintenance:0,hidden:0};state.modules.forEach(m=>counts[stateOf(m)]++);
     view.innerHTML=`<div class="cc-page"><div class="cc-head"><div><div class="cc-kicker">Administration</div><h2 class="cc-title">Module Control Center</h2><p class="cc-sub">One source of truth for module status, access, permissions and usage.</p></div><button class="cc-btn primary" onclick="openModuleModal()"><i class="fas fa-plus"></i>New Module</button></div><div class="cc-summary"><div class="cc-stat"><div class="v">${state.modules.length}</div><div class="l">Modules</div></div><div class="cc-stat"><div class="v text-emerald-600">${counts.live}</div><div class="l">Live</div></div><div class="cc-stat"><div class="v text-green-600">${counts.new}</div><div class="l">New</div></div><div class="cc-stat"><div class="v text-orange-600">${counts.maintenance}</div><div class="l">Maintenance</div></div></div><div class="cc-grid">${state.modules.map(m=>{const st=stateOf(m),assigned=state.users.filter(u=>(u.modules||[]).includes(m.id)),ms=statsFor(m,rows);return `<article class="cc-module cc6-module-card"><span class="cc-status ${st} cc6-module-status">${st}</span><div class="cc-module-top"><div class="flex gap-3 pr-24"><div class="cc-icon"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><div><h3 class="font-bold text-gray-900 dark:text-white">${esc(m.name)}</h3><p class="text-xs text-gray-500 mt-1">${esc(m.desc||'')}</p></div></div></div><div class="cc-metrics"><div class="cc-metric"><strong>${assigned.length}</strong><span>Access</span></div><div class="cc-metric"><strong>${ms.users}</strong><span>Active 30d</span></div><div class="cc-metric"><strong>${ms.last?fmtAgo(ms.last):'—'}</strong><span>Last used</span></div></div><div class="flex items-center justify-between gap-3 mb-4"><div class="cc-avatars">${assigned.slice(0,5).map(u=>avatar(u).replaceAll('cc6-avatar','cc-avatar')).join('')}${assigned.length>5?`<div class="cc-avatar cc-avatar-fallback">+${assigned.length-5}</div>`:''}</div><div class="text-[10px] text-gray-400">${ms.sessions} sessions · ${dur(ms.time)}</div></div><div class="cc-actions"><button class="cc-btn" onclick="showView('${esc(m.id)}')"><i class="fas fa-arrow-up-right-from-square"></i>Open</button><button class="cc-btn" onclick="openModuleControl('${esc(m.id)}','overview')"><i class="fas fa-sliders"></i>Manage</button>${st==='live'?`<button class="cc-btn" onclick="setModuleControlStatus('${esc(m.id)}','maintenance')"><i class="fas fa-pause"></i>Maintenance</button>`:`<button class="cc-btn" onclick="setModuleControlStatus('${esc(m.id)}','live')"><i class="fas fa-play"></i>Go Live</button>`}</div></article>`;}).join('')}</div></div>`;
   };
@@ -90,15 +105,19 @@
   window.setModuleUserAccessV6=async function(mid,uid,on){
     const u=state.users.find(x=>String(x.id)===String(uid));if(!u)return;
     const mods=Array.isArray(u.modules)?[...u.modules]:[];const next=on?[...new Set([...mods,mid])]:mods.filter(x=>x!==mid);
-    const {error}=await supabaseClient.from('profiles').update({modules:next}).eq('id',uid);if(error){console.error(error);alert('Could not update module access.');return;}
-    u.modules=next;
+    const {data,error}=await supabaseClient.from('profiles').update({modules:next}).eq('id',uid).select('id,modules').single();if(error){console.error(error);alert('Could not update module access.');return;}
+    const saved=Array.isArray(data?.modules)?data.modules:[];
+    if(saved.length!==next.length||next.some(id=>!saved.includes(id))){console.error('Supabase returned different module access',data);alert('Module access was not confirmed. Please try again.');return;}
+    u.modules=saved;
     try{const cu=String(state.currentUser?.id)===String(uid);if(cu)state.currentUser.modules=next;}catch(_){}
     await window.renderAdminModules?.();
-    const open=document.getElementById('ccOverlay');if(open)window.openModuleControl?.(mid,'access');
+    const open=document.getElementById('ccOverlay');if(open)await window.openModuleControl?.(mid,'access');
   };
 
   window.openModuleControl=async function(id,tab='overview'){
-    ensureStyles();const m=state.modules.find(x=>x.id===id);if(!m)return;document.getElementById('ccOverlay')?.remove();
+    ensureStyles();
+    if(tab==='access'){try{await refreshModuleUsers();}catch(e){console.error('Could not refresh module access',e);}}
+    const m=state.modules.find(x=>x.id===id);if(!m)return;document.getElementById('ccOverlay')?.remove();
     const el=document.createElement('div');el.id='ccOverlay';el.className='cc-overlay';el.innerHTML=`<div class="cc-drawer"><div class="cc-drawer-head"><div class="flex items-center gap-3"><div class="cc-icon bg-white/10"><i class="fas ${Utils.validIcon(m.icon)}"></i></div><div><div class="cc-kicker text-gray-400">MODULE CONTROL</div><h3 class="text-xl font-bold">${esc(m.name)}</h3><p class="text-xs text-gray-400 mt-1">${esc(m.desc||'')}</p></div></div><button class="cc-btn" onclick="document.getElementById('ccOverlay').remove()"><i class="fas fa-times"></i></button></div><div class="cc-tabs">${['overview','access','analytics','activity'].map(t=>`<button class="cc-tab ${tab===t?'active':''}" onclick="openModuleControl('${esc(id)}','${t}')">${t==='access'?'Access & Permissions':t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div><div id="ccModuleBody" class="cc-body"></div></div>`;document.body.appendChild(el);
     const body=document.getElementById('ccModuleBody'),st=stateOf(m);
     if(tab==='overview'){
