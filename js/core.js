@@ -150,14 +150,17 @@ const Cloud = {
     if (!supabaseClient || realtimeChannel) return;
     try {
       realtimeChannel = supabaseClient.channel('taameer-app-data')
-        .on('postgres_changes', { event: '*', schema: 'public', table: CONFIG.table }, async () => {
-          const { data, error } = await supabaseClient.from(CONFIG.table).select('id,data').in('id', ['users','modules','permissions','settings']);
-          if (!error && data?.length) {
+        .on('postgres_changes', { event: '*', schema: 'public', table: CONFIG.table }, payload => {
+          // Apply the ordered WAL payload directly. Refetching the whole table
+          // here allowed older requests to finish last and visually revert NEW
+          // back to Live even though Supabase already contained the NEW state.
+          const changedRow = payload?.new;
+          if (changedRow?.id && ['users','modules','permissions','settings'].includes(changedRow.id)) {
             // Authentication/profile data is authoritative for the signed-in
             // user. app_data.users is a legacy admin cache and must not replace it.
             const authenticatedUser = state.currentUser;
             const activeView = document.querySelector('.view-section:not(.hidden)')?.id?.replace(/^view-/, '') || 'home';
-            Store.applyCloudRows(data);
+            Store.applyCloudRows([changedRow]);
             if (authenticatedUser) state.currentUser = authenticatedUser;
             applyActiveAccent();
             if (state.currentUser) {

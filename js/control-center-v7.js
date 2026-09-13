@@ -28,10 +28,14 @@
   }
 
   async function saveNewCycle(){
-    Store.saveLocal?.();
-    const {data,error}=await supabaseClient.from('app_data').upsert({id:'modules',data:state.modules},{onConflict:'id'}).select('id').single();
+    const snapshot=JSON.parse(JSON.stringify(state.modules));
+    const {data,error}=await supabaseClient.from('app_data').update({data:snapshot}).eq('id','modules').select('id,data').single();
     if(error)throw error;
     if(data?.id!=='modules')throw new Error('NEW module state was not confirmed by Supabase.');
+    if(!Array.isArray(data.data))throw new Error('Supabase returned an invalid NEW module state.');
+    state.modules=data.data;
+    Store.normalize?.();
+    Store.saveLocal?.();
   }
 
   const baseSetStatus=window.setModuleControlStatus;

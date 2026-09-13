@@ -38,10 +38,14 @@
 
   async function persistModuleState(m){
     try{
-      Store.saveLocal?.();
-      const {data,error}=await supabaseClient.from('app_data').upsert({id:'modules',data:state.modules},{onConflict:'id'}).select('id').single();
+      const snapshot=JSON.parse(JSON.stringify(state.modules));
+      const {data,error}=await supabaseClient.from('app_data').update({data:snapshot}).eq('id','modules').select('id,data').single();
       if(error)throw error;
       if(data?.id!=='modules')throw new Error('Module state was not confirmed by Supabase.');
+      if(!Array.isArray(data.data))throw new Error('Supabase returned an invalid module state.');
+      state.modules=data.data;
+      Store.normalize?.();
+      Store.saveLocal?.();
     }catch(e){console.error('Module state sync failed',e);throw e;}
   }
 
