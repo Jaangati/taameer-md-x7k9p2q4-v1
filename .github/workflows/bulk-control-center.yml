@@ -17,10 +17,13 @@ jobs:
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
           old='<script src="js/requests.js?v=20260912-v13"></script>\n<script src="js/app.js?v=20260912-v8"></script>'
-          new='<script src="js/requests.js?v=20260913-v14"></script>\n<script src="js/requests-enhancements-v4.js?v=20260913-v1"></script>\n<script src="js/control-center-v2.js?v=20260913-v1"></script>\n<script src="js/app.js?v=20260912-v8"></script>'
+          first='<script src="js/requests.js?v=20260913-v14"></script>\n<script src="js/requests-enhancements-v4.js?v=20260913-v1"></script>\n<script src="js/control-center-v2.js?v=20260913-v1"></script>\n<script src="js/app.js?v=20260912-v8"></script>'
+          final='<script src="js/requests.js?v=20260913-v14"></script>\n<script src="js/requests-enhancements-v4.js?v=20260913-v1"></script>\n<script src="js/control-persistence-v2.js?v=20260913-v1"></script>\n<script src="js/control-center-v2.js?v=20260913-v1"></script>\n<script src="js/app.js?v=20260912-v8"></script>'
           if old in s:
-              s=s.replace(old,new,1)
-          elif 'js/control-center-v2.js' not in s:
+              s=s.replace(old,final,1)
+          elif first in s:
+              s=s.replace(first,final,1)
+          elif 'js/control-persistence-v2.js' not in s:
               raise SystemExit('index anchor not found')
           p.write_text(s,encoding='utf-8')
 
@@ -37,7 +40,9 @@ jobs:
         run: |
           node --check js/requests.js
           node --check js/requests-enhancements-v4.js
+          node --check js/control-persistence-v2.js
           node --check js/control-center-v2.js
+          grep -q 'control-persistence-v2.js' index.html
           grep -q 'control-center-v2.js' index.html
           grep -q 'requests-enhancements-v4.js' index.html
           grep -q 'reopened_at' js/requests.js
