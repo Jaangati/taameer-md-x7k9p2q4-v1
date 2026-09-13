@@ -153,11 +153,26 @@ const Cloud = {
         .on('postgres_changes', { event: '*', schema: 'public', table: CONFIG.table }, async () => {
           const { data, error } = await supabaseClient.from(CONFIG.table).select('id,data').in('id', ['users','modules','permissions','settings']);
           if (!error && data?.length) {
-            const currentId = state.currentUser?.id;
+            // Authentication/profile data is authoritative for the signed-in
+            // user. app_data.users is a legacy admin cache and must not replace it.
+            const authenticatedUser = state.currentUser;
+            const activeView = document.querySelector('.view-section:not(.hidden)')?.id?.replace(/^view-/, '') || 'home';
             Store.applyCloudRows(data);
-            if (currentId) state.currentUser = state.users.find(u => u.id === currentId) || null;
+            if (authenticatedUser) state.currentUser = authenticatedUser;
             applyActiveAccent();
-            if (state.currentUser) refreshUI();
+            if (state.currentUser) {
+              refreshUI();
+              if (typeof renderSidebar === 'function') renderSidebar();
+              if (activeView === 'home' && typeof renderHomeModules === 'function') renderHomeModules();
+
+              const activeModule = state.modules.find(m => m.id === activeView || m.viewId === activeView);
+              const status = activeModule?.controlStatus || (activeModule?.status === 'soon' ? 'maintenance' : activeModule?.status === 'disabled' ? 'hidden' : 'live');
+              if (state.currentUser.role !== 'admin' && activeModule && status === 'maintenance' && typeof showMaintenanceView === 'function') {
+                showMaintenanceView(activeModule.id);
+              } else if (state.currentUser.role !== 'admin' && activeModule && status === 'hidden' && typeof showView === 'function') {
+                showView('home');
+              }
+            }
           }
         })
         .subscribe();

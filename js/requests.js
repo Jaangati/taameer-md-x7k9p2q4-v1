@@ -433,7 +433,14 @@ window.RequestsApp = (() => {
     }
   }
 
-  ModuleRegistry.register('requests',(view)=>{root=view;view.className='view-section hidden h-full';view.dataset.generated='true';ensureStyle();});
+  ModuleRegistry.register('requests',(view)=>{
+    root=view;
+    // Registration may run while Requests is already open (including its
+    // maintenance view). Never reset visibility here; navigation owns it.
+    view.classList.add('view-section','h-full');
+    view.dataset.generated='true';
+    ensureStyle();
+  });
 
   return {open,render,selectUser,setStatus,search,openCreate:()=>createForm(),saveRequest,openDetail,closeModal,edit,setRequestStatus,addComment,requestExtension,submitExtension,requestAssistance,submitAssistance,reviewChange,moveToBin,restore,permanentDelete,openBin,setAssignee,setDuePreset,setDueFlexible,addReferenceRow,setCompletedRange,updateSidebarBadge};
 })();

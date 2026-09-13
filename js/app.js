@@ -52,7 +52,7 @@ async function loadRequestsModuleScript(){
       return;
     }
     const script=document.createElement('script');
-    script.src='js/requests.js?v=20260912-v10';
+    script.src='js/requests.js?v=20260913-maintenance-fix';
     script.dataset.requestsModule='true';
     script.onload=()=>{script.dataset.loaded='true';resolve();};
     script.onerror=reject;
