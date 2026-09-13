@@ -1,0 +1,29 @@
+name: Load stable request and module controls
+on: push
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Load stable requests and module controls'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          if 'js/requests-fixes-v8.js' not in s:
+              s=s.replace('<script src="js/requests-fixes-v7.js?v=20260913-v1"></script>','<script src="js/requests-fixes-v7.js?v=20260913-v1"></script>\n<script src="js/requests-fixes-v8.js?v=20260913-v1"></script>',1)
+          if 'js/control-center-v6.js' not in s:
+              s=s.replace('<script src="js/control-center-v5.js?v=20260913-v1"></script>','<script src="js/control-center-v5.js?v=20260913-v1"></script>\n<script src="js/control-center-v6.js?v=20260913-v1"></script>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          node --check js/requests-fixes-v8.js
+          node --check js/control-center-v6.js
+          grep -q 'requests-fixes-v8.js' index.html
+          grep -q 'control-center-v6.js' index.html
+          git config user.name 'TAAMEER Dashboard Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Activate stable requests and module controls'
+          git push
