@@ -17,12 +17,14 @@
 
   const esc = value => Utils.escapeHTML(String(value ?? ''));
   const isAdmin = () => state.currentUser?.role === 'admin';
+  const canEdit = () => isAdmin() || state.permissions?.user?.['department-hub']?.edit === true;
+  const canDelete = () => isAdmin() || state.permissions?.user?.['department-hub']?.delete === true;
   const currentId = () => String(state.currentUser?.id || '');
   const initials = name => String(name || '?').trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase();
   const niceDate = value => value ? new Date(`${value}T00:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set';
   const roleFor = id => Hub.roles.find(role => String(role.user_id) === String(id)) || {};
   const manager = () => Hub.team.find(person => person.job_title === 'Marketing Manager') || Hub.team[0];
-  const published = kind => Hub.documents.filter(doc => doc.kind === kind && (isAdmin() || doc.status === 'published'));
+  const published = kind => Hub.documents.filter(doc => doc.kind === kind && (canEdit() || doc.status === 'published'));
   const acknowledged = id => Hub.acknowledgements.some(row => String(row.document_id) === String(id));
   const completed = id => Hub.progress.some(row => String(row.item_id) === String(id));
 
@@ -209,7 +211,7 @@
   function roles() {
     return `<div class="dh-toolbar"><div><h2 style="font-size:20px;font-weight:850;letter-spacing:-.03em">Who owns what</h2><p class="dh-card-sub">Clear responsibilities without turning job descriptions into paperwork.</p></div></div><div class="dh-role-grid">${Hub.team.map(person => {
       const role = roleFor(person.id);
-      return `<article class="dh-role-card"><div class="dh-role-head">${avatar(person)}<div style="min-width:0;flex:1"><h3 style="font-size:13px;font-weight:850">${esc(person.full_name)}</h3><p class="dh-card-sub">${esc(person.job_title || 'Marketing Department')}</p></div>${isAdmin() ? `<button class="dh-btn small" onclick="DepartmentHub.editRole('${esc(person.id)}')"><i class="fas fa-pen"></i>Edit</button>` : ''}</div><div class="dh-focus" style="margin-top:14px">${(role.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('')}</div><ul>${(role.responsibilities || ['Support department priorities']).map(item => `<li>${esc(item)}</li>`).join('')}</ul></article>`;
+      return `<article class="dh-role-card"><div class="dh-role-head">${avatar(person)}<div style="min-width:0;flex:1"><h3 style="font-size:13px;font-weight:850">${esc(person.full_name)}</h3><p class="dh-card-sub">${esc(person.job_title || 'Marketing Department')}</p></div>${canEdit() ? `<button class="dh-btn small" onclick="DepartmentHub.editRole('${esc(person.id)}')"><i class="fas fa-pen"></i>Edit</button>` : ''}</div><div class="dh-focus" style="margin-top:14px">${(role.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('')}</div><ul>${(role.responsibilities || ['Support department priorities']).map(item => `<li>${esc(item)}</li>`).join('')}</ul></article>`;
     }).join('')}</div>`;
   }
 
@@ -218,18 +220,18 @@
     const subtitle = kind === 'policy' ? 'The approved principles and standards everyone should know.' : 'Clear, repeatable steps for doing department work well.';
     const query = Hub.search.trim().toLowerCase();
     const items = published(kind).filter(doc => !query || `${doc.title} ${doc.summary} ${doc.category}`.toLowerCase().includes(query));
-    return `<div class="dh-toolbar"><div><h2 style="font-size:20px;font-weight:850;letter-spacing:-.03em">${label}</h2><p class="dh-card-sub">${subtitle}</p></div><div style="display:flex;gap:9px;flex-wrap:wrap"><label class="dh-search"><i class="fas fa-search"></i><input value="${esc(Hub.search)}" oninput="DepartmentHub.search(this.value)" placeholder="Search ${kind === 'policy' ? 'policies' : 'procedures'}…"></label>${isAdmin() ? `<button class="dh-btn primary" onclick="DepartmentHub.editDocument(null,'${kind}')"><i class="fas fa-plus"></i>Add ${kind}</button>` : ''}</div></div>${items.length ? `<div class="dh-doc-grid">${items.map(docCard).join('')}</div>` : `<div class="dh-empty"><i class="fas ${kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i>${query ? 'No matching content.' : `No ${kind === 'policy' ? 'policies' : 'procedures'} have been published yet.`}</div>`}`;
+    return `<div class="dh-toolbar"><div><h2 style="font-size:20px;font-weight:850;letter-spacing:-.03em">${label}</h2><p class="dh-card-sub">${subtitle}</p></div><div style="display:flex;gap:9px;flex-wrap:wrap"><label class="dh-search"><i class="fas fa-search"></i><input value="${esc(Hub.search)}" oninput="DepartmentHub.search(this.value)" placeholder="Search ${kind === 'policy' ? 'policies' : 'procedures'}…"></label>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editDocument(null,'${kind}')"><i class="fas fa-plus"></i>Add ${kind}</button>` : ''}</div></div>${items.length ? `<div class="dh-doc-grid">${items.map(docCard).join('')}</div>` : `<div class="dh-empty"><i class="fas ${kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i>${query ? 'No matching content.' : `No ${kind === 'policy' ? 'policies' : 'procedures'} have been published yet.`}</div>`}`;
   }
 
   function docCard(doc) {
     const isAck = acknowledged(doc.id);
-    return `<article class="dh-doc ${doc.kind}"><div class="dh-doc-top"><span class="dh-doc-icon"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><div style="display:flex;gap:6px">${doc.status !== 'published' ? `<span class="dh-pill draft">${esc(doc.status)}</span>` : ''}${doc.is_required ? `<span class="dh-pill ${isAck ? '' : 'required'}">${isAck ? 'Read' : 'Required'}</span>` : ''}</div></div><h3>${esc(doc.title)}</h3><p>${esc(doc.summary || 'Open this document to read the full guidance.')}</p><div class="dh-doc-meta"><span class="dh-pill">${esc(doc.category)}</span><span class="dh-pill">v${esc(doc.version)}</span></div><div class="dh-doc-actions"><button class="dh-btn small" onclick="DepartmentHub.openDocument('${esc(doc.id)}')">Open <i class="fas fa-arrow-right"></i></button>${isAdmin() ? `<button class="dh-btn small" onclick="DepartmentHub.editDocument('${esc(doc.id)}')"><i class="fas fa-pen"></i></button>` : ''}</div></article>`;
+    return `<article class="dh-doc ${doc.kind}"><div class="dh-doc-top"><span class="dh-doc-icon"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><div style="display:flex;gap:6px">${doc.status !== 'published' ? `<span class="dh-pill draft">${esc(doc.status)}</span>` : ''}${doc.is_required ? `<span class="dh-pill ${isAck ? '' : 'required'}">${isAck ? 'Read' : 'Required'}</span>` : ''}</div></div><h3>${esc(doc.title)}</h3><p>${esc(doc.summary || 'Open this document to read the full guidance.')}</p><div class="dh-doc-meta"><span class="dh-pill">${esc(doc.category)}</span><span class="dh-pill">v${esc(doc.version)}</span></div><div class="dh-doc-actions"><button class="dh-btn small" onclick="DepartmentHub.openDocument('${esc(doc.id)}')">Open <i class="fas fa-arrow-right"></i></button>${canEdit() ? `<button class="dh-btn small" onclick="DepartmentHub.editDocument('${esc(doc.id)}')"><i class="fas fa-pen"></i></button>` : ''}</div></article>`;
   }
 
   function onboarding() {
     const done = Hub.progress.length;
     const percent = Hub.onboarding.length ? Math.round(done / Hub.onboarding.length * 100) : 0;
-    return `<div class="dh-grid"><section class="dh-card dh-span-5"><div class="dh-card-head"><div><h3>Your department start</h3><p class="dh-card-sub">Useful for new members and as a refresher for the whole team.</p></div>${isAdmin() ? '<button class="dh-btn small" onclick="DepartmentHub.editOnboarding()"><i class="fas fa-plus"></i>Add step</button>' : ''}</div><div class="dh-progress-copy"><strong>${percent}%</strong><span>${done} of ${Hub.onboarding.length} complete</span></div><div class="dh-progress"><span style="width:${percent}%"></span></div><div class="dh-focus" style="margin-top:18px"><span>People</span><span>Role</span><span>Standards</span><span>Tools</span><span>Access</span></div></section><section class="dh-card dh-span-7"><div class="dh-card-head"><div><h3>Essentials checklist</h3><p class="dh-card-sub">Tick an item when you have genuinely completed it.</p></div></div><div class="dh-checklist">${Hub.onboarding.map(item => `<button class="dh-check ${completed(item.id) ? 'done' : ''}" onclick="DepartmentHub.toggleOnboarding(${Number(item.id)})"><span class="dh-check-mark"><i class="fas ${completed(item.id) ? 'fa-check' : 'fa-circle'}"></i></span><span><strong>${esc(item.title)}</strong><span>${esc(item.description)}</span></span><span class="dh-check-state">${completed(item.id) ? 'Complete' : esc(item.category)}</span>${isAdmin() ? `<span class="dh-check-edit" role="button" aria-label="Edit checklist item" onclick="event.preventDefault();event.stopPropagation();DepartmentHub.editOnboarding(${Number(item.id)})"><i class="fas fa-pen"></i></span>` : '<span></span>'}</button>`).join('')}</div></section></div>`;
+    return `<div class="dh-grid"><section class="dh-card dh-span-5"><div class="dh-card-head"><div><h3>Your department start</h3><p class="dh-card-sub">Useful for new members and as a refresher for the whole team.</p></div>${canEdit() ? '<button class="dh-btn small" onclick="DepartmentHub.editOnboarding()"><i class="fas fa-plus"></i>Add step</button>' : ''}</div><div class="dh-progress-copy"><strong>${percent}%</strong><span>${done} of ${Hub.onboarding.length} complete</span></div><div class="dh-progress"><span style="width:${percent}%"></span></div><div class="dh-focus" style="margin-top:18px"><span>People</span><span>Role</span><span>Standards</span><span>Tools</span><span>Access</span></div></section><section class="dh-card dh-span-7"><div class="dh-card-head"><div><h3>Essentials checklist</h3><p class="dh-card-sub">Tick an item when you have genuinely completed it.</p></div></div><div class="dh-checklist">${Hub.onboarding.map(item => `<button class="dh-check ${completed(item.id) ? 'done' : ''}" onclick="DepartmentHub.toggleOnboarding(${Number(item.id)})"><span class="dh-check-mark"><i class="fas ${completed(item.id) ? 'fa-check' : 'fa-circle'}"></i></span><span><strong>${esc(item.title)}</strong><span>${esc(item.description)}</span></span><span class="dh-check-state">${completed(item.id) ? 'Complete' : esc(item.category)}</span>${canEdit() ? `<span class="dh-check-edit" role="button" aria-label="Edit checklist item" onclick="event.preventDefault();event.stopPropagation();DepartmentHub.editOnboarding(${Number(item.id)})"><i class="fas fa-pen"></i></span>` : '<span></span>'}</button>`).join('')}</div></section></div>`;
   }
 
   function content() {
@@ -267,9 +269,9 @@
   }
 
   function editDocument(id, fallbackKind = 'policy') {
-    if (!isAdmin()) return;
+    if (!canEdit()) return;
     const doc = Hub.documents.find(item => String(item.id) === String(id)) || { kind: fallbackKind, title: '', summary: '', body: '', category: 'General', owner: 'Marketing Management', version: '1.0', effective_date: new Date().toISOString().slice(0, 10), is_required: false, status: 'draft', sort_order: 100 };
-    overlay(`<section class="dh-modal"><header class="dh-modal-head"><h3>${id ? 'Edit department document' : 'Add department document'}</h3><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-modal-body"><form class="dh-form" onsubmit="DepartmentHub.saveDocument(event,'${id ? esc(id) : ''}')"><div class="dh-form-row"><div class="dh-field"><label>Type</label><select name="kind"><option value="policy" ${doc.kind === 'policy' ? 'selected' : ''}>Policy / standard</option><option value="procedure" ${doc.kind === 'procedure' ? 'selected' : ''}>Procedure / SOP</option></select></div><div class="dh-field"><label>Status</label><select name="status"><option value="draft" ${doc.status === 'draft' ? 'selected' : ''}>Draft — admin only</option><option value="published" ${doc.status === 'published' ? 'selected' : ''}>Published — visible to members</option><option value="archived" ${doc.status === 'archived' ? 'selected' : ''}>Archived — admin only</option></select></div></div><div class="dh-field"><label>Title</label><input name="title" required value="${esc(doc.title)}"></div><div class="dh-field"><label>Short summary</label><textarea name="summary" style="min-height:75px">${esc(doc.summary)}</textarea></div><div class="dh-field"><label>Full content</label><textarea name="body" required>${esc(doc.body)}</textarea></div><div class="dh-form-row"><div class="dh-field"><label>Category</label><input name="category" value="${esc(doc.category)}"></div><div class="dh-field"><label>Owner</label><input name="owner" value="${esc(doc.owner)}"></div></div><div class="dh-form-row"><div class="dh-field"><label>Version</label><input name="version" value="${esc(doc.version)}"></div><div class="dh-field"><label>Effective date</label><input type="date" name="effective_date" value="${esc(doc.effective_date || '')}"></div></div><label style="display:flex;align-items:center;gap:9px;font-size:11px;font-weight:750"><input type="checkbox" name="is_required" ${doc.is_required ? 'checked' : ''}>Require every member to acknowledge this</label><div class="dh-form-actions">${id ? `<button type="button" class="dh-btn danger" style="margin-right:auto" onclick="DepartmentHub.deleteDocument('${esc(id)}')"><i class="fas fa-trash"></i>Delete</button>` : ''}<button type="button" class="dh-btn" onclick="DepartmentHub.closeOverlay()">Cancel</button><button class="dh-btn primary" type="submit"><i class="fas fa-check"></i>Save document</button></div></form></div></section>`);
+    overlay(`<section class="dh-modal"><header class="dh-modal-head"><h3>${id ? 'Edit department document' : 'Add department document'}</h3><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-modal-body"><form class="dh-form" onsubmit="DepartmentHub.saveDocument(event,'${id ? esc(id) : ''}')"><div class="dh-form-row"><div class="dh-field"><label>Type</label><select name="kind"><option value="policy" ${doc.kind === 'policy' ? 'selected' : ''}>Policy / standard</option><option value="procedure" ${doc.kind === 'procedure' ? 'selected' : ''}>Procedure / SOP</option></select></div><div class="dh-field"><label>Status</label><select name="status"><option value="draft" ${doc.status === 'draft' ? 'selected' : ''}>Draft — editors only</option><option value="published" ${doc.status === 'published' ? 'selected' : ''}>Published — visible to members</option><option value="archived" ${doc.status === 'archived' ? 'selected' : ''}>Archived — editors only</option></select></div></div><div class="dh-field"><label>Title</label><input name="title" required value="${esc(doc.title)}"></div><div class="dh-field"><label>Short summary</label><textarea name="summary" style="min-height:75px">${esc(doc.summary)}</textarea></div><div class="dh-field"><label>Full content</label><textarea name="body" required>${esc(doc.body)}</textarea></div><div class="dh-form-row"><div class="dh-field"><label>Category</label><input name="category" value="${esc(doc.category)}"></div><div class="dh-field"><label>Owner</label><input name="owner" value="${esc(doc.owner)}"></div></div><div class="dh-form-row"><div class="dh-field"><label>Version</label><input name="version" value="${esc(doc.version)}"></div><div class="dh-field"><label>Effective date</label><input type="date" name="effective_date" value="${esc(doc.effective_date || '')}"></div></div><label style="display:flex;align-items:center;gap:9px;font-size:11px;font-weight:750"><input type="checkbox" name="is_required" ${doc.is_required ? 'checked' : ''}>Require every member to acknowledge this</label><div class="dh-form-actions">${id && canDelete() ? `<button type="button" class="dh-btn danger" style="margin-right:auto" onclick="DepartmentHub.deleteDocument('${esc(id)}')"><i class="fas fa-trash"></i>Delete</button>` : ''}<button type="button" class="dh-btn" onclick="DepartmentHub.closeOverlay()">Cancel</button><button class="dh-btn primary" type="submit"><i class="fas fa-check"></i>Save document</button></div></form></div></section>`);
   }
 
   async function saveDocument(event, id) {
@@ -294,7 +296,7 @@
   }
 
   async function deleteDocument(id) {
-    if (!isAdmin() || !confirm('Delete this department document?')) return;
+    if (!canDelete() || !confirm('Delete this department document?')) return;
     const { error } = await supabaseClient.from('department_hub_documents').delete().eq('id', id);
     if (error) return alert(error.message || 'Could not delete the document.');
     closeOverlay();
@@ -324,7 +326,7 @@
   }
 
   function editRole(userId) {
-    if (!isAdmin()) return;
+    if (!canEdit()) return;
     const person = Hub.team.find(item => String(item.id) === String(userId));
     const role = roleFor(userId);
     if (!person) return;
@@ -344,9 +346,9 @@
   }
 
   function editOnboarding(id = null) {
-    if (!isAdmin()) return;
+    if (!canEdit()) return;
     const item = Hub.onboarding.find(row => Number(row.id) === Number(id)) || { title: '', description: '', category: 'Getting started', sort_order: 100, active: true };
-    overlay(`<section class="dh-modal"><header class="dh-modal-head"><h3>${id ? 'Edit onboarding step' : 'Add onboarding step'}</h3><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-modal-body"><form class="dh-form" onsubmit="DepartmentHub.saveOnboarding(event,${id ? Number(id) : 'null'})"><div class="dh-field"><label>Step title</label><input name="title" required value="${esc(item.title)}"></div><div class="dh-field"><label>Description</label><textarea name="description" style="min-height:90px">${esc(item.description)}</textarea></div><div class="dh-form-row"><div class="dh-field"><label>Category</label><input name="category" value="${esc(item.category)}"></div><div class="dh-field"><label>Order</label><input type="number" name="sort_order" value="${Number(item.sort_order) || 100}"></div></div><label style="display:flex;align-items:center;gap:9px;font-size:11px;font-weight:750"><input type="checkbox" name="active" ${item.active ? 'checked' : ''}>Visible to members</label><div class="dh-form-actions">${id ? `<button type="button" class="dh-btn danger" style="margin-right:auto" onclick="DepartmentHub.deleteOnboarding(${Number(id)})"><i class="fas fa-trash"></i>Delete</button>` : ''}<button type="button" class="dh-btn" onclick="DepartmentHub.closeOverlay()">Cancel</button><button class="dh-btn primary" type="submit">Save step</button></div></form></div></section>`);
+    overlay(`<section class="dh-modal"><header class="dh-modal-head"><h3>${id ? 'Edit onboarding step' : 'Add onboarding step'}</h3><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-modal-body"><form class="dh-form" onsubmit="DepartmentHub.saveOnboarding(event,${id ? Number(id) : 'null'})"><div class="dh-field"><label>Step title</label><input name="title" required value="${esc(item.title)}"></div><div class="dh-field"><label>Description</label><textarea name="description" style="min-height:90px">${esc(item.description)}</textarea></div><div class="dh-form-row"><div class="dh-field"><label>Category</label><input name="category" value="${esc(item.category)}"></div><div class="dh-field"><label>Order</label><input type="number" name="sort_order" value="${Number(item.sort_order) || 100}"></div></div><label style="display:flex;align-items:center;gap:9px;font-size:11px;font-weight:750"><input type="checkbox" name="active" ${item.active ? 'checked' : ''}>Visible to members</label><div class="dh-form-actions">${id && canDelete() ? `<button type="button" class="dh-btn danger" style="margin-right:auto" onclick="DepartmentHub.deleteOnboarding(${Number(id)})"><i class="fas fa-trash"></i>Delete</button>` : ''}<button type="button" class="dh-btn" onclick="DepartmentHub.closeOverlay()">Cancel</button><button class="dh-btn primary" type="submit">Save step</button></div></form></div></section>`);
   }
 
   async function saveOnboarding(event, id) {
@@ -360,7 +362,7 @@
   }
 
   async function deleteOnboarding(id) {
-    if (!isAdmin() || !confirm('Delete this onboarding step for everyone?')) return;
+    if (!canDelete() || !confirm('Delete this onboarding step for everyone?')) return;
     const { error } = await supabaseClient.from('department_hub_onboarding_items').delete().eq('id', id);
     if (error) return alert(error.message || 'Could not delete this onboarding step.');
     closeOverlay();
@@ -380,20 +382,32 @@
 
   window.DepartmentHub = { open: load, reload, setTab, search, openDocument, editDocument, saveDocument, deleteDocument, toggleAcknowledgement, toggleOnboarding, editRole, saveRole, editOnboarding, saveOnboarding, deleteOnboarding, closeOverlay };
 
+  ModuleRegistry.register('department-hub', () => {
+    if (Hub.loaded) render();
+    else if (!Hub.loading) renderLoading();
+  });
+
   const priorSidebar = window.renderSidebar;
   window.renderSidebar = function() {
     priorSidebar?.();
     const nav = document.getElementById('sidebarNav');
-    if (!nav || !state.currentUser || nav.querySelector('[data-department-hub-nav]')) return;
+    if (!nav || !state.currentUser) return;
+    nav.querySelectorAll('[data-department-hub-nav="title"]').forEach(node => node.remove());
+    const item = [...nav.querySelectorAll('.nav-item')].find(node => node.querySelector('.nav-label')?.textContent.trim() === 'Department Hub');
+    if (!item) return;
+    const module = state.modules?.find(entry => entry.id === 'department-hub');
+    const hasView = state.currentUser.role === 'admin' || state.permissions?.user?.['department-hub']?.view !== false;
+    const assigned = state.currentUser.role === 'admin' || state.currentUser.modules?.includes('department-hub');
+    const status = module?.controlStatus || (module?.status === 'disabled' ? 'hidden' : module?.status === 'soon' ? 'maintenance' : 'live');
+    if (!hasView || !assigned || (status === 'hidden' && state.currentUser.role !== 'admin')) {
+      item.remove();
+      return;
+    }
     const title = document.createElement('div');
     title.className = 'section-title sidebar-label mt-2';
     title.dataset.departmentHubNav = 'title';
     title.textContent = 'Department';
-    const item = document.createElement('div');
-    item.className = `nav-item ${document.getElementById('view-department-hub') && !document.getElementById('view-department-hub').classList.contains('hidden') ? 'active' : ''}`;
     item.dataset.departmentHubNav = 'item';
-    item.onclick = () => window.showView('department-hub');
-    item.innerHTML = '<span class="nav-icon"><i class="fas fa-landmark"></i></span><span class="nav-label sidebar-label">Department Hub</span>';
     const adminTitle = [...nav.querySelectorAll('.section-title')].find(node => node.textContent.trim() === 'Administration');
     if (adminTitle) { nav.insertBefore(title, adminTitle); nav.insertBefore(item, adminTitle); }
     else { nav.append(title, item); }
@@ -403,15 +417,20 @@
   window.showView = function(viewName) {
     if (viewName !== 'department-hub') return priorShowView?.(viewName);
     if (!state.currentUser) return;
-    ensureView();
-    document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-    document.getElementById('view-department-hub')?.classList.remove('hidden');
+    const module = state.modules?.find(entry => entry.id === 'department-hub');
+    if (!module) return;
+    const status = module.controlStatus || (module.status === 'disabled' ? 'hidden' : module.status === 'soon' ? 'maintenance' : 'live');
+    const result = priorShowView?.(viewName);
+    const target = document.getElementById('view-department-hub');
+    if (!target || target.classList.contains('hidden')) return result;
+    if (state.currentUser.role !== 'admin' && status === 'maintenance') return result;
     document.getElementById('headerTitle').textContent = 'Department Hub';
     document.getElementById('headerSubtitle').textContent = 'People, roles and the way we work';
     window.renderSidebar?.();
     window.closeUserDropdown?.();
     window.VaultApp?.syncQuickCapture?.('department-hub');
     if (!Hub.loaded) load(); else render();
+    return result;
   };
 
   injectStyles();
