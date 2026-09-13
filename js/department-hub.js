@@ -3,16 +3,14 @@
   'use strict';
 
   const Hub = {
-    tab: 'overview',
     loaded: false,
     loading: false,
     team: [],
     roles: [],
     documents: [],
     acknowledgements: [],
-    onboarding: [],
-    progress: [],
-    search: ''
+    search: '',
+    docFilter: 'all'
   };
 
   const esc = value => Utils.escapeHTML(String(value ?? ''));
@@ -26,7 +24,6 @@
   const manager = () => Hub.team.find(person => person.job_title === 'Marketing Manager') || Hub.team[0];
   const published = kind => Hub.documents.filter(doc => doc.kind === kind && (canEdit() || doc.status === 'published'));
   const acknowledged = id => Hub.acknowledgements.some(row => String(row.document_id) === String(id));
-  const completed = id => Hub.progress.some(row => String(row.item_id) === String(id));
 
   function injectStyles() {
     if (document.getElementById('departmentHubStyles')) return;
@@ -53,8 +50,13 @@
       .dh-checklist{display:grid;gap:9px}.dh-check{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto auto;align-items:center;gap:11px;border:1px solid #e6eaf0;border-radius:15px;background:#fff;padding:12px;text-align:left}.dark .dh-check{background:#101824;border-color:#253143}.dh-check-mark{width:32px;height:32px;border-radius:10px;background:#edf1f5;color:#9aa5b5;display:flex;align-items:center;justify-content:center}.dh-check.done .dh-check-mark{background:#dcfce7;color:#16834c}.dh-check strong{font-size:11px}.dh-check span{display:block;font-size:9px;color:#929dad;margin-top:3px}.dh-check-state{font-size:8px!important;font-weight:850;text-transform:uppercase;letter-spacing:.07em;margin:0!important}.dh-check.done .dh-check-state{color:#16834c}.dh-check-edit{width:30px;height:30px;border-radius:9px;background:#f1f3f6;display:flex!important;align-items:center;justify-content:center;margin:0!important;color:#667085!important}.dark .dh-check-edit{background:#202a39}
       .dh-empty{border:1px dashed #dce2e9;border-radius:17px;padding:34px 18px;text-align:center;color:#97a2b2;font-size:10px}.dark .dh-empty{border-color:#2b3748}.dh-empty i{display:block;font-size:22px;margin-bottom:10px;color:#c2c9d3}
       .dh-overlay{position:fixed;inset:0;z-index:130;background:rgba(6,11,20,.62);backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:22px}.dh-modal{width:min(760px,100%);max-height:min(86vh,850px);overflow:auto;border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.28)}.dark .dh-modal{background:#0d1420;color:#fff}.dh-modal-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:19px 21px;border-bottom:1px solid #e7ebf0;background:inherit}.dark .dh-modal-head{border-color:#253043}.dh-modal-head h3{font-size:17px;font-weight:850}.dh-close{width:36px;height:36px;border-radius:11px;background:#f1f3f6;color:#596577}.dark .dh-close{background:#202a39;color:#fff}.dh-modal-body{padding:22px}.dh-reader-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}.dh-reader-body{white-space:pre-line;font-size:12px;line-height:1.8;color:#465266}.dark .dh-reader-body{color:#c7d0dc}.dh-form{display:grid;gap:13px}.dh-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dh-field label{display:block;font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.08em;color:#7b8798;margin-bottom:6px}.dh-field input,.dh-field select,.dh-field textarea{width:100%;border:1px solid #dfe5ec;border-radius:12px;background:#fff;padding:11px 12px;font-size:11px;outline:none}.dark .dh-field input,.dark .dh-field select,.dark .dh-field textarea{background:#131c29;border-color:#2a3648;color:#fff}.dh-field textarea{min-height:120px;resize:vertical}.dh-form-actions{display:flex;justify-content:flex-end;gap:9px;border-top:1px solid #edf0f4;padding-top:15px}.dark .dh-form-actions{border-color:#253043}
+      .dh-chip{border:1px solid rgba(255,255,255,.1);cursor:pointer}.dh-chip:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.2)}
+      .dh-hero-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:15px;border-top:1px solid rgba(255,255,255,.09)}.dh-hero-summary span{font-size:9px!important;line-height:1.35;color:#aeb8c8}.dh-hero-summary b{display:block;color:#fff;font-size:18px;letter-spacing:-.03em}.dh-hero-summary .attention b{color:#f4b447}.dh-hero-summary .clear{display:flex;align-items:center;gap:6px;color:#71d4a1}.dh-main{margin-top:16px}.dh-section{scroll-margin-top:18px}.dh-section-number{display:block;color:var(--accent);font-size:9px;font-weight:900;letter-spacing:.15em;margin-bottom:6px}.dh-person{width:100%;text-align:left;cursor:pointer;transition:.18s}.dh-person:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 42%,#dce2e9);box-shadow:0 12px 26px rgba(15,23,42,.075)}.dh-person-open{margin-left:auto;color:#b0bac8;font-size:10px}
+      .dh-knowledge-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.dh-library-tools{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}.dh-filter{display:inline-flex;gap:4px;padding:4px;border-radius:13px;background:#f1f3f6}.dark .dh-filter{background:#17202d}.dh-filter button{border:0;border-radius:9px;padding:8px 11px;color:#7b8798;font-size:9px;font-weight:850}.dh-filter button span{margin-left:5px;color:#a0a9b7}.dh-filter button.active{background:#fff;color:#111827;box-shadow:0 2px 8px rgba(15,23,42,.08)}.dark .dh-filter button.active{background:#2a3545;color:#fff}.dh-review-strip{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;border:1px solid #f1d7a9;border-radius:14px;background:#fff8eb;padding:11px 13px;color:#9a5b0b;font-size:10px}.dh-review-strip span{display:flex;align-items:center;gap:8px}.dark .dh-review-strip{background:#2b2113;border-color:#5a411d;color:#f2b85b}
+      .dh-doc{position:relative;cursor:pointer;min-height:220px}.dh-doc-type{margin-top:16px;color:var(--accent);font-size:8px;font-weight:900;letter-spacing:.11em;text-transform:uppercase}.dh-doc-footer{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:auto;padding-top:16px;border-top:1px solid #edf0f3}.dark .dh-doc-footer{border-color:#222d3c}.dh-doc-footer>div{display:flex;gap:6px;color:#929dad;font-size:8px}.dh-doc-open{display:flex;align-items:center;gap:7px;color:#4f5b6d;font-size:9px;font-weight:850}.dark .dh-doc-open{color:#d0d7e2}.dh-doc:hover .dh-doc-open{color:var(--accent)}.dh-doc-edit{position:absolute;right:15px;bottom:14px;width:30px;height:30px;border-radius:9px;background:#f1f3f6;color:#667085}.dark .dh-doc-edit{background:#202a39;color:#d5dce6}.dh-doc:has(.dh-doc-edit) .dh-doc-open{margin-right:38px}
+      .dh-modal-eyebrow{display:block;color:#98a4b5;font-size:8px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;margin-bottom:5px}.dh-role-modal .dh-modal-head{align-items:center}.dh-role-section+.dh-role-section{margin-top:24px}.dh-role-section .dh-focus{margin-top:10px}.dh-responsibility-list{list-style:none;padding:0;margin:11px 0 0;display:grid;gap:8px}.dh-responsibility-list li{display:flex;align-items:flex-start;gap:10px;border-radius:12px;background:#f6f8fa;padding:11px 12px;color:#465266;font-size:10px;line-height:1.45}.dark .dh-responsibility-list li{background:#151e2c;color:#d0d7e2}.dh-responsibility-list i{margin-top:2px;color:var(--accent)}
       @media(max-width:1100px){.dh-card{grid-column:span 6}.dh-span-7,.dh-span-8,.dh-span-5{grid-column:span 6}.dh-doc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dh-team-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dh-team-grid:before,.dh-team-grid .dh-person:before{display:none}.dh-team-grid{padding-top:0}.dh-org-line{display:none}}
-      @media(max-width:760px){.dh-hero{padding:24px 20px}.dh-hero-grid{grid-template-columns:1fr}.dh-hero-card{display:none}.dh-card,.dh-span-5,.dh-span-7,.dh-span-8,.dh-span-12{grid-column:span 12}.dh-doc-grid,.dh-role-grid,.dh-team-grid{grid-template-columns:1fr}.dh-toolbar{align-items:stretch;flex-direction:column}.dh-search{min-width:0}.dh-form-row{grid-template-columns:1fr}.dh-stat-row{grid-template-columns:1fr 1fr}.dh-shell{padding-bottom:24px}}
+      @media(max-width:760px){.dh-hero{padding:24px 20px}.dh-hero-grid{grid-template-columns:1fr}.dh-hero-card{display:none}.dh-card,.dh-span-5,.dh-span-7,.dh-span-8,.dh-span-12{grid-column:span 12}.dh-doc-grid,.dh-role-grid,.dh-team-grid{grid-template-columns:1fr}.dh-toolbar,.dh-library-tools{align-items:stretch;flex-direction:column}.dh-knowledge-head{align-items:stretch;flex-direction:column}.dh-search{min-width:0}.dh-form-row{grid-template-columns:1fr}.dh-stat-row{grid-template-columns:1fr 1fr}.dh-review-strip{align-items:flex-start;flex-direction:column}.dh-shell{padding-bottom:24px}}
     `;
     document.head.appendChild(style);
   }
@@ -82,22 +84,18 @@
     renderLoading();
     try {
       const uid = currentId();
-      const [teamRes, rolesRes, docsRes, ackRes, itemsRes, progressRes] = await Promise.all([
+      const [teamRes, rolesRes, docsRes, ackRes] = await Promise.all([
         supabaseClient.rpc('team_directory'),
         supabaseClient.from('department_hub_team_roles').select('*').order('sort_order'),
         supabaseClient.from('department_hub_documents').select('*').order('sort_order').order('updated_at', { ascending: false }),
-        supabaseClient.from('department_hub_acknowledgements').select('document_id,user_id,acknowledged_at').eq('user_id', uid),
-        supabaseClient.from('department_hub_onboarding_items').select('*').order('sort_order'),
-        supabaseClient.from('department_hub_onboarding_progress').select('item_id,user_id,completed_at').eq('user_id', uid)
+        supabaseClient.from('department_hub_acknowledgements').select('document_id,user_id,acknowledged_at').eq('user_id', uid)
       ]);
-      const firstError = [teamRes, rolesRes, docsRes, ackRes, itemsRes, progressRes].find(result => result.error)?.error;
+      const firstError = [teamRes, rolesRes, docsRes, ackRes].find(result => result.error)?.error;
       if (firstError) throw firstError;
       Hub.team = (teamRes.data || []).filter(person => person.full_name !== 'ADMIN');
       Hub.roles = rolesRes.data || [];
       Hub.documents = docsRes.data || [];
       Hub.acknowledgements = ackRes.data || [];
-      Hub.onboarding = itemsRes.data || [];
-      Hub.progress = progressRes.data || [];
       Hub.loaded = true;
       render();
     } catch (error) {
@@ -121,81 +119,24 @@
   function hero() {
     const person = Hub.team.find(p => String(p.id) === currentId()) || { full_name: state.currentUser?.fullName, job_title: state.currentUser?.jobTitle, avatar: state.currentUser?.avatar };
     const required = Hub.documents.filter(doc => doc.is_required && doc.status === 'published' && !acknowledged(doc.id)).length;
-    const done = Hub.progress.length;
     return `<section class="dh-hero">
       <div class="dh-hero-grid">
         <div>
-          <div class="dh-kicker"><span class="dh-kicker-dot"></span>TAAMEER Marketing</div>
-          <h2>The department,<br>in one clear place.</h2>
-          <p>Know the team, understand every role, find the approved way of working and complete your department essentials without searching across different tools.</p>
+          <div class="dh-kicker"><span class="dh-kicker-dot"></span>TAAMEER Marketing Department</div>
+          <h2>People, structure<br>and standards.</h2>
+          <p>One clear place to understand who does what and find the department's approved documents.</p>
           <div class="dh-hero-meta">
-            <span class="dh-chip"><i class="fas fa-users"></i>${Hub.team.length} team members</span>
-            <span class="dh-chip"><i class="fas fa-book-open"></i>${published('policy').filter(d => d.status === 'published').length} policies</span>
-            <span class="dh-chip"><i class="fas fa-list-check"></i>${required ? `${required} action${required === 1 ? '' : 's'} for you` : 'Everything reviewed'}</span>
+            <button class="dh-chip" onclick="DepartmentHub.goTo('team')"><i class="fas fa-sitemap"></i>View team structure</button>
+            <button class="dh-chip" onclick="DepartmentHub.goTo('knowledge')"><i class="fas fa-book-open"></i>Open knowledge library</button>
           </div>
         </div>
         <div class="dh-hero-card">
-          <div class="dh-hero-card-label">Your place in the department</div>
+          <div class="dh-hero-card-label">You are here</div>
           <div class="dh-hero-card-row">${avatar(person, 'dh-mini-avatar')}<div><strong>${esc(person.full_name || 'Team member')}</strong><span>${esc(person.job_title || 'Marketing Department')}</span></div></div>
-          <div class="dh-progress-copy" style="margin-top:16px"><span>Onboarding progress</span><span>${done}/${Hub.onboarding.length}</span></div>
-          <div class="dh-progress"><span style="width:${Hub.onboarding.length ? Math.round(done / Hub.onboarding.length * 100) : 0}%"></span></div>
+          <div class="dh-hero-summary"><span><b>${Hub.team.length}</b> members</span><span><b>${published('policy').length + published('procedure').length}</b> documents</span>${required ? `<span class="attention"><b>${required}</b> to review</span>` : '<span class="clear"><i class="fas fa-circle-check"></i> Up to date</span>'}</div>
         </div>
       </div>
     </section>`;
-  }
-
-  const tabs = [
-    ['overview', 'fa-compass', 'Overview'],
-    ['structure', 'fa-sitemap', 'Team Structure'],
-    ['roles', 'fa-user-tag', 'Roles & Responsibilities'],
-    ['policies', 'fa-shield-halved', 'Policies & Standards'],
-    ['procedures', 'fa-list-check', 'Procedures & SOPs'],
-    ['onboarding', 'fa-route', 'Onboarding']
-  ];
-
-  function tabBar() {
-    return `<nav class="dh-tabs" aria-label="Department Hub sections">${tabs.map(([id, icon, label]) => `<button class="dh-tab ${Hub.tab === id ? 'active' : ''}" onclick="DepartmentHub.setTab('${id}')"><i class="fas ${icon}" style="margin-right:7px"></i>${label}</button>`).join('')}</nav>`;
-  }
-
-  function overview() {
-    const me = Hub.team.find(person => String(person.id) === currentId());
-    const myRole = roleFor(me?.id);
-    const required = Hub.documents.filter(doc => doc.status === 'published' && doc.is_required && !acknowledged(doc.id));
-    const recent = Hub.documents.filter(doc => doc.status === 'published').slice(0, 4);
-    const done = Hub.progress.length;
-    const managerPerson = manager();
-    return `<div class="dh-grid">
-      <section class="dh-card dh-span-7">
-        <div class="dh-card-head"><div><h3>Start here</h3><p class="dh-card-sub">The essentials that help you move without asking where to look.</p></div></div>
-        <div class="dh-stat-row">
-          <button class="dh-stat" onclick="DepartmentHub.setTab('structure')"><strong>${Hub.team.length}</strong><span>People in the team</span></button>
-          <button class="dh-stat" onclick="DepartmentHub.setTab('policies')"><strong>${published('policy').length}</strong><span>Department policies</span></button>
-          <button class="dh-stat" onclick="DepartmentHub.setTab('procedures')"><strong>${published('procedure').length}</strong><span>Working procedures</span></button>
-        </div>
-        <div style="margin-top:17px"><div class="dh-card-head" style="margin-bottom:10px"><div><h3 style="font-size:12px">Your focus</h3></div><button class="dh-link" onclick="DepartmentHub.setTab('roles')">View role <i class="fas fa-arrow-right" style="margin-left:5px"></i></button></div><div class="dh-focus">${(myRole.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('') || '<span>Department support</span>'}</div></div>
-      </section>
-      <section class="dh-card dh-span-5">
-        <div class="dh-card-head"><div><h3>Your department lead</h3><p class="dh-card-sub">The person responsible for direction and alignment.</p></div></div>
-        ${managerPerson ? `<div class="dh-person-top">${avatar(managerPerson)}<div><h4>${esc(managerPerson.full_name)}</h4><p>${esc(managerPerson.job_title)}</p></div></div><div class="dh-focus" style="margin-top:15px">${(roleFor(managerPerson.id).focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('')}</div>` : '<div class="dh-empty">Department lead not configured.</div>'}
-      </section>
-      <section class="dh-card dh-span-7">
-        <div class="dh-card-head"><div><h3>${required.length ? 'Needs your review' : 'You are up to date'}</h3><p class="dh-card-sub">Required department reading and acknowledgements.</p></div><button class="dh-link" onclick="DepartmentHub.setTab('policies')">All policies <i class="fas fa-arrow-right" style="margin-left:5px"></i></button></div>
-        ${required.length ? `<div class="dh-list">${required.slice(0, 3).map(doc => docListItem(doc)).join('')}</div>` : `<div class="dh-empty"><i class="fas fa-circle-check" style="color:#39ad70"></i>No required policies are waiting for you.</div>`}
-      </section>
-      <section class="dh-card dh-span-5">
-        <div class="dh-card-head"><div><h3>Onboarding</h3><p class="dh-card-sub">Your department essentials, at your pace.</p></div><button class="dh-link" onclick="DepartmentHub.setTab('onboarding')">Open checklist <i class="fas fa-arrow-right" style="margin-left:5px"></i></button></div>
-        <div class="dh-progress-copy"><strong>${Hub.onboarding.length ? Math.round(done / Hub.onboarding.length * 100) : 0}%</strong><span>${done} of ${Hub.onboarding.length} complete</span></div><div class="dh-progress"><span style="width:${Hub.onboarding.length ? Math.round(done / Hub.onboarding.length * 100) : 0}%"></span></div>
-        <div class="dh-list" style="margin-top:14px">${Hub.onboarding.filter(item => !completed(item.id)).slice(0, 2).map(item => `<button class="dh-list-item" onclick="DepartmentHub.setTab('onboarding')"><span class="dh-list-icon"><i class="fas fa-arrow-right"></i></span><span class="dh-list-copy"><strong>${esc(item.title)}</strong><span>${esc(item.category)}</span></span></button>`).join('') || '<div class="dh-card-sub">Your checklist is complete.</div>'}</div>
-      </section>
-      <section class="dh-card dh-span-12">
-        <div class="dh-card-head"><div><h3>Recently updated</h3><p class="dh-card-sub">The latest approved department references.</p></div></div>
-        ${recent.length ? `<div class="dh-list" style="grid-template-columns:repeat(2,minmax(0,1fr))">${recent.map(doc => docListItem(doc)).join('')}</div>` : '<div class="dh-empty">Published department content will appear here.</div>'}
-      </section>
-    </div>`;
-  }
-
-  function docListItem(doc) {
-    return `<button class="dh-list-item" onclick="DepartmentHub.openDocument('${esc(doc.id)}')"><span class="dh-list-icon"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><span class="dh-list-copy"><strong>${esc(doc.title)}</strong><span>${esc(doc.category)} · v${esc(doc.version)}</span></span>${doc.is_required ? '<span class="dh-pill required">Required</span>' : ''}</button>`;
   }
 
   function structure() {
@@ -203,50 +144,27 @@
     const team = Hub.team.filter(person => String(person.id) !== String(lead?.id));
     const personCard = (person, leadCard = false) => {
       const role = roleFor(person.id);
-      return `<article class="dh-person ${leadCard ? 'manager' : ''}"><div class="dh-person-top">${avatar(person)}<div><h4>${esc(person.full_name)}</h4><p>${esc(person.job_title || 'Marketing Department')}</p></div></div><div class="dh-focus">${(role.focus_areas || []).slice(0, 3).map(area => `<span>${esc(area)}</span>`).join('')}</div></article>`;
+      return `<button class="dh-person ${leadCard ? 'manager' : ''}" onclick="DepartmentHub.openRole('${esc(person.id)}')"><div class="dh-person-top">${avatar(person)}<div><h4>${esc(person.full_name)}</h4><p>${esc(person.job_title || 'Marketing Department')}</p></div><i class="fas fa-arrow-up-right-from-square dh-person-open"></i></div><div class="dh-focus">${(role.focus_areas || []).slice(0, 3).map(area => `<span>${esc(area)}</span>`).join('') || '<span>View responsibilities</span>'}</div></button>`;
     };
-    return `<section class="dh-card dh-span-12"><div class="dh-card-head"><div><h3>Marketing Department structure</h3><p class="dh-card-sub">A simple view of the team and reporting line—built from live member profiles.</p></div><span class="dh-pill">${Hub.team.length} members</span></div><div class="dh-org">${lead ? `<div class="dh-manager-wrap">${personCard(lead, true)}</div><div class="dh-org-line"></div>` : ''}<div class="dh-team-grid">${team.map(person => personCard(person)).join('')}</div></div></section>`;
+    return `<section class="dh-card dh-span-12 dh-section" id="dh-team"><div class="dh-card-head"><div><span class="dh-section-number">01</span><h3>Team structure</h3><p class="dh-card-sub">See the reporting line, then open any member to understand their role.</p></div><span class="dh-pill">${Hub.team.length} members</span></div><div class="dh-org">${lead ? `<div class="dh-manager-wrap">${personCard(lead, true)}</div><div class="dh-org-line"></div>` : ''}<div class="dh-team-grid">${team.map(person => personCard(person)).join('')}</div></div></section>`;
   }
 
-  function roles() {
-    return `<div class="dh-toolbar"><div><h2 style="font-size:20px;font-weight:850;letter-spacing:-.03em">Who owns what</h2><p class="dh-card-sub">Clear responsibilities without turning job descriptions into paperwork.</p></div></div><div class="dh-role-grid">${Hub.team.map(person => {
-      const role = roleFor(person.id);
-      return `<article class="dh-role-card"><div class="dh-role-head">${avatar(person)}<div style="min-width:0;flex:1"><h3 style="font-size:13px;font-weight:850">${esc(person.full_name)}</h3><p class="dh-card-sub">${esc(person.job_title || 'Marketing Department')}</p></div>${canEdit() ? `<button class="dh-btn small" onclick="DepartmentHub.editRole('${esc(person.id)}')"><i class="fas fa-pen"></i>Edit</button>` : ''}</div><div class="dh-focus" style="margin-top:14px">${(role.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('')}</div><ul>${(role.responsibilities || ['Support department priorities']).map(item => `<li>${esc(item)}</li>`).join('')}</ul></article>`;
-    }).join('')}</div>`;
-  }
-
-  function documents(kind) {
-    const label = kind === 'policy' ? 'Policies & standards' : 'Procedures & SOPs';
-    const subtitle = kind === 'policy' ? 'The approved principles and standards everyone should know.' : 'Clear, repeatable steps for doing department work well.';
+  function knowledge() {
     const query = Hub.search.trim().toLowerCase();
-    const items = published(kind).filter(doc => !query || `${doc.title} ${doc.summary} ${doc.category}`.toLowerCase().includes(query));
-    return `<div class="dh-toolbar"><div><h2 style="font-size:20px;font-weight:850;letter-spacing:-.03em">${label}</h2><p class="dh-card-sub">${subtitle}</p></div><div style="display:flex;gap:9px;flex-wrap:wrap"><label class="dh-search"><i class="fas fa-search"></i><input value="${esc(Hub.search)}" oninput="DepartmentHub.search(this.value)" placeholder="Search ${kind === 'policy' ? 'policies' : 'procedures'}…"></label>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editDocument(null,'${kind}')"><i class="fas fa-plus"></i>Add ${kind}</button>` : ''}</div></div>${items.length ? `<div class="dh-doc-grid">${items.map(docCard).join('')}</div>` : `<div class="dh-empty"><i class="fas ${kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i>${query ? 'No matching content.' : `No ${kind === 'policy' ? 'policies' : 'procedures'} have been published yet.`}</div>`}`;
+    const items = Hub.documents.filter(doc => (canEdit() || doc.status === 'published') && (Hub.docFilter === 'all' || doc.kind === Hub.docFilter) && (!query || `${doc.title} ${doc.summary} ${doc.category} ${doc.owner}`.toLowerCase().includes(query)));
+    const required = items.filter(doc => doc.status === 'published' && doc.is_required && !acknowledged(doc.id));
+    return `<section class="dh-card dh-span-12 dh-section" id="dh-knowledge"><div class="dh-knowledge-head"><div><span class="dh-section-number">02</span><h3>Knowledge library</h3><p class="dh-card-sub">Policies and procedures together—search once, find the approved answer.</p></div>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editDocument(null,'policy')"><i class="fas fa-plus"></i>Add document</button>` : ''}</div>${required.length ? `<button class="dh-review-strip" onclick="DepartmentHub.openDocument('${esc(required[0].id)}')"><span><i class="fas fa-circle-exclamation"></i><strong>${required.length} document${required.length === 1 ? '' : 's'} need your review</strong></span><span>Start reviewing <i class="fas fa-arrow-right"></i></span></button>` : ''}<div class="dh-library-tools"><div class="dh-filter" role="group" aria-label="Document type">${[['all','All'],['policy','Policies'],['procedure','Procedures']].map(([id,label]) => `<button class="${Hub.docFilter === id ? 'active' : ''}" onclick="DepartmentHub.filterDocs('${id}')">${label}<span>${id === 'all' ? Hub.documents.filter(d => canEdit() || d.status === 'published').length : published(id).length}</span></button>`).join('')}</div><label class="dh-search"><i class="fas fa-search"></i><input value="${esc(Hub.search)}" oninput="DepartmentHub.search(this.value)" placeholder="Search documents…"></label></div>${items.length ? `<div class="dh-doc-grid">${items.map(docCard).join('')}</div>` : `<div class="dh-empty"><i class="fas fa-folder-open"></i>${query ? 'No document matches your search.' : 'No documents are available in this category yet.'}</div>`}</section>`;
   }
 
   function docCard(doc) {
     const isAck = acknowledged(doc.id);
-    return `<article class="dh-doc ${doc.kind}"><div class="dh-doc-top"><span class="dh-doc-icon"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><div style="display:flex;gap:6px">${doc.status !== 'published' ? `<span class="dh-pill draft">${esc(doc.status)}</span>` : ''}${doc.is_required ? `<span class="dh-pill ${isAck ? '' : 'required'}">${isAck ? 'Read' : 'Required'}</span>` : ''}</div></div><h3>${esc(doc.title)}</h3><p>${esc(doc.summary || 'Open this document to read the full guidance.')}</p><div class="dh-doc-meta"><span class="dh-pill">${esc(doc.category)}</span><span class="dh-pill">v${esc(doc.version)}</span></div><div class="dh-doc-actions"><button class="dh-btn small" onclick="DepartmentHub.openDocument('${esc(doc.id)}')">Open <i class="fas fa-arrow-right"></i></button>${canEdit() ? `<button class="dh-btn small" onclick="DepartmentHub.editDocument('${esc(doc.id)}')"><i class="fas fa-pen"></i></button>` : ''}</div></article>`;
-  }
-
-  function onboarding() {
-    const done = Hub.progress.length;
-    const percent = Hub.onboarding.length ? Math.round(done / Hub.onboarding.length * 100) : 0;
-    return `<div class="dh-grid"><section class="dh-card dh-span-5"><div class="dh-card-head"><div><h3>Your department start</h3><p class="dh-card-sub">Useful for new members and as a refresher for the whole team.</p></div>${canEdit() ? '<button class="dh-btn small" onclick="DepartmentHub.editOnboarding()"><i class="fas fa-plus"></i>Add step</button>' : ''}</div><div class="dh-progress-copy"><strong>${percent}%</strong><span>${done} of ${Hub.onboarding.length} complete</span></div><div class="dh-progress"><span style="width:${percent}%"></span></div><div class="dh-focus" style="margin-top:18px"><span>People</span><span>Role</span><span>Standards</span><span>Tools</span><span>Access</span></div></section><section class="dh-card dh-span-7"><div class="dh-card-head"><div><h3>Essentials checklist</h3><p class="dh-card-sub">Tick an item when you have genuinely completed it.</p></div></div><div class="dh-checklist">${Hub.onboarding.map(item => `<button class="dh-check ${completed(item.id) ? 'done' : ''}" onclick="DepartmentHub.toggleOnboarding(${Number(item.id)})"><span class="dh-check-mark"><i class="fas ${completed(item.id) ? 'fa-check' : 'fa-circle'}"></i></span><span><strong>${esc(item.title)}</strong><span>${esc(item.description)}</span></span><span class="dh-check-state">${completed(item.id) ? 'Complete' : esc(item.category)}</span>${canEdit() ? `<span class="dh-check-edit" role="button" aria-label="Edit checklist item" onclick="event.preventDefault();event.stopPropagation();DepartmentHub.editOnboarding(${Number(item.id)})"><i class="fas fa-pen"></i></span>` : '<span></span>'}</button>`).join('')}</div></section></div>`;
-  }
-
-  function content() {
-    if (Hub.tab === 'structure') return structure();
-    if (Hub.tab === 'roles') return roles();
-    if (Hub.tab === 'policies') return documents('policy');
-    if (Hub.tab === 'procedures') return documents('procedure');
-    if (Hub.tab === 'onboarding') return onboarding();
-    return overview();
+    return `<article class="dh-doc ${doc.kind}" onclick="DepartmentHub.openDocument('${esc(doc.id)}')"><div class="dh-doc-top"><span class="dh-doc-icon"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><div style="display:flex;gap:6px">${doc.status !== 'published' ? `<span class="dh-pill draft">${esc(doc.status)}</span>` : ''}${doc.is_required ? `<span class="dh-pill ${isAck ? '' : 'required'}">${isAck ? 'Read' : 'Required'}</span>` : ''}</div></div><div class="dh-doc-type">${doc.kind === 'policy' ? 'Policy & standard' : 'Procedure & SOP'}</div><h3>${esc(doc.title)}</h3><p>${esc(doc.summary || 'Open this document to read the full guidance.')}</p><div class="dh-doc-footer"><div><span>${esc(doc.category)}</span><span>v${esc(doc.version)}</span></div><span class="dh-doc-open">Open <i class="fas fa-arrow-right"></i></span></div>${canEdit() ? `<button class="dh-doc-edit" onclick="event.stopPropagation();DepartmentHub.editDocument('${esc(doc.id)}')" aria-label="Edit ${esc(doc.title)}"><i class="fas fa-pen"></i></button>` : ''}</article>`;
   }
 
   function render() {
     injectStyles();
     const view = ensureView();
-    view.innerHTML = `<div class="dh-shell">${hero()}${tabBar()}<main>${content()}</main></div>`;
+    view.innerHTML = `<div class="dh-shell">${hero()}<main class="dh-grid dh-main">${structure()}${knowledge()}</main></div>`;
   }
 
   function overlay(html) {
@@ -315,14 +233,12 @@
     openDocument(id);
   }
 
-  async function toggleOnboarding(id) {
-    const has = completed(id);
-    const query = has
-      ? supabaseClient.from('department_hub_onboarding_progress').delete().eq('item_id', id).eq('user_id', currentId())
-      : supabaseClient.from('department_hub_onboarding_progress').insert({ item_id: id, user_id: currentId() });
-    const { error } = await query;
-    if (error) return alert(error.message || 'Could not update your checklist.');
-    await reload();
+  function openRole(userId) {
+    const person = Hub.team.find(item => String(item.id) === String(userId));
+    const role = roleFor(userId);
+    if (!person) return;
+    const responsibilities = role.responsibilities || [];
+    overlay(`<article class="dh-modal dh-role-modal"><header class="dh-modal-head"><div class="dh-role-head">${avatar(person)}<div><span class="dh-modal-eyebrow">Role in the department</span><h3>${esc(person.full_name)}</h3><p class="dh-card-sub">${esc(person.job_title || 'Marketing Department')}</p></div></div><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-modal-body"><div class="dh-role-section"><span class="dh-modal-eyebrow">Focus areas</span><div class="dh-focus">${(role.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('') || '<span>Department support</span>'}</div></div><div class="dh-role-section"><span class="dh-modal-eyebrow">Responsibilities</span>${responsibilities.length ? `<ul class="dh-responsibility-list">${responsibilities.map(item => `<li><i class="fas fa-check"></i><span>${esc(item)}</span></li>`).join('')}</ul>` : '<p class="dh-card-sub">Responsibilities have not been added yet.</p>'}</div>${canEdit() ? `<div class="dh-form-actions"><button class="dh-btn primary" onclick="DepartmentHub.editRole('${esc(userId)}')"><i class="fas fa-pen"></i>Edit role</button></div>` : ''}</div></article>`);
   }
 
   function editRole(userId) {
@@ -345,42 +261,12 @@
     await reload();
   }
 
-  function editOnboarding(id = null) {
-    if (!canEdit()) return;
-    const item = Hub.onboarding.find(row => Number(row.id) === Number(id)) || { title: '', description: '', category: 'Getting started', sort_order: 100, active: true };
-    overlay(`<section class="dh-modal"><header class="dh-modal-head"><h3>${id ? 'Edit onboarding step' : 'Add onboarding step'}</h3><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-modal-body"><form class="dh-form" onsubmit="DepartmentHub.saveOnboarding(event,${id ? Number(id) : 'null'})"><div class="dh-field"><label>Step title</label><input name="title" required value="${esc(item.title)}"></div><div class="dh-field"><label>Description</label><textarea name="description" style="min-height:90px">${esc(item.description)}</textarea></div><div class="dh-form-row"><div class="dh-field"><label>Category</label><input name="category" value="${esc(item.category)}"></div><div class="dh-field"><label>Order</label><input type="number" name="sort_order" value="${Number(item.sort_order) || 100}"></div></div><label style="display:flex;align-items:center;gap:9px;font-size:11px;font-weight:750"><input type="checkbox" name="active" ${item.active ? 'checked' : ''}>Visible to members</label><div class="dh-form-actions">${id && canDelete() ? `<button type="button" class="dh-btn danger" style="margin-right:auto" onclick="DepartmentHub.deleteOnboarding(${Number(id)})"><i class="fas fa-trash"></i>Delete</button>` : ''}<button type="button" class="dh-btn" onclick="DepartmentHub.closeOverlay()">Cancel</button><button class="dh-btn primary" type="submit">Save step</button></div></form></div></section>`);
-  }
-
-  async function saveOnboarding(event, id) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const payload = { title: String(data.get('title') || '').trim(), description: String(data.get('description') || '').trim(), category: String(data.get('category') || 'Getting started').trim(), sort_order: Number(data.get('sort_order')) || 100, active: data.get('active') === 'on' };
-    const result = id ? await supabaseClient.from('department_hub_onboarding_items').update(payload).eq('id', id) : await supabaseClient.from('department_hub_onboarding_items').insert(payload);
-    if (result.error) return alert(result.error.message || 'Could not save this onboarding step.');
-    closeOverlay();
-    await reload();
-  }
-
-  async function deleteOnboarding(id) {
-    if (!canDelete() || !confirm('Delete this onboarding step for everyone?')) return;
-    const { error } = await supabaseClient.from('department_hub_onboarding_items').delete().eq('id', id);
-    if (error) return alert(error.message || 'Could not delete this onboarding step.');
-    closeOverlay();
-    await reload();
-  }
-
-  function setTab(tab) {
-    if (!tabs.some(item => item[0] === tab)) return;
-    Hub.tab = tab;
-    Hub.search = '';
-    render();
-    document.getElementById('mainContent')?.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
+  function goTo(section) { document.getElementById(section === 'team' ? 'dh-team' : 'dh-knowledge')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  function filterDocs(filter) { if (!['all', 'policy', 'procedure'].includes(filter)) return; Hub.docFilter = filter; render(); goTo('knowledge'); }
   function search(value) { Hub.search = value; render(); const input = document.querySelector('.dh-search input'); if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); } }
   async function reload() { Hub.loaded = false; await load(); }
 
-  window.DepartmentHub = { open: load, reload, setTab, search, openDocument, editDocument, saveDocument, deleteDocument, toggleAcknowledgement, toggleOnboarding, editRole, saveRole, editOnboarding, saveOnboarding, deleteOnboarding, closeOverlay };
+  window.DepartmentHub = { open: load, reload, goTo, filterDocs, search, openDocument, editDocument, saveDocument, deleteDocument, toggleAcknowledgement, openRole, editRole, saveRole, closeOverlay };
 
   ModuleRegistry.register('department-hub', () => {
     if (Hub.loaded) render();
