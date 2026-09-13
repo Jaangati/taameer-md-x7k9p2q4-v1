@@ -9,6 +9,7 @@ function showDashboard() {
   prepareCalendarPlaceholder();
   resizeLoginBrandLogo();
   renderSidebar();
+  if (typeof VaultApp !== 'undefined' && VaultApp?.initGlobal) VaultApp.initGlobal();
   showView('home');
 }
 
@@ -110,6 +111,7 @@ function showView(viewName) {
   }
   if (viewName === 'home') renderHomeModules(); if (viewName === 'users') loadUsers(); if (viewName === 'modules-admin') renderAdminModules(); if (viewName === 'permissions') renderPermissions();
   renderSidebar(); closeUserDropdown();
+  if (typeof VaultApp !== 'undefined' && VaultApp?.syncQuickCapture) VaultApp.syncQuickCapture(viewName);
 }
 
 // ---------- Clock / dropdown / profile ----------

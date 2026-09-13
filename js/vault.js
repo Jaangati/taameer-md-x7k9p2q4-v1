@@ -43,7 +43,7 @@ const VaultApp = (() => {
   async function open(){
     const r=shell(); if(!r) return;
     injectStyles();
-    try{await load();render();ensureQuickCapture();bindGlobalKeys();}
+    try{await load();render();bindGlobalKeys();}
     catch(e){console.error(e);r.innerHTML='<div class="h-full flex items-center justify-center text-red-500">Could not load Vault.</div>';}
   }
 
@@ -212,7 +212,33 @@ const VaultApp = (() => {
     const r=document.getElementById('askResult');if(!r)return;if(!q){r.innerHTML='<div class="text-center py-10 text-sm text-gray-400">Start typing and Vault will surface the best saved knowledge instantly.</div>';return;}const top=ranked(q,5);if(!top.length){r.innerHTML='<div class="text-center py-10 text-sm text-gray-400">I couldn’t find this in Vault.</div>';return;}r.innerHTML=`<div class="text-[9px] font-bold tracking-[.12em] text-gray-400 mb-3">BEST MATCHES</div>${top.map(x=>`<button class="vault-answer-card w-full text-left" data-source="${x.id}"><b>${esc(x.title||labelFor(x.item_type))}</b><p>${esc((x.body||'').slice(0,420))}${(x.body||'').length>420?'…':''}</p><div class="text-[9px] text-gray-400 mt-2">Source: ${esc(pname(x.created_by))}</div></button>`).join('')}`;r.querySelectorAll('[data-source]').forEach(b=>b.onclick=()=>openView(b.dataset.source));
   }
   function toast(msg){let t=document.getElementById('vaultToast');if(!t){t=document.createElement('div');t.id='vaultToast';t.className='fixed right-5 bottom-24 z-[500] px-4 py-3 bg-gray-950 text-white rounded-xl shadow-xl text-sm font-semibold transition';document.body.appendChild(t)}t.textContent=msg;t.style.opacity='1';clearTimeout(t._tm);t._tm=setTimeout(()=>t.style.opacity='0',1800)}
-  function ensureQuickCapture(){if(!state.currentUser)return;let b=document.getElementById('vaultQuick');if(b)return;b=document.createElement('button');b.id='vaultQuick';b.title='Quick Save to Vault';b.className='fixed right-5 bottom-5 z-[180] h-11 px-4 rounded-2xl bg-gray-950 text-white shadow-xl hover:scale-105 transition flex items-center justify-center text-xs font-bold';b.innerHTML='<i class="fas fa-plus mr-2"></i>Quick Save';b.onclick=()=>openEditor(null,true);document.body.appendChild(b)}
-  function bindGlobalKeys(){if(window.__vaultKeysBound)return;window.__vaultKeysBound=true;document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&state.currentUser){const v=document.getElementById('view-vault');if(v&&!v.classList.contains('hidden')){e.preventDefault();document.getElementById('vaultSearch')?.focus();}}});setInterval(()=>{if(state.currentUser)ensureQuickCapture();else document.getElementById('vaultQuick')?.remove()},2500)}
-  return {open,ensureQuickCapture};
+  function ensureQuickCapture(){
+    if(!state.currentUser)return null;
+    let b=document.getElementById('vaultQuick');
+    if(b)return b;
+    b=document.createElement('button');
+    b.id='vaultQuick';
+    b.title='Quick Save to Vault';
+    b.className='fixed right-5 bottom-5 z-[180] h-11 px-4 rounded-2xl bg-gray-950 text-white shadow-xl hover:scale-105 transition flex items-center justify-center text-xs font-bold';
+    b.innerHTML='<i class="fas fa-plus mr-2"></i>Quick Save';
+    b.onclick=()=>{injectStyles();openEditor(null,true)};
+    document.body.appendChild(b);
+    return b;
+  }
+  function syncQuickCapture(viewName){
+    const dashboard=document.getElementById('dashboardView');
+    const dashboardVisible=dashboard&&!dashboard.classList.contains('hidden');
+    const vaultView=document.getElementById('view-vault');
+    const vaultActive=viewName==='vault'||(!viewName&&vaultView&&!vaultView.classList.contains('hidden'));
+    const shouldShow=!!state.currentUser&&dashboardVisible&&!vaultActive;
+    if(!shouldShow){document.getElementById('vaultQuick')?.remove();return}
+    ensureQuickCapture();
+  }
+  function bindGlobalKeys(){
+    if(window.__vaultKeysBound)return;
+    window.__vaultKeysBound=true;
+    document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&state.currentUser){const v=document.getElementById('view-vault');if(v&&!v.classList.contains('hidden')){e.preventDefault();document.getElementById('vaultSearch')?.focus();}}});
+  }
+  function initGlobal(){bindGlobalKeys();syncQuickCapture()}
+  return {open,ensureQuickCapture,syncQuickCapture,initGlobal};
 })();

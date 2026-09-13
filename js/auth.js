@@ -102,6 +102,7 @@ async function logout() {
   try { if (typeof stopTeamUpdates === 'function') stopTeamUpdates(); } catch (_) {}
   try { await supabaseClient?.auth.signOut(); } catch (error) { console.warn('Sign out failed', error); }
   state.currentUser = null;
+  if (typeof VaultApp !== 'undefined' && VaultApp?.syncQuickCapture) VaultApp.syncQuickCapture();
   closeUserDropdown();
   document.getElementById('loginView').classList.remove('hidden');
   document.getElementById('dashboardView').classList.add('hidden');
