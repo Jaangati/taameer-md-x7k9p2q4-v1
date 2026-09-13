@@ -111,7 +111,7 @@ window.RequestsApp = (() => {
     else arr=arr.filter(r=>!r.deleted_at);
     if(selectedUser!=='all') arr=arr.filter(r=>String(r.assignee_id)===String(selectedUser)||requestCollabs(r.id).includes(String(selectedUser)));
     if(selectedStatus==='active') arr=arr.filter(r=>['new','in_progress'].includes(r.status));
-    if(selectedStatus==='attention') arr=arr.filter(r=>isOverdue(r)||pendingActionCount(r)>0);
+    if(selectedStatus==='attention') arr=arr.filter(r=>isOverdue(r)||pendingActionCount(r)>0||!!r.reopened_at);
     if(selectedStatus==='unread') arr=arr.filter(hasUnread);
     if(selectedStatus==='closed'){
       arr=arr.filter(r=>r.status==='closed');
@@ -143,7 +143,7 @@ window.RequestsApp = (() => {
     const c=counts(),arr=scopeRequests(),scoped=visibleRequestScope();
     const unreadCount=scoped.filter(hasUnread).length;
     const actionCount=scoped.reduce((n,r)=>n+pendingActionCount(r),0);
-    const attentionCount=scoped.filter(r=>isOverdue(r)||pendingActionCount(r)>0).length;
+    const attentionCount=scoped.filter(r=>isOverdue(r)||pendingActionCount(r)>0||!!r.reopened_at).length;
     const completedCount=scoped.filter(r=>r.status==='closed').length;
     const cancelledCount=scoped.filter(r=>r.status==='cancelled').length;
     const people=isAdmin()?directory:directory.filter(p=>String(p.id)===currentId());
@@ -269,9 +269,9 @@ window.RequestsApp = (() => {
 
   async function setRequestStatus(id,status){
     const payload={status};
-    if(status==='closed')payload.closed_at=new Date().toISOString();
-    if(status==='cancelled')payload.cancelled_at=new Date().toISOString();
-    if(status==='in_progress'){payload.closed_at=null;payload.cancelled_at=null;payload.submitted_at=null;}
+    if(status==='closed'){payload.closed_at=new Date().toISOString();payload.reopened_at=null;}
+    if(status==='cancelled'){payload.cancelled_at=new Date().toISOString();payload.reopened_at=null;}
+    if(status==='in_progress'){payload.closed_at=null;payload.cancelled_at=null;payload.submitted_at=null;payload.reopened_at=new Date().toISOString();}
     const {error}=await supabaseClient.from('work_requests').update(payload).eq('id',id);if(error)return alert(error.message);
     await supabaseClient.from('work_request_history').insert({request_id:id,actor_id:state.currentUser.id,action:'status_changed',details:{to:status}});
     if(typeof recordActivity==='function')recordActivity('request_status_changed','work_request',id,{status});closeModal();await reload();
