@@ -79,3 +79,17 @@
   .sidebar-collapsed .sidebar-header > div { justify-content: center; }
   .sidebar-expanded .sidebar-toggle-btn { display: flex !important; }
   #toggleIcon { transition: transform 0.3s ease; }
+
+
+/* Desktop application scale */
+@media (min-width: 1024px) {
+  body {
+    zoom: 0.85;
+  }
+}
+
+/* Welcome banner logo: compensate for whitespace in the source SVG. */
+.home-hero-logo {
+  transform: scale(1.65);
+  transform-origin: center;
+}
