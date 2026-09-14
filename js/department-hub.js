@@ -328,10 +328,18 @@
     if (!canEdit()) return;
     const name = prompt('Name this document category:')?.trim();
     if (!name) return;
-    const { error } = await supabaseClient.from('department_hub_categories').insert({ name, created_by: currentId(), sort_order: (Hub.categories.length + 1) * 10 });
+    const { data, error } = await supabaseClient.from('department_hub_categories').insert({ name, created_by: currentId(), sort_order: (Hub.categories.length + 1) * 10 }).select().single();
     if (error) return alert(error.code === '23505' ? 'That category already exists.' : (error.message || 'Could not add the category.'));
+    Hub.categories.push(data);
+    const editorSelect = document.querySelector('.dh-document-editor select[name="category"]');
+    if (editorSelect) {
+      const option = document.createElement('option');
+      option.value = name; option.textContent = name; option.selected = true;
+      editorSelect.appendChild(option);
+      return;
+    }
     Hub.categoryFilter = name;
-    await reload();
+    render();
     goTo('knowledge');
   }
 
