@@ -62,6 +62,45 @@
       @media(max-width:1100px){.dh-card{grid-column:span 6}.dh-span-7,.dh-span-8,.dh-span-5{grid-column:span 6}.dh-doc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dh-team-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dh-team-grid:before,.dh-team-grid .dh-person:before{display:none}.dh-team-grid{padding-top:0}.dh-org-line{display:none}}
       @media(max-width:1250px){.dh-org-branches{grid-template-columns:repeat(3,minmax(120px,1fr));row-gap:42px}.dh-org-branches:before,.dh-org-branch:before{display:none}.dh-document-layout.with-audience{grid-template-columns:minmax(0,1fr) 290px}.dh-document-meta{grid-template-columns:1.5fr 1fr 1fr}.dh-meta-item:last-child{grid-column:span 3}}
       @media(max-width:760px){.dh-hero{padding:24px 20px}.dh-hero-grid{grid-template-columns:1fr}.dh-hero-card{display:none}.dh-card,.dh-span-5,.dh-span-7,.dh-span-8,.dh-span-12{grid-column:span 12}.dh-doc-grid,.dh-role-grid,.dh-team-grid{grid-template-columns:1fr}.dh-toolbar,.dh-library-tools{align-items:stretch;flex-direction:column}.dh-knowledge-head{align-items:stretch;flex-direction:column}.dh-search{min-width:0}.dh-form-row{grid-template-columns:1fr}.dh-stat-row{grid-template-columns:1fr 1fr}.dh-review-strip{align-items:flex-start;flex-direction:column}.dh-shell{padding-bottom:24px}.dh-org-board{padding:100px 18px 35px}.dh-org-board-title{left:20px}.dh-org-branches{grid-template-columns:repeat(2,minmax(110px,1fr))}.dh-org-node{max-width:145px}.dh-document-modal{width:96vw}.dh-document-top{padding:24px 21px}.dh-document-top h2{font-size:22px}.dh-document-layout.with-audience{grid-template-columns:1fr}.dh-document-paper{padding:21px}.dh-document-meta{grid-template-columns:1fr 1fr}.dh-effective-date{grid-column:span 2}.dh-meta-item:last-child{grid-column:span 2}.dh-document-audience{border-left:0;border-top:1px solid #e0e5eb}.dh-acknowledge-box{align-items:stretch;flex-direction:column}.dh-member-profile{grid-template-columns:auto 1fr;padding:0 20px 20px}.dh-member-profile>.dh-btn{grid-column:span 2}.dh-member-avatar{width:82px;height:82px}.dh-member-body{grid-template-columns:1fr;padding:21px}.dh-member-responsibilities{grid-template-columns:1fr}}
+
+      /* 2026 Department Hub refinement — calm workspace, visual structure editor and real document surfaces */
+      .dh-shell{max-width:1540px;padding:0 6px 52px}
+      .dh-hero{border:1px solid #e3e8ee;border-radius:22px;padding:28px 30px;background:linear-gradient(118deg,#fff 0%,#fff 58%,color-mix(in srgb,var(--accent) 10%,#f6f8fb) 100%);color:#101828;box-shadow:0 12px 34px rgba(15,23,42,.055)}
+      .dh-hero:before{width:330px;height:330px;right:-85px;top:-210px;border-color:color-mix(in srgb,var(--accent) 13%,transparent);box-shadow:0 0 0 48px color-mix(in srgb,var(--accent) 4%,transparent),0 0 0 96px color-mix(in srgb,var(--accent) 2%,transparent)}
+      .dh-hero-grid{grid-template-columns:minmax(0,1.2fr) minmax(310px,.8fr);align-items:center}
+      .dh-kicker{color:#7b8798}.dh-hero h2{margin-top:11px;font-size:clamp(27px,2.7vw,41px);color:#0b1220}.dh-hero p{margin-top:9px;color:#667085}
+      .dh-hero-meta{margin-top:18px}.dh-chip{border-color:#dce2e9;background:#fff;color:#344054;box-shadow:0 3px 10px rgba(15,23,42,.04)}.dh-chip:hover{background:color-mix(in srgb,var(--accent) 7%,#fff);border-color:color-mix(in srgb,var(--accent) 40%,#dce2e9)}
+      .dh-hero-card{border-color:#e1e6ec;border-radius:17px;background:rgba(255,255,255,.78);box-shadow:0 10px 30px rgba(15,23,42,.05)}.dh-hero-card-label{color:#98a2b3}.dh-hero-card span{color:#7d8999}.dh-hero-summary{border-color:#e6eaf0}.dh-hero-summary span{color:#7d8999}.dh-hero-summary b{color:#101828}
+      .dh-main{margin-top:20px;gap:22px}.dh-card{border-color:#e1e6ec;border-radius:20px;box-shadow:0 8px 25px rgba(15,23,42,.035)}.dh-structure-shell{background:#fff}
+      .dh-structure-shell>.dh-card-head{padding:24px 26px 19px;border-bottom:1px solid #edf0f4}.dh-card-head-actions{display:flex;align-items:center;gap:9px}
+      .dh-org-board{min-height:560px;padding:0;overflow:auto;background:linear-gradient(180deg,#f8fafc,#f2f5f8);color:#101828}
+      .dh-org-board:before{background-image:linear-gradient(#e9edf2 1px,transparent 1px),linear-gradient(90deg,#e9edf2 1px,transparent 1px);background-size:30px 30px;mask-image:linear-gradient(to bottom,#000,rgba(0,0,0,.28))}
+      .dh-org-canvas{position:relative;min-width:1080px;height:560px}.dh-org-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.dh-org-svg path{fill:none;stroke:#aab4c1;stroke-width:1.6;vector-effect:non-scaling-stroke}
+      .dh-org-node.free{position:absolute;width:154px;transform:translate(-50%,-50%);z-index:2}.dh-org-node.free:hover{transform:translate(-50%,-53%)}
+      .dh-org-node.free .dh-org-photo{width:86px;height:92px;border-radius:17px;padding:3px;background:#dbe1e8;box-shadow:0 9px 22px rgba(15,23,42,.13)}.dh-org-node.free.lead .dh-org-photo{width:98px;height:104px;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 78%,#fff),#9b7b45)}
+      .dh-org-node.free .dh-org-avatar{border-radius:14px;background:#e6eaf0;color:#344054}.dh-org-node.free strong{color:#101828;background:#fff;box-shadow:0 5px 13px rgba(15,23,42,.11)}.dh-org-node.free small{color:#667085}.dh-org-node.free .dh-org-focus{background:#e8edf2;color:#667085}.dh-org-level{background:#667085}.dh-org-node.lead .dh-org-level{background:var(--accent);color:#fff}
+      .dh-doc-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;align-items:start}.dh-library{padding:25px 27px 31px;background:#f8fafc}.dh-library .dh-knowledge-head{margin-bottom:20px}.dh-library-tools{padding:11px 0 18px;border-bottom:1px solid #e4e8ed}
+      .dh-doc{min-height:330px;border:0;border-radius:4px 18px 18px 4px;padding:0;background:#fff;box-shadow:0 10px 30px rgba(15,23,42,.10),inset 4px 0 0 color-mix(in srgb,var(--accent) 52%,#d9dee5)}
+      .dh-doc:hover{transform:translateY(-5px) rotate(-.15deg);box-shadow:0 18px 38px rgba(15,23,42,.14)}
+      .dh-doc:before{content:'';position:absolute;right:0;top:0;width:38px;height:38px;background:linear-gradient(225deg,#eef1f5 50%,transparent 51%);border-radius:0 17px 0 0}.dh-doc.procedure{box-shadow:0 10px 30px rgba(15,23,42,.10),inset 4px 0 0 #7b8798}
+      .dh-doc-cover{display:flex;min-height:330px;flex-direction:column;padding:24px 21px 18px}.dh-doc-brand{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:16px;border-bottom:1px solid #e8ebef}.dh-doc-brand strong{font-size:9px;letter-spacing:.17em}.dh-doc-brand span{font-size:8px;color:#98a2b3}.dh-doc-mark{display:flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:11px;background:color-mix(in srgb,var(--accent) 12%,#f4f6f8);color:var(--accent)}
+      .dh-doc .dh-doc-type{margin-top:24px;color:#7b8798}.dh-doc h3{font-family:Georgia,'Times New Roman',serif;font-size:19px;line-height:1.25;letter-spacing:-.015em}.dh-doc p{font-size:9.5px}.dh-doc-footer{padding-top:14px}.dh-doc-statuses{display:flex;gap:5px;flex-wrap:wrap;margin-top:13px}
+      .dh-document-modal{width:min(1420px,97vw);height:min(94vh,980px);max-height:94vh;border-radius:22px;overflow:hidden;background:#eef1f5}
+      .dh-reader-toolbar{height:64px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 18px;border-bottom:1px solid #dfe4ea;background:#fff}.dh-reader-toolbar-group{display:flex;align-items:center;gap:9px}.dh-reader-toolbar-title{min-width:0}.dh-reader-toolbar-title strong,.dh-reader-toolbar-title span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dh-reader-toolbar-title strong{font-size:11px}.dh-reader-toolbar-title span{margin-top:2px;color:#98a2b3;font-size:8px}
+      .dh-document-workspace{position:relative;height:calc(min(94vh,980px) - 64px);overflow:auto;padding:34px 370px 45px 34px;background:#e9edf2}.dh-document-workspace.no-admin{padding-right:34px}
+      .dh-document-paper{width:min(780px,100%);min-height:1000px;margin:0 auto;padding:54px 62px 64px;background:#fff;box-shadow:0 15px 42px rgba(15,23,42,.14)}
+      .dh-paper-brand{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding-bottom:20px;border-bottom:2px solid #172033}.dh-paper-logo{font-size:17px;font-weight:900;letter-spacing:.13em}.dh-paper-ref{text-align:right;color:#667085;font-size:8px;line-height:1.55}.dh-paper-kind{margin-top:44px;color:var(--accent);font-size:8px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.dh-paper-title{margin-top:10px;font-family:Georgia,'Times New Roman',serif;font-size:31px;line-height:1.15;color:#111827}.dh-paper-summary{margin-top:13px;color:#667085;font-size:11px;line-height:1.65}
+      .dh-document-meta{margin-top:28px;grid-template-columns:1.35fr repeat(3,1fr);gap:0;border:1px solid #dfe4ea}.dh-effective-date,.dh-meta-item{min-height:64px;border:0;border-right:1px solid #e3e7ec;border-radius:0;padding:13px}.dh-meta-item:last-child{border-right:0}.dh-effective-date{background:color-mix(in srgb,var(--accent) 8%,#fff)}.dh-effective-date>i{width:31px;height:31px;border-radius:8px}.dh-document-rule{margin:31px 0 26px}.dh-reader-body{font-family:Georgia,'Times New Roman',serif;font-size:13px;line-height:1.95;color:#303846}.dh-reader-body h4{font-family:inherit;font-size:17px}.dh-paper-footer{display:flex;justify-content:space-between;margin-top:55px;padding-top:14px;border-top:1px solid #dfe4ea;color:#98a2b3;font-size:8px}
+      .dh-document-audience{position:absolute;right:20px;top:20px;width:325px;max-height:calc(100% - 40px);overflow:auto;border:1px solid #dce2e8;border-radius:17px;background:#f8fafc;padding:20px;box-shadow:0 14px 34px rgba(15,23,42,.11);transition:.2s}.dh-document-audience.hidden{display:none}
+      .dh-member-modal{width:min(940px,95vw);border-radius:22px;background:#fff}.dh-member-cover{height:auto;background:#fff;border-bottom:1px solid #e5e9ee}.dh-member-cover:after,.dh-member-cover-mark{display:none}.dh-member-cover .dh-close{right:18px;top:18px;background:#f0f2f5;color:#596577}
+      .dh-member-profile{align-items:center;padding:30px 64px 26px 28px;background:linear-gradient(105deg,#fff 65%,color-mix(in srgb,var(--accent) 7%,#fff))}.dh-member-avatar{width:92px;height:108px;margin:0;border:3px solid #fff;border-radius:15px;box-shadow:0 10px 25px rgba(15,23,42,.14)}.dh-member-identity{padding-top:0}.dh-member-body{grid-template-columns:180px minmax(0,1fr);gap:34px;padding:28px}.dh-member-facts{border-right:1px solid #e8ebef;padding-right:24px}.dh-member-facts div{border-radius:0;background:transparent;padding:10px 0;border-bottom:1px solid #edf0f3}.dh-member-responsibilities{grid-template-columns:1fr}.dh-member-responsibilities li{border:0;border-bottom:1px solid #edf0f3;border-radius:0;padding:11px 0}.dh-member-responsibilities p{font-size:10px}
+      .dh-structure-editor{width:min(1460px,97vw);height:min(92vh,900px);max-height:92vh;overflow:hidden;border-radius:22px}.dh-editor-head{height:70px}.dh-editor-layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;height:calc(min(92vh,900px) - 70px);background:#eef2f5}.dh-editor-stage{overflow:auto;padding:20px}.dh-editor-canvas{position:relative;min-width:1020px;height:690px;border:1px solid #dce2e8;border-radius:16px;background-color:#fff;background-image:linear-gradient(#edf0f4 1px,transparent 1px),linear-gradient(90deg,#edf0f4 1px,transparent 1px);background-size:24px 24px;box-shadow:0 8px 28px rgba(15,23,42,.06)}.dh-editor-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.dh-editor-svg path{fill:none;stroke:#8592a3;stroke-width:2}
+      .dh-editor-node{position:absolute;width:142px;transform:translate(-50%,-50%);border:1px solid #dfe4ea;border-radius:14px;background:#fff;padding:10px;cursor:grab;touch-action:none;box-shadow:0 8px 20px rgba(15,23,42,.09);z-index:2;text-align:left}.dh-editor-node:active{cursor:grabbing}.dh-editor-node.selected{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent),0 10px 24px rgba(15,23,42,.12)}.dh-editor-node-row{display:flex;align-items:center;gap:8px}.dh-editor-node .dh-audience-avatar{width:36px;height:36px;flex:0 0 auto}.dh-editor-node strong,.dh-editor-node small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.dh-editor-node strong{font-size:9px}.dh-editor-node small{margin-top:3px;color:#8a95a5;font-size:7px}
+      .dh-editor-inspector{border-left:1px solid #dce2e8;background:#fff;padding:22px}.dh-editor-inspector h3{font-size:15px}.dh-editor-tip{margin-top:7px;color:#7d8999;font-size:9px;line-height:1.5}.dh-editor-selected{display:flex;align-items:center;gap:10px;margin:21px 0;padding:12px;border-radius:12px;background:#f4f6f8}.dh-editor-selected strong,.dh-editor-selected span{display:block}.dh-editor-selected strong{font-size:10px}.dh-editor-selected span{margin-top:3px;color:#8b96a6;font-size:8px}.dh-editor-inspector .dh-field{margin-top:18px}
+      @media(max-width:1250px){.dh-doc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.dh-document-workspace{padding-right:34px}.dh-document-audience{position:relative;right:auto;top:auto;width:min(780px,100%);max-height:none;margin:22px auto 0}}
+      @media(max-width:920px){.dh-doc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dh-editor-layout{grid-template-columns:1fr}.dh-editor-inspector{display:none}}
+      @media(max-width:760px){.dh-hero-grid{grid-template-columns:1fr}.dh-doc-grid{grid-template-columns:1fr}.dh-library{padding:20px 17px}.dh-document-paper{min-height:850px;padding:38px 24px}.dh-document-workspace,.dh-document-workspace.no-admin{padding:18px 12px 30px}.dh-paper-title{font-size:25px}.dh-document-meta{grid-template-columns:1fr 1fr}.dh-effective-date,.dh-meta-item{border-bottom:1px solid #e3e7ec}.dh-member-profile{padding:24px 54px 22px 20px}.dh-member-body{grid-template-columns:1fr}.dh-member-facts{border-right:0;border-bottom:1px solid #e8ebef;padding:0 0 18px}}
+
     `;
     document.head.appendChild(style);
   }
@@ -124,46 +163,147 @@
   function hero() {
     const person = Hub.team.find(p => String(p.id) === currentId()) || { full_name: state.currentUser?.fullName, job_title: state.currentUser?.jobTitle, avatar: state.currentUser?.avatar };
     const required = Hub.documents.filter(doc => doc.is_required && doc.status === 'published' && !acknowledged(doc.id)).length;
-    return `<section class="dh-hero">
-      <div class="dh-hero-grid">
-        <div>
-          <div class="dh-kicker"><span class="dh-kicker-dot"></span>TAAMEER Marketing Department</div>
-          <h2>People, structure<br>and standards.</h2>
-          <p>One clear place to understand who does what and find the department's approved documents.</p>
-          <div class="dh-hero-meta">
-            <button class="dh-chip" onclick="DepartmentHub.goTo('team')"><i class="fas fa-sitemap"></i>View team structure</button>
-            <button class="dh-chip" onclick="DepartmentHub.goTo('knowledge')"><i class="fas fa-book-open"></i>Open knowledge library</button>
-          </div>
-        </div>
-        <div class="dh-hero-card">
-          <div class="dh-hero-card-label">You are here</div>
-          <div class="dh-hero-card-row">${avatar(person, 'dh-mini-avatar')}<div><strong>${esc(person.full_name || 'Team member')}</strong><span>${esc(person.job_title || 'Marketing Department')}</span></div></div>
-          <div class="dh-hero-summary"><span><b>${Hub.team.length}</b> members</span><span><b>${published('policy').length + published('procedure').length}</b> documents</span>${required ? `<span class="attention"><b>${required}</b> to review</span>` : '<span class="clear"><i class="fas fa-circle-check"></i> Up to date</span>'}</div>
-        </div>
-      </div>
-    </section>`;
+    return `<section class="dh-hero"><div class="dh-hero-grid"><div><div class="dh-kicker"><span class="dh-kicker-dot"></span>TAAMEER · Department Hub</div><h2>Your department,<br>made clear.</h2><p>Meet the team, understand every role and read the approved standards that guide our work.</p><div class="dh-hero-meta"><button class="dh-chip" onclick="DepartmentHub.goTo('team')"><i class="fas fa-sitemap"></i>Explore structure</button><button class="dh-chip" onclick="DepartmentHub.goTo('knowledge')"><i class="fas fa-file-lines"></i>Browse official documents</button></div></div><div class="dh-hero-card"><div class="dh-hero-card-label">Your place in the department</div><div class="dh-hero-card-row">${avatar(person, 'dh-mini-avatar')}<div><strong>${esc(person.full_name || 'Team member')}</strong><span>${esc(person.job_title || 'Marketing Department')}</span></div></div><div class="dh-hero-summary"><span><b>${Hub.team.length}</b> people</span><span><b>${published('policy').length + published('procedure').length}</b> approved files</span>${required ? `<span class="attention"><b>${required}</b> to review</span>` : '<span class="clear"><i class="fas fa-circle-check"></i> Up to date</span>'}</div></div></div></section>`;
+  }
+
+  function structurePositions() {
+    const lead = manager();
+    const others = Hub.team.filter(person => String(person.id) !== String(lead?.id));
+    const result = {};
+    Hub.team.forEach((person, index) => {
+      const role = roleFor(person.id);
+      const fallbackX = String(person.id) === String(lead?.id) ? 50 : (others.length === 1 ? 50 : 10 + (80 * others.findIndex(item => String(item.id) === String(person.id)) / Math.max(1, others.length - 1)));
+      const fallbackY = String(person.id) === String(lead?.id) ? 18 : 69;
+      result[String(person.id)] = {
+        x: Number.isFinite(Number(role.layout_x)) ? Number(role.layout_x) : fallbackX,
+        y: Number.isFinite(Number(role.layout_y)) ? Number(role.layout_y) : fallbackY,
+        reports_to: role.reports_to || (String(person.id) === String(lead?.id) ? null : lead?.id || null)
+      };
+    });
+    return result;
+  }
+
+  function linePath(parent, child, width = 1000, height = 560) {
+    const x1 = parent.x / 100 * width, y1 = parent.y / 100 * height + 58;
+    const x2 = child.x / 100 * width, y2 = child.y / 100 * height - 58;
+    const mid = y1 + Math.max(22, (y2 - y1) * .48);
+    return `M ${x1} ${y1} C ${x1} ${mid}, ${x2} ${mid}, ${x2} ${y2}`;
   }
 
   function structure() {
+    const positions = structurePositions();
     const lead = manager();
-    const team = Hub.team.filter(person => String(person.id) !== String(lead?.id));
-    const personCard = (person, leadCard = false) => {
-      const role = roleFor(person.id);
-      return `<button class="dh-org-node ${leadCard ? 'lead' : 'member'}" onclick="DepartmentHub.openRole('${esc(person.id)}')"><span class="dh-org-level">${leadCard ? 'Department lead' : 'Team member'}</span><span class="dh-org-photo">${avatar(person, 'dh-org-avatar')}</span><strong>${esc(person.full_name)}</strong><small>${esc(person.job_title || 'Marketing Department')}</small>${!leadCard ? `<span class="dh-org-focus">${esc((role.focus_areas || [])[0] || 'View role')}</span>` : ''}</button>`;
-    };
-    return `<section class="dh-card dh-span-12 dh-section dh-structure-shell" id="dh-team"><div class="dh-card-head"><div><span class="dh-section-number">01</span><h3>Marketing organization chart</h3><p class="dh-card-sub">A visual view of the team. Select a person to open their role and responsibilities.</p></div><span class="dh-pill">${Hub.team.length} members</span></div><div class="dh-org-board"><div class="dh-org-board-title"><span>TAAMEER</span><strong>MARKETING<br>DEPARTMENT</strong></div><div class="dh-org-mark">T</div>${lead ? `<div class="dh-org-lead">${personCard(lead, true)}</div><div class="dh-org-trunk"></div>` : ''}<div class="dh-org-branches">${team.map(person => `<div class="dh-org-branch">${personCard(person)}</div>`).join('')}</div></div></section>`;
+    const lines = Hub.team.map(person => {
+      const pos = positions[String(person.id)];
+      const parent = positions[String(pos?.reports_to || '')];
+      return parent ? `<path d="${linePath(parent, pos)}"></path>` : '';
+    }).join('');
+    const nodes = Hub.team.map(person => {
+      const role = roleFor(person.id), pos = positions[String(person.id)], isLead = String(person.id) === String(lead?.id);
+      return `<button class="dh-org-node free ${isLead ? 'lead' : 'member'}" style="left:${pos.x}%;top:${pos.y}%" onclick="DepartmentHub.openRole('${esc(person.id)}')"><span class="dh-org-level">${isLead ? 'Department lead' : 'Team member'}</span><span class="dh-org-photo">${avatar(person, 'dh-org-avatar')}</span><strong>${esc(person.full_name)}</strong><small>${esc(person.job_title || 'Marketing Department')}</small>${!isLead ? `<span class="dh-org-focus">${esc((role.focus_areas || [])[0] || 'View role')}</span>` : ''}</button>`;
+    }).join('');
+    return `<section class="dh-card dh-span-12 dh-section dh-structure-shell" id="dh-team"><div class="dh-card-head"><div><span class="dh-section-number">01</span><h3>Marketing organization</h3><p class="dh-card-sub">See how the department connects. Select a person to understand their role.</p></div><div class="dh-card-head-actions"><span class="dh-pill">${Hub.team.length} members</span>${isAdmin() ? '<button class="dh-btn small" onclick="DepartmentHub.openStructureEditor()"><i class="fas fa-pen-ruler"></i>Edit structure</button>' : ''}</div></div><div class="dh-org-board"><div class="dh-org-canvas"><svg class="dh-org-svg" viewBox="0 0 1000 560" preserveAspectRatio="none">${lines}</svg>${nodes}</div></div></section>`;
+  }
+
+  function openStructureEditor() {
+    if (!isAdmin()) return;
+    Hub.structureDraft = structurePositions();
+    Hub.structureSelected = String(manager()?.id || Hub.team[0]?.id || '');
+    overlay(`<section class="dh-modal dh-structure-editor"><header class="dh-modal-head dh-editor-head"><div><h3>Edit department structure</h3><p class="dh-card-sub">Drag people to arrange the chart. Select a person to change their reporting line.</p></div><div class="dh-card-head-actions"><button class="dh-btn" onclick="DepartmentHub.closeOverlay()">Cancel</button><button class="dh-btn accent" onclick="DepartmentHub.saveStructure()"><i class="fas fa-check"></i>Save structure</button></div></header><div class="dh-editor-layout"><div class="dh-editor-stage"><div class="dh-editor-canvas" id="dhEditorCanvas"><svg class="dh-editor-svg" id="dhEditorSvg"></svg>${Hub.team.map(person => { const p=Hub.structureDraft[String(person.id)]; return `<button class="dh-editor-node" data-user-id="${esc(person.id)}" style="left:${p.x}%;top:${p.y}%"><span class="dh-editor-node-row">${avatar(person,'dh-audience-avatar')}<span><strong>${esc(person.full_name)}</strong><small>${esc(person.job_title || 'Marketing Department')}</small></span></span></button>`; }).join('')}</div></div><aside class="dh-editor-inspector" id="dhEditorInspector"></aside></div></section>`);
+    bindStructureEditor();
+    selectStructureNode(Hub.structureSelected);
+  }
+
+  function drawStructureEditor() {
+    const canvas = document.getElementById('dhEditorCanvas'), svg = document.getElementById('dhEditorSvg');
+    if (!canvas || !svg) return;
+    const width = canvas.clientWidth, height = canvas.clientHeight;
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.innerHTML = Hub.team.map(person => {
+      const child = Hub.structureDraft[String(person.id)];
+      const parent = Hub.structureDraft[String(child?.reports_to || '')];
+      return parent ? `<path d="${linePath(parent, child, width, height)}"></path>` : '';
+    }).join('');
+  }
+
+  function bindStructureEditor() {
+    const canvas = document.getElementById('dhEditorCanvas');
+    if (!canvas) return;
+    let drag = null;
+    canvas.querySelectorAll('.dh-editor-node').forEach(node => {
+      node.addEventListener('pointerdown', event => {
+        event.preventDefault();
+        const id = node.dataset.userId;
+        selectStructureNode(id);
+        drag = { id, node };
+        node.setPointerCapture?.(event.pointerId);
+      });
+    });
+    canvas.addEventListener('pointermove', event => {
+      if (!drag) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.max(7, Math.min(93, (event.clientX - rect.left) / rect.width * 100));
+      const y = Math.max(10, Math.min(90, (event.clientY - rect.top) / rect.height * 100));
+      Hub.structureDraft[drag.id].x = Math.round(x * 10) / 10;
+      Hub.structureDraft[drag.id].y = Math.round(y * 10) / 10;
+      drag.node.style.left = `${x}%`; drag.node.style.top = `${y}%`;
+      drawStructureEditor();
+    });
+    const finish = () => { drag = null; };
+    canvas.addEventListener('pointerup', finish);
+    canvas.addEventListener('pointercancel', finish);
+    window.setTimeout(drawStructureEditor, 0);
+  }
+
+  function selectStructureNode(userId) {
+    Hub.structureSelected = String(userId);
+    document.querySelectorAll('.dh-editor-node').forEach(node => node.classList.toggle('selected', node.dataset.userId === Hub.structureSelected));
+    const person = Hub.team.find(item => String(item.id) === Hub.structureSelected);
+    const inspector = document.getElementById('dhEditorInspector');
+    if (!person || !inspector) return;
+    const current = Hub.structureDraft[Hub.structureSelected];
+    inspector.innerHTML = `<span class="dh-modal-eyebrow">Selected member</span><div class="dh-editor-selected">${avatar(person,'dh-audience-avatar')}<div><strong>${esc(person.full_name)}</strong><span>${esc(person.job_title || '')}</span></div></div><h3>Reporting line</h3><p class="dh-editor-tip">The connector updates automatically when you change this.</p><div class="dh-field"><label>Reports to</label><select onchange="DepartmentHub.changeStructureParent('${esc(person.id)}',this.value)"><option value="">No manager / top level</option>${Hub.team.filter(item => String(item.id) !== String(person.id)).map(item => `<option value="${esc(item.id)}" ${String(current.reports_to || '') === String(item.id) ? 'selected' : ''}>${esc(item.full_name)}</option>`).join('')}</select></div><p class="dh-editor-tip" style="margin-top:20px"><i class="fas fa-arrows-up-down-left-right"></i>&nbsp; Drag the selected person anywhere on the canvas to refine the layout.</p>`;
+  }
+
+  function changeStructureParent(userId, parentId) {
+    if (!Hub.structureDraft?.[String(userId)]) return;
+    let cursor = String(parentId || '');
+    while (cursor) {
+      if (cursor === String(userId)) {
+        alert('That reporting line would create a loop.');
+        selectStructureNode(userId);
+        return;
+      }
+      cursor = String(Hub.structureDraft[cursor]?.reports_to || '');
+    }
+    Hub.structureDraft[String(userId)].reports_to = parentId || null;
+    drawStructureEditor();
+  }
+
+  async function saveStructure() {
+    if (!isAdmin() || !Hub.structureDraft) return;
+    const button = document.querySelector('.dh-structure-editor .dh-btn.accent');
+    if (button) button.disabled = true;
+    const rows = Hub.team.map(person => {
+      const role = roleFor(person.id), layout = Hub.structureDraft[String(person.id)];
+      return { user_id: person.id, reports_to: layout.reports_to || null, layout_x: layout.x, layout_y: layout.y, focus_areas: role.focus_areas || [], responsibilities: role.responsibilities || [], sort_order: role.sort_order || 100, updated_at: new Date().toISOString() };
+    });
+    const { error } = await supabaseClient.from('department_hub_team_roles').upsert(rows, { onConflict: 'user_id' });
+    if (error) { alert(error.message || 'Could not save the structure.'); if (button) button.disabled = false; return; }
+    closeOverlay();
+    await reload();
   }
 
   function knowledge() {
     const query = Hub.search.trim().toLowerCase();
     const items = Hub.documents.filter(doc => (canEdit() || doc.status === 'published') && (Hub.docFilter === 'all' || doc.kind === Hub.docFilter) && (!query || `${doc.title} ${doc.summary} ${doc.category} ${doc.owner}`.toLowerCase().includes(query)));
     const required = items.filter(doc => doc.status === 'published' && doc.is_required && !acknowledged(doc.id));
-    return `<section class="dh-card dh-span-12 dh-section" id="dh-knowledge"><div class="dh-knowledge-head"><div><span class="dh-section-number">02</span><h3>Knowledge library</h3><p class="dh-card-sub">Policies and procedures together—search once, find the approved answer.</p></div>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editDocument(null,'policy')"><i class="fas fa-plus"></i>Add document</button>` : ''}</div>${required.length ? `<button class="dh-review-strip" onclick="DepartmentHub.openDocument('${esc(required[0].id)}')"><span><i class="fas fa-circle-exclamation"></i><strong>${required.length} document${required.length === 1 ? '' : 's'} need your review</strong></span><span>Start reviewing <i class="fas fa-arrow-right"></i></span></button>` : ''}<div class="dh-library-tools"><div class="dh-filter" role="group" aria-label="Document type">${[['all','All'],['policy','Policies'],['procedure','Procedures']].map(([id,label]) => `<button class="${Hub.docFilter === id ? 'active' : ''}" onclick="DepartmentHub.filterDocs('${id}')">${label}<span>${id === 'all' ? Hub.documents.filter(d => canEdit() || d.status === 'published').length : published(id).length}</span></button>`).join('')}</div><label class="dh-search"><i class="fas fa-search"></i><input value="${esc(Hub.search)}" oninput="DepartmentHub.search(this.value)" placeholder="Search documents…"></label></div>${items.length ? `<div class="dh-doc-grid">${items.map(docCard).join('')}</div>` : `<div class="dh-empty"><i class="fas fa-folder-open"></i>${query ? 'No document matches your search.' : 'No documents are available in this category yet.'}</div>`}</section>`;
+    return `<section class="dh-card dh-span-12 dh-section dh-library" id="dh-knowledge"><div class="dh-knowledge-head"><div><span class="dh-section-number">02</span><h3>Official document library</h3><p class="dh-card-sub">The approved policies and procedures of the Marketing Department.</p></div>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editDocument(null,'policy')"><i class="fas fa-plus"></i>New document</button>` : ''}</div>${required.length ? `<button class="dh-review-strip" onclick="DepartmentHub.openDocument('${esc(required[0].id)}')"><span><i class="fas fa-circle-exclamation"></i><strong>${required.length} document${required.length === 1 ? '' : 's'} await your acknowledgement</strong></span><span>Review now <i class="fas fa-arrow-right"></i></span></button>` : ''}<div class="dh-library-tools"><div class="dh-filter" role="group" aria-label="Document type">${[['all','All documents'],['policy','Policies'],['procedure','Procedures']].map(([id,label]) => `<button class="${Hub.docFilter === id ? 'active' : ''}" onclick="DepartmentHub.filterDocs('${id}')">${label}<span>${id === 'all' ? Hub.documents.filter(d => canEdit() || d.status === 'published').length : published(id).length}</span></button>`).join('')}</div><label class="dh-search"><i class="fas fa-search"></i><input value="${esc(Hub.search)}" oninput="DepartmentHub.search(this.value)" placeholder="Search the library…"></label></div>${items.length ? `<div class="dh-doc-grid">${items.map(docCard).join('')}</div>` : `<div class="dh-empty"><i class="fas fa-folder-open"></i>${query ? 'No document matches your search.' : 'No official documents are available here yet.'}</div>`}</section>`;
   }
 
   function docCard(doc) {
     const isAck = acknowledged(doc.id);
-    return `<article class="dh-doc ${doc.kind}" onclick="DepartmentHub.openDocument('${esc(doc.id)}')"><div class="dh-doc-top"><span class="dh-doc-icon"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><div style="display:flex;gap:6px">${doc.status !== 'published' ? `<span class="dh-pill draft">${esc(doc.status)}</span>` : ''}${doc.is_required ? `<span class="dh-pill ${isAck ? '' : 'required'}">${isAck ? 'Read' : 'Required'}</span>` : ''}</div></div><div class="dh-doc-type">${doc.kind === 'policy' ? 'Policy & standard' : 'Procedure & SOP'}</div><h3>${esc(doc.title)}</h3><p>${esc(doc.summary || 'Open this document to read the full guidance.')}</p><div class="dh-doc-footer"><div><span>${esc(doc.category)}</span><span>v${esc(doc.version)}</span></div><span class="dh-doc-open">Open <i class="fas fa-arrow-right"></i></span></div>${canEdit() ? `<button class="dh-doc-edit" onclick="event.stopPropagation();DepartmentHub.editDocument('${esc(doc.id)}')" aria-label="Edit ${esc(doc.title)}"><i class="fas fa-pen"></i></button>` : ''}</article>`;
+    return `<article class="dh-doc ${doc.kind}" onclick="DepartmentHub.openDocument('${esc(doc.id)}')"><div class="dh-doc-cover"><div class="dh-doc-brand"><strong>TAAMEER</strong><span>MARKETING</span></div><span class="dh-doc-mark"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i></span><div class="dh-doc-type">${doc.kind === 'policy' ? 'Department policy' : 'Standard procedure'}</div><h3>${esc(doc.title)}</h3><p>${esc(doc.summary || 'Open this official document to read the complete guidance.')}</p><div class="dh-doc-statuses">${doc.status !== 'published' ? `<span class="dh-pill draft">${esc(doc.status)}</span>` : ''}${doc.is_required ? `<span class="dh-pill ${isAck ? '' : 'required'}">${isAck ? 'Acknowledged' : 'Action required'}</span>` : ''}</div><div class="dh-doc-footer"><div><span>v${esc(doc.version)}</span><span>${niceDate(doc.effective_date)}</span></div><span class="dh-doc-open">Read <i class="fas fa-arrow-right"></i></span></div></div>${canEdit() ? `<button class="dh-doc-edit" onclick="event.stopPropagation();DepartmentHub.editDocument('${esc(doc.id)}')" aria-label="Edit ${esc(doc.title)}"><i class="fas fa-pen"></i></button>` : ''}</article>`;
   }
 
   function render() {
@@ -218,12 +358,16 @@
     const doc = Hub.documents.find(item => String(item.id) === String(id));
     if (!doc) return;
     const isAck = acknowledged(doc.id);
-    overlay(`<article class="dh-modal dh-document-modal"><header class="dh-document-top"><div><span class="dh-document-type"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i>${doc.kind === 'policy' ? 'Department policy' : 'Department procedure'}</span><h2>${esc(doc.title)}</h2><p>${esc(doc.summary || 'Approved department guidance')}</p></div><button class="dh-close dark" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-document-layout ${isAdmin() ? 'with-audience' : ''}"><main class="dh-document-paper"><div class="dh-document-meta"><div class="dh-effective-date"><i class="fas fa-calendar-day"></i><div><span>Effective date</span><strong>${niceDate(doc.effective_date)}</strong></div></div><div class="dh-meta-item"><span>Category</span><strong>${esc(doc.category)}</strong></div><div class="dh-meta-item"><span>Version</span><strong>${esc(doc.version)}</strong></div><div class="dh-meta-item"><span>Document owner</span><strong>${esc(doc.owner)}</strong></div></div><div class="dh-document-rule"><span>Approved department document</span><span>Updated ${niceDateTime(doc.updated_at)}</span></div><div class="dh-reader-body">${formatDocumentBody(doc.body || doc.summary)}</div>${doc.is_required && doc.status === 'published' ? `<div class="dh-acknowledge-box ${isAck ? 'done' : ''}"><div><i class="fas ${isAck ? 'fa-circle-check' : 'fa-file-signature'}"></i><span><strong>${isAck ? 'You acknowledged this document' : 'Acknowledgement required'}</strong><small>${isAck ? 'Your confirmation has been recorded.' : 'Confirm only after reading the complete document.'}</small></span></div><button class="dh-btn ${isAck ? '' : 'accent'}" onclick="DepartmentHub.toggleAcknowledgement('${esc(doc.id)}')">${isAck ? 'Acknowledged' : 'I have read and understood'}</button></div>` : ''}</main>${isAdmin() ? `<aside class="dh-document-audience"><div class="dh-audience-head"><span>ADMIN VIEW</span><h3>Reading status</h3><p>Live status for members who currently have access.</p></div><div id="dhReaderAudience"><div class="dh-audience-loading"><i class="fas fa-circle-notch fa-spin"></i>Loading audience…</div></div></aside>` : ''}</div></article>`);
+    overlay(`<article class="dh-modal dh-document-modal"><header class="dh-reader-toolbar"><div class="dh-reader-toolbar-group"><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-arrow-left"></i></button><div class="dh-reader-toolbar-title"><strong>${esc(doc.title)}</strong><span>${doc.kind === 'policy' ? 'Department policy' : 'Standard procedure'} · v${esc(doc.version)}</span></div></div><div class="dh-reader-toolbar-group">${canEdit() ? `<button class="dh-btn small" onclick="DepartmentHub.editDocument('${esc(doc.id)}')"><i class="fas fa-pen"></i>Edit</button>` : ''}${isAdmin() ? '<button class="dh-btn small" onclick="DepartmentHub.toggleAudience()"><i class="fas fa-users-viewfinder"></i>Reading status</button>' : ''}<button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></div></header><div class="dh-document-workspace ${isAdmin() ? '' : 'no-admin'}"><main class="dh-document-paper"><div class="dh-paper-brand"><div class="dh-paper-logo">TAAMEER</div><div class="dh-paper-ref">MARKETING DEPARTMENT<br>${doc.kind === 'policy' ? 'POLICY' : 'PROCEDURE'} · VERSION ${esc(doc.version)}</div></div><div class="dh-paper-kind"><i class="fas ${doc.kind === 'policy' ? 'fa-shield-halved' : 'fa-list-check'}"></i>&nbsp; Official department document</div><h1 class="dh-paper-title">${esc(doc.title)}</h1><p class="dh-paper-summary">${esc(doc.summary || 'Approved department guidance')}</p><div class="dh-document-meta"><div class="dh-effective-date"><i class="fas fa-calendar-day"></i><div><span>Effective date</span><strong>${niceDate(doc.effective_date)}</strong></div></div><div class="dh-meta-item"><span>Category</span><strong>${esc(doc.category)}</strong></div><div class="dh-meta-item"><span>Version</span><strong>${esc(doc.version)}</strong></div><div class="dh-meta-item"><span>Owner</span><strong>${esc(doc.owner)}</strong></div></div><div class="dh-document-rule"><span>Approved department document</span><span>Last updated ${niceDateTime(doc.updated_at)}</span></div><div class="dh-reader-body">${formatDocumentBody(doc.body || doc.summary)}</div>${doc.is_required && doc.status === 'published' ? `<div class="dh-acknowledge-box ${isAck ? 'done' : ''}"><div><i class="fas ${isAck ? 'fa-circle-check' : 'fa-file-signature'}"></i><span><strong>${isAck ? 'Document acknowledged' : 'Your acknowledgement is required'}</strong><small>${isAck ? 'Your confirmation has been recorded.' : 'Confirm after you have read the complete document.'}</small></span></div><button class="dh-btn ${isAck ? '' : 'accent'}" onclick="DepartmentHub.toggleAcknowledgement('${esc(doc.id)}')">${isAck ? 'Acknowledged' : 'I have read and understood'}</button></div>` : ''}<footer class="dh-paper-footer"><span>TAAMEER Marketing Department</span><span>Controlled document · v${esc(doc.version)}</span></footer></main>${isAdmin() ? `<aside class="dh-document-audience hidden" id="dhDocumentAudiencePanel"><div class="dh-audience-head"><span>ADMIN VIEW</span><h3>Reading status</h3><p>View and acknowledgement status for members with Hub access.</p></div><div id="dhReaderAudience"><div class="dh-audience-loading"><i class="fas fa-circle-notch fa-spin"></i>Loading audience…</div></div></aside>` : ''}</div></article>`);
     if (trackView) {
       const { error } = await supabaseClient.rpc('record_department_hub_document_view', { p_document_id: doc.id });
       if (error) console.error('Could not record document view', error);
     }
     if (isAdmin()) await loadDocumentAudience(doc);
+  }
+
+  function toggleAudience() {
+    document.getElementById('dhDocumentAudiencePanel')?.classList.toggle('hidden');
   }
 
   function editDocument(id, fallbackKind = 'policy') {
@@ -279,7 +423,7 @@
     if (!person) return;
     const responsibilities = role.responsibilities || [];
     const reportsTo = Hub.team.find(item => String(item.id) === String(role.reports_to || ''));
-    overlay(`<article class="dh-modal dh-member-modal"><header class="dh-member-cover"><div class="dh-member-cover-mark">TAAMEER</div><button class="dh-close dark" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button></header><div class="dh-member-profile">${avatar(person, 'dh-member-avatar')}<div class="dh-member-identity"><span class="dh-modal-eyebrow">Role in the department</span><h2>${esc(person.full_name)}</h2><p>${esc(person.job_title || 'Marketing Department')}</p></div>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editRole('${esc(userId)}')"><i class="fas fa-pen"></i>Edit role</button>` : ''}</div><div class="dh-member-body"><aside class="dh-member-facts"><div><span>Reports to</span><strong>${esc(reportsTo?.full_name || (String(person.id) === String(manager()?.id) ? 'TAAMEER Management' : manager()?.full_name || 'Department lead'))}</strong></div><div><span>Focus areas</span><strong>${(role.focus_areas || []).length}</strong></div><div><span>Core responsibilities</span><strong>${responsibilities.length}</strong></div>${person.email ? `<div><span>Email</span><strong>${esc(person.email)}</strong></div>` : ''}</aside><main class="dh-member-role"><section><span class="dh-modal-eyebrow">Focus areas</span><div class="dh-focus dh-member-focus">${(role.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('') || '<span>Department support</span>'}</div></section><section><span class="dh-modal-eyebrow">Responsibilities</span>${responsibilities.length ? `<ol class="dh-member-responsibilities">${responsibilities.map((item, index) => `<li><span>${String(index + 1).padStart(2, '0')}</span><p>${esc(item)}</p></li>`).join('')}</ol>` : '<div class="dh-empty">Responsibilities have not been added yet.</div>'}</section></main></div></article>`);
+    overlay(`<article class="dh-modal dh-member-modal"><header class="dh-member-cover"><button class="dh-close" onclick="DepartmentHub.closeOverlay()"><i class="fas fa-xmark"></i></button><div class="dh-member-profile">${avatar(person, 'dh-member-avatar')}<div class="dh-member-identity"><span class="dh-modal-eyebrow">Marketing department · Role profile</span><h2>${esc(person.full_name)}</h2><p>${esc(person.job_title || 'Marketing Department')}</p></div>${canEdit() ? `<button class="dh-btn primary" onclick="DepartmentHub.editRole('${esc(userId)}')"><i class="fas fa-pen"></i>Edit role</button>` : ''}</div></header><div class="dh-member-body"><aside class="dh-member-facts"><div><span>Reports to</span><strong>${esc(reportsTo?.full_name || (String(person.id) === String(manager()?.id) ? 'TAAMEER Management' : manager()?.full_name || 'Department lead'))}</strong></div>${person.email ? `<div><span>Email</span><strong>${esc(person.email)}</strong></div>` : ''}</aside><main class="dh-member-role"><section><span class="dh-modal-eyebrow">Focus areas</span><div class="dh-focus dh-member-focus">${(role.focus_areas || []).map(area => `<span>${esc(area)}</span>`).join('') || '<span>Department support</span>'}</div></section><section><span class="dh-modal-eyebrow">Core responsibilities</span>${responsibilities.length ? `<ol class="dh-member-responsibilities">${responsibilities.map((item, index) => `<li><span>${String(index + 1).padStart(2, '0')}</span><p>${esc(item)}</p></li>`).join('')}</ol>` : '<div class="dh-empty">Responsibilities have not been added yet.</div>'}</section></main></div></article>`);
   }
 
   function editRole(userId) {
@@ -295,7 +439,7 @@
     const data = new FormData(event.currentTarget);
     const lines = value => String(value || '').split('\n').map(item => item.trim()).filter(Boolean);
     const existing = roleFor(userId);
-    const payload = { user_id: userId, reports_to: data.get('reports_to') || null, focus_areas: lines(data.get('focus_areas')), responsibilities: lines(data.get('responsibilities')), sort_order: existing.sort_order || 100, updated_at: new Date().toISOString() };
+    const payload = { user_id: userId, reports_to: data.get('reports_to') || null, focus_areas: lines(data.get('focus_areas')), responsibilities: lines(data.get('responsibilities')), sort_order: existing.sort_order || 100, layout_x: existing.layout_x ?? null, layout_y: existing.layout_y ?? null, updated_at: new Date().toISOString() };
     const { error } = await supabaseClient.from('department_hub_team_roles').upsert(payload, { onConflict: 'user_id' });
     if (error) return alert(error.message || 'Could not save this role.');
     closeOverlay();
@@ -307,7 +451,7 @@
   function search(value) { Hub.search = value; render(); const input = document.querySelector('.dh-search input'); if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); } }
   async function reload() { Hub.loaded = false; await load(); }
 
-  window.DepartmentHub = { open: load, reload, goTo, filterDocs, search, openDocument, editDocument, saveDocument, deleteDocument, toggleAcknowledgement, openRole, editRole, saveRole, closeOverlay };
+  window.DepartmentHub = { open: load, reload, goTo, filterDocs, search, openDocument, editDocument, saveDocument, deleteDocument, toggleAcknowledgement, toggleAudience, openRole, editRole, saveRole, openStructureEditor, selectStructureNode, changeStructureParent, saveStructure, closeOverlay };
 
   ModuleRegistry.register('department-hub', () => {
     if (Hub.loaded) render();
