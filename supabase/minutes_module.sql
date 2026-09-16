@@ -186,3 +186,58 @@ update public.app_data set data = (select jsonb_agg(case
     and not coalesce((u->'modules') ? 'minutes', false)
   then jsonb_set(u, '{modules}', coalesce(u->'modules','[]'::jsonb) || '"minutes"'::jsonb, true)
   else u end) from jsonb_array_elements(data) u) where id='users';
+
+-- Private Word attachments for controlled meeting records.
+create table if not exists public.meeting_minute_files (
+  id uuid primary key default gen_random_uuid(),
+  meeting_id uuid not null references public.meeting_minutes(id) on delete cascade,
+  uploaded_by uuid not null references public.profiles(id) on delete restrict,
+  file_name text not null check (char_length(file_name) between 1 and 255),
+  storage_path text not null unique,
+  mime_type text,
+  size_bytes bigint not null check (size_bytes between 1 and 15728640),
+  created_at timestamptz not null default now()
+);
+create index if not exists meeting_minute_files_meeting_created_idx on public.meeting_minute_files(meeting_id, created_at desc);
+create index if not exists meeting_minute_files_uploaded_by_idx on public.meeting_minute_files(uploaded_by);
+alter table public.meeting_minute_files enable row level security;
+
+drop policy if exists meeting_files_select on public.meeting_minute_files;
+create policy meeting_files_select on public.meeting_minute_files for select to authenticated
+using ((select public.minutes_module_access()) and exists (select 1 from public.meeting_minutes m where m.id = meeting_id));
+drop policy if exists meeting_files_insert_owner on public.meeting_minute_files;
+create policy meeting_files_insert_owner on public.meeting_minute_files for insert to authenticated
+with check ((select public.minutes_module_access()) and uploaded_by = (select auth.uid()) and exists (
+  select 1 from public.meeting_minutes m where m.id = meeting_id and m.created_by = (select auth.uid()) and m.status <> 'locked'
+));
+drop policy if exists meeting_files_delete_owner on public.meeting_minute_files;
+create policy meeting_files_delete_owner on public.meeting_minute_files for delete to authenticated
+using ((select public.minutes_module_access()) and uploaded_by = (select auth.uid()) and exists (
+  select 1 from public.meeting_minutes m where m.id = meeting_id and m.created_by = (select auth.uid()) and m.status <> 'locked'
+));
+
+insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
+values ('meeting-minutes-word','meeting-minutes-word',false,15728640,array[
+  'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+]) on conflict (id) do update set public=false,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
+
+drop policy if exists meeting_word_objects_select on storage.objects;
+create policy meeting_word_objects_select on storage.objects for select to authenticated
+using (bucket_id='meeting-minutes-word' and (select public.minutes_module_access()) and exists (
+  select 1 from public.meeting_minutes m where m.id::text = (storage.foldername(name))[1]
+));
+drop policy if exists meeting_word_objects_insert on storage.objects;
+create policy meeting_word_objects_insert on storage.objects for insert to authenticated
+with check (bucket_id='meeting-minutes-word' and (select public.minutes_module_access()) and exists (
+  select 1 from public.meeting_minutes m where m.id::text = (storage.foldername(name))[1]
+    and m.created_by = (select auth.uid()) and m.status <> 'locked'
+));
+drop policy if exists meeting_word_objects_delete on storage.objects;
+create policy meeting_word_objects_delete on storage.objects for delete to authenticated
+using (bucket_id='meeting-minutes-word' and (select public.minutes_module_access()) and exists (
+  select 1 from public.meeting_minutes m where m.id::text = (storage.foldername(name))[1]
+    and m.created_by = (select auth.uid()) and m.status <> 'locked'
+));
+
+grant select, insert, delete on public.meeting_minute_files to authenticated;
+revoke all on public.meeting_minute_files from anon;
