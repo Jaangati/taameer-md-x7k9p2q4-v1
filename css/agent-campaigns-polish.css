@@ -1,0 +1,59 @@
+#view-agent-campaigns .ach-shell{max-width:1640px;padding-bottom:72px}
+#view-agent-campaigns .ach-panel{border-color:#e7e9ee;box-shadow:0 12px 34px rgba(15,23,42,.045)}
+#view-agent-campaigns .ach-directory{background:transparent;border:0;box-shadow:none;overflow:visible}
+#view-agent-campaigns .ach-directory .ach-head{padding:10px 2px 20px}
+#view-agent-campaigns .ach-directory .ach-filterbar{padding:0 2px 22px}
+#view-agent-campaigns .ach-directory .ach-card-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;padding:0}
+#view-agent-campaigns .ach-agent{position:relative;overflow:hidden;border:0;border-radius:24px;padding:0;background:#fff;box-shadow:0 8px 28px rgba(15,23,42,.07);text-align:left;transition:transform .22s ease,box-shadow .22s ease}
+#view-agent-campaigns .ach-agent:hover{transform:translateY(-5px);box-shadow:0 20px 48px rgba(15,23,42,.13)}
+#view-agent-campaigns .ach-agent-visual{position:relative;aspect-ratio:1.14/1;overflow:hidden;background:linear-gradient(145deg,#0d1322,#252d3b)}
+#view-agent-campaigns .ach-agent-visual:after{content:"";position:absolute;inset:44% 0 0;background:linear-gradient(transparent,rgba(7,11,20,.78))}
+#view-agent-campaigns .ach-agent-visual .ach-avatar{width:100%;height:100%;border-radius:0;font-size:38px;object-fit:cover}
+#view-agent-campaigns .ach-agent-visual .ach-fallback{background:radial-gradient(circle at 70% 20%,color-mix(in srgb,var(--accent) 58%,#354052),transparent 35%),linear-gradient(145deg,#0b1020,#30394a);color:rgba(255,255,255,.92);font-size:42px;letter-spacing:-.08em}
+#view-agent-campaigns .ach-agent-status{position:absolute;z-index:2;left:15px;top:15px;box-shadow:0 5px 16px rgba(0,0,0,.12)}
+#view-agent-campaigns .ach-agent-open{position:absolute;z-index:2;right:15px;top:15px;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.22);background:rgba(5,10,20,.56);backdrop-filter:blur(12px);display:grid;place-items:center;color:#fff;transition:.2s}
+#view-agent-campaigns .ach-agent-open:hover{background:var(--accent);border-color:var(--accent);transform:scale(1.04)}
+#view-agent-campaigns .ach-agent-overlay{position:absolute;z-index:2;left:17px;right:17px;bottom:15px;color:#fff}
+#view-agent-campaigns .ach-agent-overlay h4{font-size:18px;line-height:1.12;margin:0;font-weight:850;letter-spacing:-.025em}
+#view-agent-campaigns .ach-agent-overlay .handle{margin-top:5px;color:rgba(255,255,255,.72);font-size:11px}
+#view-agent-campaigns .ach-agent-body{padding:16px 17px 17px}
+#view-agent-campaigns .ach-agent-meta{display:flex;justify-content:space-between;gap:10px;align-items:center}
+#view-agent-campaigns .ach-agent-readiness{display:flex;align-items:center;gap:9px;font-size:9px;font-weight:900;color:#667085;text-transform:uppercase;letter-spacing:.08em}
+#view-agent-campaigns .ach-agent-readiness i{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 13%,transparent)}
+#view-agent-campaigns .ach-agent-body .ach-ready{margin:13px 0 15px}
+#view-agent-campaigns .ach-agent-numbers{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #eef0f3;padding-top:13px}
+#view-agent-campaigns .ach-agent-numbers div:last-child{text-align:right}
+#view-agent-campaigns .ach-agent-numbers strong{display:block;font-size:12px;color:#111827}
+#view-agent-campaigns .ach-agent-numbers span{font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#98a2b3;font-weight:850}
+#view-agent-campaigns .ach-drawer{width:min(1220px,97vw);height:min(920px,95vh);background:#f3f4f6;border-radius:28px}
+#view-agent-campaigns .ach-profile-hero{position:relative;min-height:220px;padding:26px 30px 27px 294px;background:linear-gradient(115deg,#080d1b 0%,#171f2e 66%,color-mix(in srgb,var(--accent) 55%,#202a39) 145%);color:#fff;display:flex;justify-content:space-between;gap:24px;align-items:flex-end;overflow:hidden}
+#view-agent-campaigns .ach-profile-hero:after{content:"PROFILE";position:absolute;right:-10px;bottom:-36px;font-size:108px;font-weight:950;letter-spacing:-.07em;color:rgba(255,255,255,.035)}
+#view-agent-campaigns .ach-profile-photo{position:absolute;left:28px;bottom:0;width:236px;height:192px;border-radius:25px 25px 0 0;overflow:hidden;background:#171e2c;box-shadow:0 16px 45px rgba(0,0,0,.26);z-index:1}
+#view-agent-campaigns .ach-profile-photo .ach-avatar{width:100%;height:100%;border-radius:0;font-size:38px;object-fit:cover}
+#view-agent-campaigns .ach-photo-control{position:absolute;z-index:3;left:16px;bottom:16px;background:rgba(7,11,20,.74);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(10px);color:#fff;border-radius:11px;padding:9px 11px;font-size:9px;font-weight:850;cursor:pointer}
+#view-agent-campaigns .ach-profile-copy{position:relative;z-index:1}
+#view-agent-campaigns .ach-profile-copy h3{font-size:30px;line-height:1.05;font-weight:850;letter-spacing:-.04em;margin:8px 0 7px}
+#view-agent-campaigns .ach-profile-copy p{font-size:11px;color:#aab2c0}
+#view-agent-campaigns .ach-profile-actions{position:relative;z-index:2;align-self:flex-start}
+#view-agent-campaigns .ach-drawer-grid{grid-template-columns:minmax(0,1.2fr) minmax(330px,.8fr);gap:18px;padding:18px}
+#view-agent-campaigns .ach-contact-sheet{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}
+#view-agent-campaigns .ach-contact{position:relative;background:#f7f8fa;border:1px solid #edf0f4;border-radius:13px;padding:12px 42px 12px 13px;min-height:61px}
+#view-agent-campaigns .ach-contact.full{grid-column:1/-1}
+#view-agent-campaigns .ach-contact label{display:block;font-size:8px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#98a2b3;margin-bottom:5px}
+#view-agent-campaigns .ach-contact strong{display:block;font-size:11px;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#view-agent-campaigns .ach-copy{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:29px;height:29px;border:0;border-radius:9px;background:#fff;color:#667085;box-shadow:0 2px 8px rgba(15,23,42,.08)}
+#view-agent-campaigns .ach-copy:hover{color:#fff;background:#111827}
+#view-agent-campaigns .ach-copy-all{width:100%;margin-top:11px;border:1px dashed #cfd4dc;background:#fff;border-radius:12px;padding:10px;font-size:10px;font-weight:850;color:#344054}
+#view-agent-campaigns .ach-credentials-card{background:linear-gradient(145deg,#0a0f1d,#202839);color:#fff;border:0}
+#view-agent-campaigns .ach-credentials-card .ach-sub{color:#98a2b3}
+#view-agent-campaigns .ach-secret-data{margin-top:15px;padding:13px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.055)}
+#view-agent-campaigns .ach-secret-item{position:relative;padding:9px 38px 9px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+#view-agent-campaigns .ach-secret-item:last-child{border:0}
+#view-agent-campaigns .ach-secret-item label{display:block;color:#7f899a;font-size:8px;text-transform:uppercase;letter-spacing:.1em;font-weight:900}
+#view-agent-campaigns .ach-secret-item code{display:block;margin-top:4px;color:#fff;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#view-agent-campaigns .ach-secret-item .ach-copy{background:rgba(255,255,255,.09);color:#fff;box-shadow:none}
+#view-agent-campaigns .ach-toast{position:fixed;z-index:30000;left:50%;bottom:30px;transform:translate(-50%,18px);opacity:0;background:#101828;color:#fff;border-radius:13px;padding:11px 16px;font-size:11px;font-weight:800;box-shadow:0 16px 40px rgba(0,0,0,.23);transition:.22s;pointer-events:none}
+#view-agent-campaigns .ach-toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1250px){#view-agent-campaigns .ach-directory .ach-card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){#view-agent-campaigns .ach-directory .ach-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#view-agent-campaigns .ach-profile-hero{padding-left:210px}#view-agent-campaigns .ach-profile-photo{width:160px;height:180px}#view-agent-campaigns .ach-drawer-grid{grid-template-columns:1fr}}
+@media(max-width:620px){#view-agent-campaigns .ach-directory .ach-card-grid{grid-template-columns:1fr}#view-agent-campaigns .ach-profile-hero{padding:24px;min-height:340px;align-items:flex-start;flex-direction:column}#view-agent-campaigns .ach-profile-photo{left:24px;bottom:22px;width:120px;height:120px;border-radius:20px}#view-agent-campaigns .ach-profile-copy{padding-left:0}#view-agent-campaigns .ach-contact-sheet{grid-template-columns:1fr}#view-agent-campaigns .ach-contact.full{grid-column:auto}}
