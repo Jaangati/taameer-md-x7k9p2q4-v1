@@ -6,6 +6,7 @@
     tab: "overview",
     month: new Date().toISOString().slice(0, 7) + "-01",
     agents: [],
+    deletedAgents: [],
     accounts: [],
     months: [],
     allocations: [],
@@ -139,6 +140,17 @@
         readinessKeys.length) *
       100
     );
+  };
+  const effectiveAccountStatus = (a) => {
+    const x = account(a.id);
+    if (!x) return "no_account";
+    if (Math.round(readiness(a)) === 100)
+      return campaignsFor(a.id).some((c) =>
+        ["active", "learning"].includes(c.status),
+      )
+        ? "campaign_active"
+        : "ready";
+    return x.status === "ready" ? "under_setup" : x.status;
   };
   const statusHistory = (id) =>
     H.statusUpdates
@@ -303,12 +315,19 @@
         (x) => x.error,
       )?.error;
       if (err) throw err;
+      const allAgents = a.data || [];
+      const activeAgentIds = new Set(
+        allAgents.filter((x) => !x.deleted_at).map((x) => String(x.id)),
+      );
       Object.assign(H, {
-        agents: a.data || [],
+        agents: allAgents.filter((x) => !x.deleted_at),
+        deletedAgents: allAgents.filter((x) => x.deleted_at),
         accounts: ac.data || [],
         months: m.data || [],
         allocations: al.data || [],
-        campaigns: c.data || [],
+        campaigns: (c.data || []).filter(
+          (x) => !x.deleted_at && activeAgentIds.has(String(x.agent_id)),
+        ),
         updates: u.data || [],
         statusUpdates: su.data || [],
         dailyCheckins: dc.data || [],
@@ -410,11 +429,12 @@
   function agentCard(a) {
     const x = account(a.id),
       pct = Math.round(readiness(a)),
+      displayStatus = effectiveAccountStatus(a),
       al = allocation(a.id),
       cs = campaignsFor(a.id).filter(active),
       spent = cs.reduce((n, c) => n + spendForCampaign(c.id), 0),
       url = safeUrl(x?.profile_url);
-    return `<article class="ach-agent ${pct === 100 ? "ready" : ""}" onclick="AgentCampaigns.openAgent('${a.id}')"><div class="ach-agent-visual">${agentPhoto(a)}<span class="ach-chip ach-agent-status ${tone(x?.status || "no_account")}">${statusLabel(x?.status || "no_account")}</span>${url ? `<a class="ach-agent-open" title="Open Instagram" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-instagram"></i></a>` : ""}<div class="ach-agent-overlay"><h4>${esc(a.full_name_en)}</h4><div class="handle">${x?.username ? "@" + esc(x.username) : "Instagram not created"}</div></div></div><div class="ach-agent-body"><div class="ach-agent-meta"><span class="ach-agent-readiness"><i></i>${pct}% ready</span><span class="ach-sub">${cs.length} live ${cs.length === 1 ? "campaign" : "campaigns"}</span></div><div class="ach-ready"><div class="ach-ready-track"><span style="width:${pct}%"></span></div></div><div class="ach-agent-numbers"><div><strong>${money(al?.allocated_budget || 0)}</strong><span>Allocated</span></div><div><strong>${money(spent)}</strong><span>Recorded spend</span></div></div></div></article>`;
+    return `<article class="ach-agent ${pct === 100 ? "ready" : ""}" onclick="AgentCampaigns.openAgent('${a.id}')"><div class="ach-agent-visual">${agentPhoto(a)}<span class="ach-chip ach-agent-status ${tone(displayStatus)}">${statusLabel(displayStatus)}</span>${url ? `<a class="ach-agent-open" title="Open Instagram" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><i class="fab fa-instagram"></i></a>` : ""}<div class="ach-agent-overlay"><h4>${esc(a.full_name_en)}</h4><div class="handle">${x?.username ? "@" + esc(x.username) : "Instagram not created"}</div></div></div><div class="ach-agent-body"><div class="ach-agent-meta"><span class="ach-agent-readiness"><i></i>${pct}% ready</span><span class="ach-sub">${cs.length} live ${cs.length === 1 ? "campaign" : "campaigns"}</span></div><div class="ach-ready"><div class="ach-ready-track"><span style="width:${pct}%"></span></div></div><div class="ach-agent-numbers"><div><strong>${money(al?.allocated_budget || 0)}</strong><span>Allocated</span></div><div><strong>${money(spent)}</strong><span>Recorded spend</span></div></div></div></article>`;
   }
   function agentsView() {
     const list = H.agents.filter((a) => {
@@ -431,11 +451,11 @@
       return (
         q &&
         (H.filter === "all" ||
-          x?.status === H.filter ||
+          effectiveAccountStatus(a) === H.filter ||
           (H.filter === "no_account" && !x))
       );
     });
-    return `<section class="ach-panel ach-directory"><div class="ach-head"><div><div class="ach-kicker">Instagram account directory</div><h3>People first. Campaigns second.</h3><div class="ach-sub">Open an agent to copy account details, manage access, update readiness or start a campaign.</div></div><div class="ach-tools"><label class="ach-btn"><i class="fas fa-file-import"></i>Import HR CSV<input type="file" accept=".csv" hidden onchange="AgentCampaigns.importRoster(this)"></label><button class="ach-btn dark" onclick="AgentCampaigns.agent()"><i class="fas fa-user-plus"></i>Add agent</button></div></div><div class="ach-filterbar"><div class="ach-filters">${[
+    return `<section class="ach-panel ach-directory"><div class="ach-head"><div><div class="ach-kicker">Instagram account directory</div><h3>People first. Campaigns second.</h3><div class="ach-sub">Open an agent to copy account details, manage access, update readiness or start a campaign.</div></div><div class="ach-tools"><button class="ach-btn" onclick="AgentCampaigns.downloadAgentsList()"><i class="fas fa-download"></i>Agents List</button><label class="ach-btn"><i class="fas fa-file-arrow-up"></i>Upload Agents List<input type="file" accept=".csv,text/csv" hidden onchange="AgentCampaigns.importRoster(this)"></label>${state.currentUser?.role === "admin" ? `<button class="ach-btn" onclick="AgentCampaigns.openBin()"><i class="fas fa-trash-restore"></i>Bin ${H.deletedAgents.length ? `<span class="ach-count-inline">${H.deletedAgents.length}</span>` : ""}</button>` : ""}<button class="ach-btn dark" onclick="AgentCampaigns.agent()"><i class="fas fa-user-plus"></i>Add agent</button></div></div><div class="ach-filterbar"><div class="ach-filters">${[
       ["all", `All ${H.agents.length}`],
       ["ready", "Ready"],
       ["campaign_active", "Campaign active"],
@@ -467,7 +487,7 @@
               : due
                 ? "Due today"
                 : "Not required";
-        return `<tr><td><div class="ach-campaign-name">${esc(c.name)}</div><small class="text-gray-400">${esc(c.project_name || c.objective)}</small></td><td>${esc(a?.full_name_en || "—")}</td><td><span class="ach-chip ${tone(c.status)}">${statusLabel(c.status)}</span></td><td>${money(c.budget)}</td><td><b>${money(u?.spend || 0)}</b></td><td><span class="ach-chip ${due ? "red" : "green"}">${esc(label)}</span></td><td><div class="ach-tools"><button class="ach-btn sm" onclick="AgentCampaigns.update('${c.id}')"><i class="fas fa-rotate"></i>Check in</button><button class="ach-btn sm" title="Download campaign report" onclick="AgentCampaigns.downloadCampaigns('', '${c.id}')"><i class="fas fa-download"></i></button><button class="ach-btn sm" title="Edit campaign" onclick="AgentCampaigns.campaign('${c.id}')"><i class="fas fa-pen"></i></button></div></td></tr>`;
+        return `<tr><td><div class="ach-campaign-name">${esc(c.name)}</div><small class="text-gray-400">${esc(c.project_name || c.objective)}</small></td><td>${esc(a?.full_name_en || "—")}</td><td><span class="ach-chip ${tone(c.status)}">${statusLabel(c.status)}</span></td><td>${money(c.budget)}</td><td><b>${money(u?.spend || 0)}</b></td><td><span class="ach-chip ${due ? "red" : "green"}">${esc(label)}</span></td><td><div class="ach-tools"><button class="ach-btn sm" onclick="AgentCampaigns.update('${c.id}')"><i class="fas fa-rotate"></i>Check in</button><button class="ach-btn sm" title="Download campaign report" onclick="AgentCampaigns.downloadCampaigns('', '${c.id}')"><i class="fas fa-download"></i></button><button class="ach-btn sm" title="Edit campaign" onclick="AgentCampaigns.campaign('${c.id}')"><i class="fas fa-pen"></i></button>${state.currentUser?.role === "admin" ? `<button class="ach-btn sm danger" title="Delete campaign" onclick="AgentCampaigns.deleteCampaign('${c.id}')"><i class="fas fa-trash"></i></button>` : ""}</div></td></tr>`;
       })
       .join(
         "",
@@ -661,6 +681,7 @@
     const al = allocation(id),
       cs = campaignsFor(id),
       pct = Math.round(readiness(a)),
+      displayStatus = effectiveAccountStatus(a),
       url = safeUrl(x?.profile_url);
     const checks = readinessKeys
       .map(
@@ -680,9 +701,9 @@
       ? `<section class="ach-box ach-credentials-card"><div class="ach-kicker">Secure account access</div><h4>Instagram credentials</h4><p class="ach-sub">Encrypted in Supabase Vault. Reveals are logged and hidden automatically.</p>${canSecrets() ? `<button class="ach-btn ghost w-full" onclick="AgentCampaigns.revealInline('${x.id}')"><i class="fas fa-eye"></i>${x.credentials_saved ? "Reveal password & details" : "No saved credential"}</button><div id="agInlineSecret"></div><button class="ach-copy-all ach-copy-dark" onclick="AgentCampaigns.credentials('${x.id}')"><i class="fas fa-key"></i>${x.credentials_saved ? "Update secure details" : "Add secure details"}</button>` : '<div class="ach-note">Credential access is restricted.</div>'}</section>`
       : "";
     overlay(
-      `<header class="ach-profile-head"><div class="ach-profile-person">${agentPhoto(a, "profile")}<div><div class="ach-kicker">Sales agent · Instagram account</div><h3>${esc(a.full_name_en)}</h3><p>${x?.username ? "@" + esc(x.username) : "Account not created"} · ${esc(a.department_team || "Sales team")}</p></div></div><div class="ach-actions">${url ? `<a class="ach-btn primary" target="_blank" rel="noopener" href="${esc(url)}"><i class="fab fa-instagram"></i>Instagram</a>` : ""}<button class="ach-btn light" onclick="AgentCampaigns.close();AgentCampaigns.agent('${id}')"><i class="fas fa-pen"></i>Edit details</button><button class="ach-icon-close" aria-label="Close" onclick="AgentCampaigns.close()"><i class="fas fa-times"></i></button></div></header>
+      `<header class="ach-profile-head"><div class="ach-profile-person">${agentPhoto(a, "profile")}<div><div class="ach-kicker">Sales agent · Instagram account</div><h3>${esc(a.full_name_en)}</h3><p>${x?.username ? "@" + esc(x.username) : "Account not created"} · ${esc(a.department_team || "Sales team")}</p></div></div><div class="ach-actions">${url ? `<a class="ach-btn primary" target="_blank" rel="noopener" href="${esc(url)}"><i class="fab fa-instagram"></i>Instagram</a>` : ""}<button class="ach-btn light" onclick="AgentCampaigns.close();AgentCampaigns.agent('${id}')"><i class="fas fa-pen"></i>Edit details</button>${state.currentUser?.role === "admin" ? `<button class="ach-btn danger-dark" onclick="AgentCampaigns.deleteAgent('${id}')"><i class="fas fa-trash"></i>Move to Bin</button>` : ""}<button class="ach-icon-close" aria-label="Close" onclick="AgentCampaigns.close()"><i class="fas fa-times"></i></button></div></header>
       <div class="ach-profile-body"><main>
-      <section class="ach-box"><div class="ach-section-title"><div><div class="ach-kicker">Account details</div><h4>Contact & profile</h4></div><span class="ach-chip ${tone(x?.status || "no_account")}">${statusLabel(x?.status || "no_account")}</span></div><div class="ach-contact-sheet">${contactRow("Instagram username", x?.username ? "@" + x.username : "", "username")}${contactRow("Company email", a.company_email, "email")}${contactRow("Work phone", a.work_phone, "phone")}${contactRow("Profile shortcut", url, "url")}${contactRow("Team / department", a.department_team, "team", true)}</div><button class="ach-copy-all" onclick="AgentCampaigns.copyAgent('all')"><i class="fas fa-copy"></i>Copy complete account sheet</button></section>
+      <section class="ach-box"><div class="ach-section-title"><div><div class="ach-kicker">Account details</div><h4>Contact & profile</h4></div><span class="ach-chip ${tone(displayStatus)}">${statusLabel(displayStatus)}</span></div><div class="ach-contact-sheet">${contactRow("Instagram username", x?.username ? "@" + x.username : "", "username")}${contactRow("Company email", a.company_email, "email")}${contactRow("Work phone", a.work_phone, "phone")}${contactRow("Profile shortcut", url, "url")}${contactRow("Team / department", a.department_team, "team", true)}</div><button class="ach-copy-all" onclick="AgentCampaigns.copyAgent('all')"><i class="fas fa-copy"></i>Copy complete account sheet</button></section>
       <section class="ach-box"><div class="ach-section-title"><div><div class="ach-kicker">Account readiness</div><h4><span id="achReadinessValue">${pct}%</span> complete</h4></div><span class="ach-sub">${readinessKeys.filter(([key]) => x?.[key]).length}/${readinessKeys.length} checks</span></div><div class="ach-progress"><span id="achReadinessBar" class="${pct === 100 ? "complete" : ""}" style="width:${pct}%"></span></div><div class="ach-checks">${checks}</div></section>
       <section class="ach-box"><div class="ach-section-title"><div><div class="ach-kicker">Campaigns</div><h4>${cs.length} linked</h4></div><div class="ach-actions"><button class="ach-btn sm" onclick="AgentCampaigns.downloadCampaigns('${id}')"><i class="fas fa-download"></i>Report</button><button class="ach-btn sm" onclick="AgentCampaigns.close();AgentCampaigns.campaign('', '${id}')"><i class="fas fa-plus"></i>New campaign</button></div></div><div class="ach-campaign-list">${campaignRows}</div></section>
       </main><aside>${credentials}<section class="ach-box"><div class="ach-kicker">${esc(periodLabel(month()))}</div><h4>Media allocation</h4><p class="ach-sub">${esc(monthRange(month()))}</p><div class="ach-allocation-field">${field("Allocated budget · QAR", "aga_allocation", al?.allocated_budget || 0, "number", false, 'min="0" step="1"')}</div>${canBudget() ? `<button class="ach-btn primary w-full" onclick="AgentCampaigns.saveAllocation('${id}')">Save monthly allocation</button>` : '<div class="ach-note">Budget access is restricted.</div>'}</section>
@@ -1158,69 +1179,275 @@
         : x[key];
     await copyText(value, key === "all" ? "Login pack" : "Secure detail");
   }
-  async function importRoster(input) {
-    const file = input.files?.[0];
-    if (!file) return;
-    const text = await file.text(),
-      lines = text.split(/\r?\n/).filter(Boolean),
-      headers = lines
-        .shift()
-        .split(",")
-        .map((x) =>
-          x
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "_"),
-        ),
-      idx = (n) => headers.findIndex((h) => h === n || h.includes(n));
-    const rows = lines
-      .map((line) => {
-        const c = line
-          .match(/("[^"]*(?:""[^"]*)*"|[^,]*)/g)
-          .filter((_, i) => i % 2 === 0)
-          .map((x) => x.replace(/^"|"$/g, "").replace(/""/g, '"').trim());
-        return {
-          hr_employee_id: c[idx("employee_id")] || c[idx("agent_id")] || null,
-          full_name_en: c[idx("full_name")] || c[idx("name")] || "",
-          company_email: c[idx("email")] || null,
-          work_phone: c[idx("phone")] || null,
-          employment_status: "active",
-          source: "hr_import",
-          updated_by: uid(),
-        };
-      })
-      .filter((x) => x.full_name_en);
-    if (!rows.length)
-      return alert(
-        "No recognizable rows found. Include Full Name, Email, Phone and Employee ID columns.",
-      );
+  function downloadAgentsList() {
+    const rows = [
+      ["Name", "Email", "Phone number"],
+      ...H.agents.map((a) => [
+        a.full_name_en,
+        a.company_email || "",
+        a.work_phone || "",
+      ]),
+    ];
+    const csv =
+      "\uFEFF" + rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+    downloadBlob(
+      new Blob([csv], { type: "text/csv;charset=utf-8" }),
+      "Agents List.csv",
+    );
+    toast("Agents List downloaded.");
+  }
+  function parseCsv(text) {
+    const rows = [];
+    let row = [],
+      cell = "",
+      quoted = false;
+    for (let i = 0; i < text.length; i += 1) {
+      const char = text[i],
+        next = text[i + 1];
+      if (char === '"' && quoted && next === '"') {
+        cell += '"';
+        i += 1;
+      } else if (char === '"') quoted = !quoted;
+      else if (char === "," && !quoted) {
+        row.push(cell);
+        cell = "";
+      } else if ((char === "\n" || char === "\r") && !quoted) {
+        if (char === "\r" && next === "\n") i += 1;
+        row.push(cell);
+        cell = "";
+        if (row.some((value) => String(value).trim())) rows.push(row);
+        row = [];
+      } else cell += char;
+    }
+    row.push(cell);
+    if (row.some((value) => String(value).trim())) rows.push(row);
+    return rows;
+  }
+  const normalizedPhone = (value) =>
+    String(value || "").replace(/[^0-9+]/g, "");
+  const normalizedName = (value) =>
+    String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  async function deleteAgent(id) {
+    if (state.currentUser?.role !== "admin")
+      return toast("Only administrators can remove agents.");
+    const a = H.agents.find((x) => String(x.id) === String(id));
     if (
+      !a ||
       !confirm(
-        `Import ${rows.length} HR roster records? Existing emails will be matched and updated.`,
+        `Move ${a.full_name_en} to the Agents Bin? Their account, campaigns and history will be preserved.`,
       )
     )
       return;
-    for (const row of rows) {
-      let q = row.company_email
-        ? await supabaseClient
-            .from("agent_campaign_agents")
-            .select("id")
-            .ilike("company_email", row.company_email)
-            .maybeSingle()
-        : { data: null };
-      if (q.data)
-        await supabaseClient
-          .from("agent_campaign_agents")
-          .update(row)
-          .eq("id", q.data.id);
-      else
-        await supabaseClient
-          .from("agent_campaign_agents")
-          .insert({ ...row, created_by: uid() });
-    }
-    input.value = "";
+    const r = await supabaseClient
+      .from("agent_campaign_agents")
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: uid(),
+        updated_by: uid(),
+      })
+      .eq("id", id);
+    if (r.error) return alert(r.error.message);
+    recordActivity?.(
+      "agent_campaign_agent_binned",
+      "agent_campaign_agent",
+      id,
+      {},
+    );
+    close();
     await load(true);
-    alert("HR roster imported and matched by company email.");
+    toast("Agent moved to Bin.");
+  }
+  async function restoreAgent(id) {
+    if (state.currentUser?.role !== "admin") return;
+    const r = await supabaseClient
+      .from("agent_campaign_agents")
+      .update({ deleted_at: null, deleted_by: null, updated_by: uid() })
+      .eq("id", id);
+    if (r.error) return alert(r.error.message);
+    await load(true);
+    openBin();
+    toast("Agent restored.");
+  }
+  function openBin() {
+    if (state.currentUser?.role !== "admin") return;
+    const rows = H.deletedAgents.length
+      ? H.deletedAgents
+          .map(
+            (a) =>
+              `<div class="ach-bin-row">${agentPhoto(a, "mini")}<span><strong>${esc(a.full_name_en)}</strong><small>${esc(a.company_email || a.work_phone || "No contact details")} · removed ${fmt(a.deleted_at)}</small></span><button class="ach-btn sm" onclick="AgentCampaigns.restoreAgent('${a.id}')"><i class="fas fa-rotate-left"></i>Restore</button></div>`,
+          )
+          .join("")
+      : '<div class="ach-empty"><i class="fas fa-trash-can"></i>The Agents Bin is empty.</div>';
+    overlay(
+      `<div class="ach-modalbar"><div><div class="ach-kicker">Admin archive</div><h3>Agents Bin</h3><div class="ach-sub">Removed agents stay here with their accounts, campaigns and history intact.</div></div><button class="ach-btn" onclick="AgentCampaigns.close()"><i class="fas fa-times"></i></button></div><div class="ach-modalbody"><div class="ach-bin-list">${rows}</div></div>`,
+    );
+  }
+  async function deleteCampaign(id) {
+    if (state.currentUser?.role !== "admin")
+      return toast("Only administrators can delete campaigns.");
+    const c = H.campaigns.find((x) => String(x.id) === String(id));
+    if (
+      !c ||
+      !confirm(
+        `Delete “${c.name}”? Its check-ins and performance history will be preserved in the database.`,
+      )
+    )
+      return;
+    const r = await supabaseClient
+      .from("agent_campaign_campaigns")
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: uid(),
+        updated_by: uid(),
+      })
+      .eq("id", id);
+    if (r.error) return alert(r.error.message);
+    recordActivity?.(
+      "agent_campaign_campaign_deleted",
+      "agent_campaign_campaign",
+      id,
+      {},
+    );
+    await load(true);
+    toast("Campaign removed.");
+  }
+  async function importRoster(input) {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const grid = parseCsv(await file.text());
+      const headers = (grid.shift() || []).map((x) =>
+        String(x)
+          .replace(/^\uFEFF/, "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "_"),
+      );
+      const find = (...names) =>
+        headers.findIndex((h) =>
+          names.some((name) => h === name || h.includes(name)),
+        );
+      const nameIndex = find("name", "full_name"),
+        emailIndex = find("email"),
+        phoneIndex = find("phone_number", "phone");
+      if (nameIndex < 0 || emailIndex < 0 || phoneIndex < 0)
+        throw new Error(
+          "Use the Agents List format: Name, Email, Phone number. Download the current list first if you need the template.",
+        );
+      const seen = new Set();
+      let duplicates = 0;
+      const rows = grid
+        .map((cells) => ({
+          full_name_en: String(cells[nameIndex] || "")
+            .trim()
+            .replace(/\s+/g, " "),
+          company_email:
+            String(cells[emailIndex] || "")
+              .trim()
+              .toLowerCase() || null,
+          work_phone: normalizedPhone(cells[phoneIndex]) || null,
+        }))
+        .filter((row) => {
+          if (!row.full_name_en) return false;
+          const keys = [
+            row.company_email && `e:${row.company_email}`,
+            row.work_phone && `p:${row.work_phone}`,
+            `n:${normalizedName(row.full_name_en)}`,
+          ].filter(Boolean);
+          if (keys.some((key) => seen.has(key))) {
+            duplicates += 1;
+            return false;
+          }
+          keys.forEach((key) => seen.add(key));
+          return true;
+        });
+      if (!rows.length)
+        throw new Error("No new valid people were found in this file.");
+      if (
+        !confirm(
+          `Upload ${rows.length} unique people from “${file.name}”? Existing people will be updated and missing system account records will be created.`,
+        )
+      )
+        return;
+      let created = 0,
+        updated = 0,
+        restored = 0,
+        accountsCreated = 0;
+      const known = [...H.agents, ...H.deletedAgents];
+      for (const source of rows) {
+        const existing = known.find(
+          (a) =>
+            (source.company_email &&
+              String(a.company_email || "")
+                .trim()
+                .toLowerCase() === source.company_email) ||
+            (source.work_phone &&
+              normalizedPhone(a.work_phone) === source.work_phone) ||
+            normalizedName(a.full_name_en) ===
+              normalizedName(source.full_name_en),
+        );
+        if (existing?.deleted_at && state.currentUser?.role !== "admin")
+          throw new Error(
+            `${source.full_name_en} is already saved in the Agents Bin. Ask an administrator to restore the agent instead of creating a duplicate.`,
+          );
+        const payload = {
+          ...source,
+          employment_status: "active",
+          source: "agents_list",
+          updated_by: uid(),
+          ...(state.currentUser?.role === "admin"
+            ? { deleted_at: null, deleted_by: null }
+            : {}),
+        };
+        let saved;
+        if (existing) {
+          const result = await supabaseClient
+            .from("agent_campaign_agents")
+            .update(payload)
+            .eq("id", existing.id)
+            .select()
+            .single();
+          if (result.error) throw result.error;
+          saved = result.data;
+          updated += 1;
+          if (existing.deleted_at) restored += 1;
+        } else {
+          const result = await supabaseClient
+            .from("agent_campaign_agents")
+            .insert({ ...payload, created_by: uid() })
+            .select()
+            .single();
+          if (result.error) throw result.error;
+          saved = result.data;
+          created += 1;
+          known.push(saved);
+        }
+        if (!H.accounts.some((x) => String(x.agent_id) === String(saved.id))) {
+          const accountResult = await supabaseClient
+            .from("agent_campaign_accounts")
+            .insert({
+              agent_id: saved.id,
+              status: "no_account",
+              created_by: uid(),
+              updated_by: uid(),
+            });
+          if (accountResult.error && accountResult.error.code !== "23505")
+            throw accountResult.error;
+          if (!accountResult.error) accountsCreated += 1;
+        }
+      }
+      await load(true);
+      alert(
+        `Agents List complete.\n\n${created} added\n${updated} matched and updated\n${duplicates} duplicate rows skipped\n${restored} restored from Bin\n${accountsCreated} missing system account records created\n\nActual Instagram accounts remain clearly marked “No account” until they are created externally.`,
+      );
+    } catch (error) {
+      alert(error.message || "The Agents List could not be uploaded.");
+    } finally {
+      input.value = "";
+    }
   }
   const v = (id) => document.getElementById(id)?.value ?? "";
   function tab(x) {
@@ -1271,7 +1498,12 @@
     revealInline,
     copySecret,
     copyText,
+    downloadAgentsList,
     importRoster,
+    openBin,
+    deleteAgent,
+    restoreAgent,
+    deleteCampaign,
   };
   ModuleRegistry.register("agent-campaigns", (view) => {
     root = view;
