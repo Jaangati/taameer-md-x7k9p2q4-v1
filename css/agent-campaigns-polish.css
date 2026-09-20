@@ -173,3 +173,32 @@
 @media(max-width:1050px){#view-agent-campaigns .ach-mini-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:800px){#view-agent-campaigns .ach-overview{grid-template-columns:1fr}#view-agent-campaigns .ach-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#agentCampaignOverlay .ach-profile-body{grid-template-columns:1fr}#agentCampaignOverlay .ach-profile-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:560px){#view-agent-campaigns .ach-mini-grid,#view-agent-campaigns .ach-compact-metrics{grid-template-columns:1fr 1fr}#agentCampaignOverlay .ach-change-grid,#agentCampaignOverlay .ach-checks{grid-template-columns:1fr}}
+
+/* Calendar-month reporting and daily campaign accountability */
+#view-agent-campaigns .ach-mini-agent.ready{border-color:#b7e4ce;background:linear-gradient(135deg,#fff,#f1fbf6)}
+#view-agent-campaigns .ach-mini-agent.ready .ach-mini-score b,#view-agent-campaigns .ach-agent.ready .ach-agent-readiness{color:#087a4b}
+#view-agent-campaigns .ach-mini-agent.ready .ach-mini-score em,#view-agent-campaigns .ach-agent.ready .ach-ready-track span,#agentCampaignOverlay .ach-progress span.complete{background:#25a86b!important}
+#agentCampaignOverlay .ach-progress span.complete{box-shadow:0 0 0 3px rgba(37,168,107,.12)}
+#agentCampaignOverlay .ach-photo-upload{cursor:default}
+#agentCampaignOverlay .ach-photo-actions{display:flex;gap:6px;align-items:center}
+#agentCampaignOverlay .ach-photo-actions label{cursor:pointer}
+#agentCampaignOverlay .ach-checkin-lead.has-missed{background:#fff4f2;border:1px solid #ffd7d1}
+#agentCampaignOverlay .ach-checkin-lead.has-missed strong{color:#b42318}
+#agentCampaignOverlay .ach-daily-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:0 0 15px}
+#agentCampaignOverlay .ach-daily-strip>span{position:relative;min-height:57px;padding:9px;border-radius:11px;border:1px solid #e4e7ec;background:#fff;display:flex;flex-direction:column}
+#agentCampaignOverlay .ach-daily-strip b{font-size:8px;text-transform:uppercase;color:#667085}
+#agentCampaignOverlay .ach-daily-strip small{font-size:11px;font-weight:850;color:#101828;margin-top:2px}
+#agentCampaignOverlay .ach-daily-strip i{position:absolute;right:8px;bottom:9px;font-size:9px}
+#agentCampaignOverlay .ach-daily-strip .completed{background:#effbf5;border-color:#b7e4ce;color:#087a4b}
+#agentCampaignOverlay .ach-daily-strip .missed{background:#fff4f2;border-color:#ffd7d1;color:#b42318}
+#agentCampaignOverlay .ach-daily-strip .due{background:#fff9eb;border-color:#f8df9c;color:#a15c00}
+#agentCampaignOverlay .ach-performance-block{margin-top:16px;padding:17px;border-radius:16px;border:1px solid #dfe5ec;background:linear-gradient(145deg,#f8fafc,#fff)}
+#agentCampaignOverlay .ach-performance-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+#agentCampaignOverlay .ach-performance-head h4{font-size:14px;font-weight:850;margin-top:3px}
+#agentCampaignOverlay .ach-performance-head>span{padding:6px 9px;border-radius:99px;background:#eef2f6;color:#526071;font-size:8px;font-weight:850;text-transform:uppercase;letter-spacing:.07em}
+#agentCampaignOverlay .ach-report-intro{display:flex;gap:14px;align-items:center;background:#f7f8fa;border:1px solid #e9edf2;border-radius:15px;padding:16px;margin-bottom:18px}
+#agentCampaignOverlay .ach-report-intro>i{width:40px;height:40px;border-radius:12px;background:#101828;color:#fff;display:grid;place-items:center}
+#agentCampaignOverlay .ach-report-intro strong,#agentCampaignOverlay .ach-report-intro span{display:block}
+#agentCampaignOverlay .ach-report-intro strong{font-size:12px}
+#agentCampaignOverlay .ach-report-intro span{font-size:9px;color:#667085;margin-top:3px}
+@media(max-width:700px){#agentCampaignOverlay .ach-daily-strip{grid-template-columns:repeat(4,minmax(0,1fr))}#agentCampaignOverlay .ach-photo-upload{grid-template-columns:42px 1fr}#agentCampaignOverlay .ach-photo-actions{grid-column:1/-1}}
