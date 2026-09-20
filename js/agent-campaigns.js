@@ -455,7 +455,7 @@
           (H.filter === "no_account" && !x))
       );
     });
-    return `<section class="ach-panel ach-directory"><div class="ach-head"><div><div class="ach-kicker">Instagram account directory</div><h3>People first. Campaigns second.</h3><div class="ach-sub">Open an agent to copy account details, manage access, update readiness or start a campaign.</div></div><div class="ach-tools"><button class="ach-btn" onclick="AgentCampaigns.downloadAgentsList()"><i class="fas fa-download"></i>Agents List</button><label class="ach-btn"><i class="fas fa-file-arrow-up"></i>Upload Agents List<input type="file" accept=".csv,text/csv" hidden onchange="AgentCampaigns.importRoster(this)"></label>${state.currentUser?.role === "admin" ? `<button class="ach-btn" onclick="AgentCampaigns.openBin()"><i class="fas fa-trash-restore"></i>Bin ${H.deletedAgents.length ? `<span class="ach-count-inline">${H.deletedAgents.length}</span>` : ""}</button>` : ""}<button class="ach-btn dark" onclick="AgentCampaigns.agent()"><i class="fas fa-user-plus"></i>Add agent</button></div></div><div class="ach-filterbar"><div class="ach-filters">${[
+    return `<section class="ach-panel ach-directory"><div class="ach-head"><div><div class="ach-kicker">Instagram account directory</div><h3>People first. Campaigns second.</h3><div class="ach-sub">Open an agent to copy account details, manage access, update readiness or start a campaign.</div></div><div class="ach-tools"><button class="ach-btn" onclick="AgentCampaigns.downloadAgentsReport()"><i class="fas fa-file-pdf"></i>Profiles report</button><button class="ach-btn" onclick="AgentCampaigns.downloadAgentsList()"><i class="fas fa-file-csv"></i>Agents List</button><label class="ach-btn"><i class="fas fa-file-arrow-up"></i>Upload Agents List<input type="file" accept=".csv,text/csv" hidden onchange="AgentCampaigns.importRoster(this)"></label>${state.currentUser?.role === "admin" ? `<button class="ach-btn" onclick="AgentCampaigns.openBin()"><i class="fas fa-trash-restore"></i>Bin ${H.deletedAgents.length ? `<span class="ach-count-inline">${H.deletedAgents.length}</span>` : ""}</button>` : ""}<button class="ach-btn dark" onclick="AgentCampaigns.agent()"><i class="fas fa-user-plus"></i>Add agent</button></div></div><div class="ach-filterbar"><div class="ach-filters">${[
       ["all", `All ${H.agents.length}`],
       ["ready", "Ready"],
       ["campaign_active", "Campaign active"],
@@ -499,10 +499,10 @@
     d.id = "agentCampaignOverlay";
     d.className = "ach-overlay";
     d.innerHTML = `<div class="ach-modal ${wide ? "wide" : ""}">${html}</div>`;
-    document.body.appendChild(d);
-    d.addEventListener("click", (e) => {
-      if (e.target === d) close();
+    d.querySelectorAll("button").forEach((button) => {
+      if (button.textContent.trim() === "Cancel") button.remove();
     });
+    document.body.appendChild(d);
   }
   function close() {
     H.lastCredential = null;
@@ -1005,89 +1005,277 @@
     await load(true);
   }
   const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const pdfClean = (value) =>
+    String(value ?? "")
+      .replace(/\s+/g, " ")
+      .trim();
+  const pdfQar = (value) =>
+    `QAR ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Number(value) || 0)}`;
+  function pdfAccent() {
+    const raw = getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent")
+      .trim();
+    const hex = raw.match(/^#([0-9a-f]{6})$/i);
+    if (hex) {
+      const n = Number.parseInt(hex[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+    const rgb = raw.match(/(\d+)[^\d]+(\d+)[^\d]+(\d+)/);
+    return rgb ? rgb.slice(1, 4).map(Number) : [226, 82, 74];
+  }
+  function pdfDoc() {
+    const JsPDF = window.jspdf?.jsPDF;
+    if (!JsPDF) throw new Error("The PDF generator is still loading. Please try again.");
+    return new JsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+  }
+  function pdfHeader(doc, title, subtitle, reference = "") {
+    const accent = pdfAccent();
+    doc.setFillColor(9, 15, 29);
+    doc.rect(0, 0, 210, 42, "F");
+    doc.setFillColor(...accent);
+    doc.rect(0, 0, 5, 42, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("TAAMEER", 15, 16);
+    doc.setFontSize(9);
+    doc.text(pdfClean(title).toUpperCase(), 15, 27);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(173, 181, 196);
+    doc.setFontSize(7.5);
+    doc.text(pdfClean(subtitle), 15, 34);
+    if (reference) {
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.text(pdfClean(reference), 195, 16, { align: "right" });
+    }
+  }
+  function pdfMetric(doc, x, y, width, label, value, highlight = false) {
+    const accent = pdfAccent();
+    doc.setFillColor(highlight ? accent[0] : 247, highlight ? accent[1] : 248, highlight ? accent[2] : 250);
+    doc.setDrawColor(highlight ? accent[0] : 228, highlight ? accent[1] : 231, highlight ? accent[2] : 236);
+    doc.roundedRect(x, y, width, 18, 3, 3, "FD");
+    doc.setTextColor(highlight ? 255 : 16, highlight ? 255 : 24, highlight ? 255 : 40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(pdfClean(value), x + 4, y + 8);
+    doc.setFontSize(6.3);
+    doc.setTextColor(highlight ? 255 : 102, highlight ? 255 : 112, highlight ? 255 : 133);
+    doc.text(pdfClean(label).toUpperCase(), x + 4, y + 14);
+  }
+  function pdfPill(doc, text, x, y, green = false) {
+    const label = pdfClean(text).toUpperCase();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.3);
+    const width = Math.max(19, doc.getTextWidth(label) + 8);
+    doc.setFillColor(green ? 233 : 255, green ? 250 : 247, green ? 241 : 232);
+    doc.setTextColor(green ? 2 : 181, green ? 122 : 71, green ? 72 : 8);
+    doc.roundedRect(x, y, width, 7, 3.5, 3.5, "F");
+    doc.text(label, x + 4, y + 4.8);
+    return width;
+  }
+  function pdfFooters(doc, label) {
+    const pages = doc.getNumberOfPages();
+    for (let page = 1; page <= pages; page += 1) {
+      doc.setPage(page);
+      doc.setDrawColor(224, 228, 234);
+      doc.line(14, 283, 196, 283);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      doc.setTextColor(126, 137, 155);
+      doc.text(`CONFIDENTIAL · ${pdfClean(label)}`, 14, 289);
+      doc.text(`© ${new Date().getFullYear()} TAAMEER Marketing Department`, 105, 289, { align: "center" });
+      doc.text(`${page} / ${pages}`, 196, 289, { align: "right" });
+    }
+  }
+  async function pdfImage(url) {
+    if (!url) return null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      const data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      return {
+        data,
+        format: blob.type.includes("png")
+          ? "PNG"
+          : blob.type.includes("webp")
+            ? "WEBP"
+            : "JPEG",
+      };
+    } catch (_) {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
   function report() {
     overlay(
-      `<div class="ach-modalbar"><div><div class="ach-kicker">Campaign reporting</div><h3>Download campaign overview</h3></div><button class="ach-btn" onclick="AgentCampaigns.close()"><i class="fas fa-times"></i></button></div><form onsubmit="AgentCampaigns.runReport(event)"><div class="ach-modalbody"><div class="ach-report-intro"><i class="fas fa-file-arrow-down"></i><div><strong>Excel-ready performance report</strong><span>Includes campaign setup, budget, latest spend, required performance, check-in history and every missed day.</span></div></div><div class="ach-formgrid"><div class="ach-field"><label>Campaign owner</label><select id="agr_agent" class="ach-input"><option value="">All agents</option>${H.agents.map((a) => `<option value="${a.id}">${esc(a.full_name_en)}</option>`).join("")}</select></div><div class="ach-field"><label>Period</label><select id="agr_scope" class="ach-input"><option value="month">${esc(periodLabel(month()))}</option><option value="all">All campaign history</option></select></div></div></div><div class="ach-modalfoot"><button type="button" class="ach-btn" onclick="AgentCampaigns.close()">Cancel</button><button type="submit" class="ach-btn primary"><i class="fas fa-download"></i>Download CSV</button></div></form>`,
+      `<div class="ach-modalbar"><div><div class="ach-kicker">Campaign reporting</div><h3>Download campaign overview</h3></div><button class="ach-btn" onclick="AgentCampaigns.close()"><i class="fas fa-times"></i></button></div><form onsubmit="AgentCampaigns.runReport(event)"><div class="ach-modalbody"><div class="ach-report-intro"><i class="fas fa-file-pdf"></i><div><strong>Designed TAAMEER PDF report</strong><span>Campaign setup, budget, spend, mandatory performance, daily accountability and latest recorded changes in a presentation-ready layout.</span></div></div><div class="ach-formgrid"><div class="ach-field"><label>Campaign owner</label><select id="agr_agent" class="ach-input"><option value="">All agents</option>${H.agents.map((a) => `<option value="${a.id}">${esc(a.full_name_en)}</option>`).join("")}</select></div><div class="ach-field"><label>Period</label><select id="agr_scope" class="ach-input"><option value="month">${esc(periodLabel(month()))}</option><option value="all">All campaign history</option></select></div></div></div><div class="ach-modalfoot"><button type="submit" class="ach-btn primary"><i class="fas fa-file-pdf"></i>Download PDF</button></div></form>`,
     );
   }
-  function runReport(e) {
+  async function runReport(e) {
     e.preventDefault();
-    downloadCampaigns(v("agr_agent"), "", v("agr_scope"));
-    close();
+    await downloadCampaigns(v("agr_agent"), "", v("agr_scope"));
   }
-  function downloadCampaigns(agentId = "", campaignId = "", scope = "all") {
+  async function downloadCampaigns(agentId = "", campaignId = "", scope = "all") {
     const mid = month()?.id;
-    let list = H.campaigns.filter(
+    const list = H.campaigns.filter(
       (c) =>
         (!agentId || String(c.agent_id) === String(agentId)) &&
         (!campaignId || String(c.id) === String(campaignId)) &&
         (scope !== "month" || String(c.month_id) === String(mid)),
     );
     if (!list.length) return toast("No campaigns match this report.");
-    const headers = [
-      "Month",
-      "Agent",
-      "Instagram",
-      "Campaign",
-      "Project / property",
-      "Objective",
-      "Status",
-      "Start date",
-      "End date",
-      "Budget QAR",
-      "Latest spend QAR",
-      "Budget remaining QAR",
-      "Reach",
-      "Impressions",
-      "Profile visits",
-      "Messages",
-      "Leads",
-      "Last performance date",
-      "Completed check-ins",
-      "Missed dates",
-      "Missing date list",
-      "Latest check-in note",
-      "Ads Manager link",
-    ];
-    const rows = list.map((c) => {
-      const a = H.agents.find((x) => String(x.id) === String(c.agent_id)),
-        x = account(c.agent_id),
-        u = latestUpdate(c.id) || {},
-        daily = dailyFor(c.id),
-        history = statusHistory(c.id),
-        m = H.months.find((x) => String(x.id) === String(c.month_id));
-      const missed = daily
-        .filter((d) => d.state === "missed")
-        .map((d) => d.checkin_date);
-      return [
-        periodLabel(m),
-        a?.full_name_en || "",
-        x?.username ? `@${x.username}` : "",
-        c.name,
-        c.project_name || "",
-        c.objective,
-        c.status,
-        c.start_date || "",
-        c.end_date || "",
-        Number(c.budget || 0),
-        Number(u.spend || 0),
-        Number(c.budget || 0) - Number(u.spend || 0),
-        Number(u.reach || 0),
-        Number(u.impressions || 0),
-        Number(u.profile_visits || 0),
-        Number(u.messages || 0),
-        Number(u.leads || 0),
-        u.report_date || "",
-        daily.filter((d) => d.state === "completed").length,
-        missed.length,
-        missed.join(" | "),
-        history[0]?.summary || "",
-        c.ad_manager_url || "",
-      ];
+    toast("Preparing campaign PDF…");
+    let doc;
+    try {
+      doc = pdfDoc();
+    } catch (error) {
+      return alert(error.message);
+    }
+    const totals = list.reduce(
+      (sum, c) => {
+        const u = latestUpdate(c.id) || {};
+        sum.budget += Number(c.budget || 0);
+        sum.spend += Number(u.spend || 0);
+        sum.leads += Number(u.leads || 0);
+        return sum;
+      },
+      { budget: 0, spend: 0, leads: 0 },
+    );
+    const owner = agentId
+      ? H.agents.find((a) => String(a.id) === String(agentId))?.full_name_en
+      : "All sales agents";
+    pdfHeader(
+      doc,
+      "Agent Campaign Performance",
+      `${owner || "Selected agent"} · ${scope === "month" ? periodLabel(month()) : "Complete history"}`,
+      `GENERATED ${new Date().toLocaleDateString("en-GB")}`,
+    );
+    doc.setTextColor(16, 24, 40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(21);
+    doc.text(campaignId ? pdfClean(list[0].name) : "Campaign control report", 14, 57);
+    doc.setTextColor(102, 112, 133);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text("A management-ready view of media allocation, delivery and daily accountability.", 14, 64);
+    pdfMetric(doc, 14, 71, 42, "Campaigns", String(list.length));
+    pdfMetric(doc, 60, 71, 42, "Budget", pdfQar(totals.budget));
+    pdfMetric(doc, 106, 71, 42, "Recorded spend", pdfQar(totals.spend));
+    pdfMetric(doc, 152, 71, 44, "Recorded leads", number(totals.leads), true);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(52, 64, 84);
+    doc.text("CAMPAIGN INDEX", 14, 102);
+    let indexY = 109;
+    list.forEach((c, index) => {
+      if (indexY > 270) {
+        doc.addPage();
+        pdfHeader(doc, "Campaign Index", `${owner || "Selected agent"} · continued`, "CONFIDENTIAL");
+        indexY = 55;
+      }
+      const a = H.agents.find((x) => String(x.id) === String(c.agent_id));
+      const u = latestUpdate(c.id) || {};
+      doc.setFillColor(index % 2 ? 250 : 246, index % 2 ? 251 : 248, index % 2 ? 252 : 250);
+      doc.roundedRect(14, indexY - 5, 182, 10, 2, 2, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(16, 24, 40);
+      doc.text(pdfClean(c.name).slice(0, 48), 18, indexY + 1);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(102, 112, 133);
+      doc.text(pdfClean(a?.full_name_en || "Unassigned").slice(0, 28), 90, indexY + 1);
+      doc.text(statusLabel(c.status), 144, indexY + 1);
+      doc.text(pdfQar(u.spend || 0), 192, indexY + 1, { align: "right" });
+      indexY += 12;
     });
-    const csv =
-      "\ufeff" +
-      [headers, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+    list.forEach((c) => {
+      const a = H.agents.find((x) => String(x.id) === String(c.agent_id));
+      const x = account(c.agent_id);
+      const u = latestUpdate(c.id) || {};
+      const daily = dailyFor(c.id);
+      const history = statusHistory(c.id);
+      const missed = daily.filter((d) => d.state === "missed");
+      const completed = daily.filter((d) => d.state === "completed");
+      doc.addPage();
+      pdfHeader(doc, "Campaign Detail", `${a?.full_name_en || "Unassigned agent"}${x?.username ? ` · @${x.username}` : ""}`, `STATUS · ${statusLabel(c.status).toUpperCase()}`);
+      pdfPill(doc, statusLabel(c.status), 14, 51, ["active", "completed"].includes(c.status));
+      doc.setTextColor(16, 24, 40);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(19);
+      doc.text(doc.splitTextToSize(pdfClean(c.name), 160).slice(0, 2), 14, 68);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(102, 112, 133);
+      doc.text(`${pdfClean(c.project_name || "No project specified")} · ${pdfClean(c.objective || "leads")}`, 14, 82);
+      doc.setDrawColor(226, 230, 236);
+      doc.line(14, 88, 196, 88);
+      const facts = [
+        ["START", fmt(c.start_date)],
+        ["END", fmt(c.end_date)],
+        ["TARGET", c.target_location || "Not specified"],
+        ["LAST RECORD", fmt(u.report_date)],
+      ];
+      facts.forEach(([label, value], i) => {
+        const fx = 14 + i * 45.5;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6);
+        doc.setTextColor(152, 162, 179);
+        doc.text(label, fx, 97);
+        doc.setFontSize(7.5);
+        doc.setTextColor(52, 64, 84);
+        doc.text(pdfClean(value).slice(0, 24), fx, 103);
+      });
+      pdfMetric(doc, 14, 112, 56, "Budget", pdfQar(c.budget));
+      pdfMetric(doc, 77, 112, 56, "Spend to date", pdfQar(u.spend));
+      pdfMetric(doc, 140, 112, 56, "Remaining", pdfQar(Math.max(0, Number(c.budget || 0) - Number(u.spend || 0))), true);
+      pdfMetric(doc, 14, 136, 28, "Reach", number(u.reach));
+      pdfMetric(doc, 45, 136, 28, "Impressions", number(u.impressions));
+      pdfMetric(doc, 76, 136, 28, "Visits", number(u.profile_visits));
+      pdfMetric(doc, 107, 136, 28, "Messages", number(u.messages));
+      pdfMetric(doc, 138, 136, 28, "Leads", number(u.leads));
+      pdfMetric(doc, 169, 136, 27, "Missed", String(missed.length), missed.length > 0);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(52, 64, 84);
+      doc.text("DAILY ACCOUNTABILITY", 14, 166);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(102, 112, 133);
+      doc.text(`${completed.length} completed check-ins · ${missed.length} missed days · ${daily.filter((d) => d.state === "due").length} currently due`, 14, 173);
+      if (missed.length) {
+        doc.setTextColor(180, 35, 24);
+        doc.text(doc.splitTextToSize(`Missing: ${missed.map((d) => fmt(d.checkin_date)).join(" · ")}`, 178).slice(0, 2), 14, 180);
+      }
+      doc.setTextColor(52, 64, 84);
+      doc.setFont("helvetica", "bold");
+      doc.text("LATEST RECORDED UPDATE", 14, 197);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(102, 112, 133);
+      doc.text(doc.splitTextToSize(pdfClean(history[0]?.summary || u.notes || "No check-in note recorded yet."), 178).slice(0, 3), 14, 204);
+      if (history[0]?.changes?.length) {
+        doc.setFontSize(6.5);
+        doc.text(`Changes: ${history[0].changes.join(" · ")}`, 14, 220);
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(52, 64, 84);
+      doc.text("REFERENCE", 14, 237);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(102, 112, 133);
+      doc.setFontSize(7);
+      const reference = pdfClean(c.ad_manager_url || "No Ads Manager link recorded.");
+      doc.text(doc.splitTextToSize(reference, 170).slice(0, 2), 14, 244);
+    });
+    pdfFooters(doc, "Agent Campaign Performance Report");
     const name = campaignId
       ? slug(list[0].name)
       : agentId
@@ -1098,11 +1286,128 @@
         : scope === "month"
           ? slug(periodLabel(month())) + "-campaigns"
           : "all-agent-campaigns";
-    downloadBlob(
-      new Blob([csv], { type: "text/csv;charset=utf-8" }),
-      `${name}-report.csv`,
+    doc.save(`${name}-report.pdf`);
+    close();
+    toast("Campaign PDF downloaded.");
+  }
+  async function downloadAgentsReport() {
+    if (!H.agents.length) return toast("No agents are available for this report.");
+    toast("Preparing profiles PDF…");
+    let doc;
+    try {
+      doc = pdfDoc();
+    } catch (error) {
+      return alert(error.message);
+    }
+    const photos = new Map();
+    await Promise.all(
+      H.agents.map(async (a) => {
+        const image = await pdfImage(a.profile_photo_url);
+        if (image) photos.set(a.id, image);
+      }),
     );
-    toast("Campaign report downloaded.");
+    const ready = H.agents.filter((a) => Math.round(readiness(a)) === 100).length;
+    const noAccount = H.agents.filter((a) => effectiveAccountStatus(a) === "no_account").length;
+    pdfHeader(doc, "Sales Agent Profile Register", "Instagram account ownership, readiness and campaign activity", `GENERATED ${new Date().toLocaleDateString("en-GB")}`);
+    doc.setTextColor(16, 24, 40);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(21);
+    doc.text("Agents & profiles", 14, 57);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(102, 112, 133);
+    doc.text("A controlled register of sales-agent contact details and Instagram account readiness.", 14, 64);
+    pdfMetric(doc, 14, 71, 42, "Agents", String(H.agents.length));
+    pdfMetric(doc, 60, 71, 42, "Ready", String(ready), true);
+    pdfMetric(doc, 106, 71, 42, "In setup", String(H.agents.length - ready - noAccount));
+    pdfMetric(doc, 152, 71, 44, "No account", String(noAccount));
+    let y = 96;
+    for (const a of H.agents) {
+      if (y > 210) {
+        doc.addPage();
+        pdfHeader(doc, "Sales Agent Profile Register", "TAAMEER controlled account directory", "CONFIDENTIAL");
+        y = 51;
+      }
+      const x = account(a.id);
+      const pct = Math.round(readiness(a));
+      const status = effectiveAccountStatus(a);
+      const cs = campaignsFor(a.id);
+      const live = cs.filter(active).length;
+      const al = allocation(a.id);
+      const image = photos.get(a.id);
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(226, 230, 236);
+      doc.roundedRect(14, y, 182, 82, 4, 4, "FD");
+      doc.setFillColor(14, 22, 38);
+      doc.roundedRect(18, y + 11, 30, 36, 3, 3, "F");
+      let imageAdded = false;
+      if (image) {
+        try {
+          doc.addImage(image.data, image.format, 18, y + 11, 30, 36);
+          imageAdded = true;
+        } catch (_) {}
+      }
+      if (!imageAdded) {
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(initials(a.full_name_en), 33, y + 32, { align: "center" });
+      }
+      doc.setTextColor(16, 24, 40);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text(doc.splitTextToSize(pdfClean(a.full_name_en), 103).slice(0, 2), 54, y + 16);
+      pdfPill(doc, statusLabel(status), 155, y + 9, ["ready", "campaign_active"].includes(status));
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(102, 112, 133);
+      doc.text(x?.username ? `@${pdfClean(x.username)}` : "Instagram account not created", 54, y + 29);
+      doc.text(pdfClean(a.department_team || "Sales team"), 54, y + 35);
+      doc.setDrawColor(234, 237, 241);
+      doc.line(54, y + 40, 192, y + 40);
+      const contact = [
+        ["EMAIL", a.company_email || "Not added"],
+        ["PHONE", a.work_phone || "Not added"],
+        ["ALLOCATION", pdfQar(al?.allocated_budget || 0)],
+        ["CAMPAIGNS", `${live} live · ${cs.length} total`],
+      ];
+      contact.forEach(([label, value], i) => {
+        const cx = 54 + (i % 2) * 69;
+        const cy = y + 49 + Math.floor(i / 2) * 13;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(5.8);
+        doc.setTextColor(152, 162, 179);
+        doc.text(label, cx, cy);
+        doc.setFontSize(7);
+        doc.setTextColor(52, 64, 84);
+        doc.text(pdfClean(value).slice(0, 34), cx, cy + 5);
+      });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.2);
+      doc.setTextColor(52, 64, 84);
+      doc.text(`ACCOUNT READINESS · ${pct}%`, 18, y + 56);
+      doc.setFillColor(234, 237, 241);
+      doc.roundedRect(18, y + 60, 30, 3, 1.5, 1.5, "F");
+      const accent = pct === 100 ? [37, 168, 107] : pdfAccent();
+      if (pct > 0) {
+        doc.setFillColor(...accent);
+        doc.roundedRect(18, y + 60, 30 * (pct / 100), 3, 1.5, 1.5, "F");
+      }
+      readinessKeys.forEach(([key, label], i) => {
+        const cx = 18 + (i % 4) * 43.5;
+        const cy = y + 70 + Math.floor(i / 4) * 7;
+        doc.setFillColor(x?.[key] ? 37 : 208, x?.[key] ? 168 : 213, x?.[key] ? 107 : 221);
+        doc.circle(cx + 1.5, cy - 1.2, 1.2, "F");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(5.5);
+        doc.setTextColor(102, 112, 133);
+        doc.text(pdfClean(label).slice(0, 21), cx + 4, cy);
+      });
+      y += 88;
+    }
+    pdfFooters(doc, "Sales Agent Profile Register");
+    doc.save(`agents-profiles-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast("Agents & profiles PDF downloaded.");
   }
   function credentials(accountId) {
     const x = H.accounts.find((a) => a.id === accountId),
@@ -1492,6 +1797,7 @@
     report,
     runReport,
     downloadCampaigns,
+    downloadAgentsReport,
     credentials,
     saveCredential,
     reveal,
